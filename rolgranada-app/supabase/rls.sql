@@ -10,6 +10,7 @@ declare
   base_username text;
 begin
   base_username := coalesce(
+    nullif(new.raw_user_meta_data ->> 'username', ''),
     nullif(new.raw_user_meta_data ->> 'full_name', ''),
     nullif(split_part(coalesce(new.email, ''), '@', 1), ''),
     'Jugador'
@@ -36,6 +37,7 @@ insert into public.profiles (id, username, avatar_url)
 select
   users.id,
   left(coalesce(
+    nullif(users.raw_user_meta_data ->> 'username', ''),
     nullif(users.raw_user_meta_data ->> 'full_name', ''),
     nullif(split_part(coalesce(users.email, ''), '@', 1), ''),
     'Jugador'
@@ -105,67 +107,6 @@ using (
   or exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role = 'admin')
 );
 
-create or replace function public.listar_partidas()
-returns table (
-  id uuid,
-  titulo text,
-  sistema text,
-  descripcion text,
-  imagen_url text,
-  dm_id uuid,
-  participantes_max integer,
-  proxima_sesion timestamptz,
-  ubicacion_aproximada text,
-  ubicacion_exacta text,
-  estado text,
-  created_at timestamp,
-  dm_username text,
-  dm_avatar_url text,
-  participant_ids uuid[]
-)
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select
-    partida.id,
-    partida.titulo,
-    partida.sistema,
-    partida.descripcion,
-    partida.imagen_url,
-    partida.dm_id,
-    partida.participantes_max,
-    partida.proxima_sesion,
-    partida.ubicacion_aproximada,
-    case
-      when auth.uid() = partida.dm_id
-        or exists (
-          select 1 from public.profiles p
-          where p.id = auth.uid() and p.role = 'admin'
-        )
-        or exists (
-          select 1 from public.partida_participantes pp
-          where pp.partida_id = partida.id and pp.user_id = auth.uid()
-        )
-      then partida.ubicacion_exacta
-      else null
-    end,
-    partida.estado,
-    partida.created_at,
-    coalesce(dm.username, 'DM'),
-    dm.avatar_url,
-    coalesce(array_agg(pp.user_id) filter (where pp.user_id is not null), '{}'::uuid[])
-  from public.partidas partida
-  left join public.profiles dm on dm.id = partida.dm_id
-  left join public.partida_participantes pp on pp.partida_id = partida.id
-  where auth.uid() is not null
-  group by partida.id, dm.username, dm.avatar_url
-  order by partida.created_at desc;
-$$;
-revoke all on function public.listar_partidas() from public, anon;
-grant execute on function public.listar_partidas() to authenticated;
-
 revoke all on public.partida_participantes from anon, authenticated;
 grant select, delete on public.partida_participantes to authenticated;
 
@@ -176,6 +117,10 @@ for select to authenticated using (user_id = (select auth.uid()));
 drop policy if exists "participantes_delete_self" on public.partida_participantes;
 create policy "participantes_delete_self" on public.partida_participantes
 for delete to authenticated using (user_id = (select auth.uid()));
+
+delete from public.partida_participantes pp
+using public.partidas partida
+where pp.partida_id = partida.id and pp.user_id = partida.dm_id;
 
 create or replace function public.unirse_partida(p_partida_id uuid)
 returns void
@@ -198,6 +143,10 @@ begin
 
   if not found then
     raise exception 'La partida no existe.' using errcode = 'P0002';
+  end if;
+
+  if partida_actual.dm_id = current_user_id then
+    raise exception 'El DM ya dirige esta partida y no puede unirse como participante.' using errcode = '22023';
   end if;
 
   if exists (
@@ -435,23 +384,45 @@ begin
   end if;
 
   return query
+  with jugadores as (
+    select pp.user_id
+    from public.partida_participantes pp
+    where pp.partida_id = p_partida_id
+    union
+    select partida.dm_id
+    from public.partidas partida
+    where partida.id = p_partida_id
+  )
   select
     dias.dia::date,
     franjas.franja,
-    count(pp.user_id)::integer,
-    count(*) filter (where pp.user_id is not null and estado.valor = 'puedo')::integer,
-    count(*) filter (where pp.user_id is not null and estado.valor = 'podria')::integer,
-    count(*) filter (where pp.user_id is not null and estado.valor = 'no_puedo')::integer,
-    count(*) filter (where pp.user_id is not null and estado.valor = 'no_indicado')::integer
+    count(jugadores.user_id)::integer,
+    count(*) filter (where estado.valor = 'puedo')::integer,
+    count(*) filter (where estado.valor = 'podria')::integer,
+    count(*) filter (where estado.valor = 'no_puedo')::integer,
+    count(*) filter (where estado.valor = 'no_indicado')::integer
   from generate_series(p_inicio, p_fin, interval '1 day') dias(dia)
   cross join (values ('manana'::text), ('tarde'::text)) franjas(franja)
-  left join public.partida_participantes pp on pp.partida_id = p_partida_id
-  left join public.disponibilidades disp on disp.user_id = pp.user_id and disp.fecha = dias.dia::date
+  cross join jugadores
+  left join public.disponibilidades disp on disp.user_id = jugadores.user_id and disp.fecha = dias.dia::date
   cross join lateral (
-    select coalesce(
-      case when franjas.franja = 'manana' then disp.manana::text else disp.tarde::text end,
-      'no_indicado'
-    ) as valor
+    select case
+      when exists (
+        select 1
+        from public.sesiones sesion_ocupada
+        join public.partidas partida_ocupada on partida_ocupada.id = sesion_ocupada.partida_id
+        left join public.partida_participantes pp_ocupado
+          on pp_ocupado.partida_id = partida_ocupada.id and pp_ocupado.user_id = jugadores.user_id
+        where sesion_ocupada.partida_id <> p_partida_id
+          and sesion_ocupada.fecha = dias.dia::date
+          and sesion_ocupada.franja = franjas.franja
+          and (partida_ocupada.dm_id = jugadores.user_id or pp_ocupado.user_id is not null)
+      ) then 'no_puedo'
+      else coalesce(
+        case when franjas.franja = 'manana' then disp.manana::text else disp.tarde::text end,
+        'no_indicado'
+      )
+    end as valor
   ) estado
   group by dias.dia, franjas.franja
   order by dias.dia, franjas.franja;
@@ -460,13 +431,15 @@ $$;
 revoke all on function public.listar_disponibilidad_partida(uuid, date, date) from public, anon;
 grant execute on function public.listar_disponibilidad_partida(uuid, date, date) to authenticated;
 
-create or replace function public.listar_sesiones_usuario()
+drop function if exists public.listar_sesiones_usuario();
+create function public.listar_sesiones_usuario()
 returns table (
   id uuid,
   partida_id uuid,
   fecha date,
   franja text,
   notas text,
+  imagen_url text,
   created_at timestamp,
   titulo_partida text
 )
@@ -476,7 +449,7 @@ security definer
 set search_path = public
 as $$
   select sesion.id, sesion.partida_id, sesion.fecha, sesion.franja,
-    sesion.notas, sesion.created_at, partida.titulo
+    sesion.notas, sesion.imagen_url, sesion.created_at, partida.titulo
   from public.sesiones sesion
   join public.partidas partida on partida.id = sesion.partida_id
   where exists (
@@ -525,6 +498,26 @@ for delete to authenticated using (
       partida.dm_id = (select auth.uid())
       or exists (select 1 from public.profiles perfil where perfil.id = (select auth.uid()) and perfil.role = 'admin')
     )
+  )
+);
+
+drop policy if exists "session_images_upload_dm" on storage.objects;
+create policy "session_images_upload_dm" on storage.objects
+for insert to authenticated with check (
+  bucket_id = 'sesiones'
+  and exists (
+    select 1 from public.partidas partida
+    where partida.id = split_part(name, '/', 1)::uuid and partida.dm_id = (select auth.uid())
+  )
+);
+
+drop policy if exists "session_images_delete_dm" on storage.objects;
+create policy "session_images_delete_dm" on storage.objects
+for delete to authenticated using (
+  bucket_id = 'sesiones'
+  and exists (
+    select 1 from public.partidas partida
+    where partida.id = split_part(name, '/', 1)::uuid and partida.dm_id = (select auth.uid())
   )
 );
 

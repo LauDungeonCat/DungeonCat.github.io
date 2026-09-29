@@ -47,26 +47,17 @@ Esto marca el fin del primer proyecto. Lo siguiente es crear una forma de accede
 
 El cliente usa `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` desde `rolgranada-app/.env.local`. En GitHub Pages, configura esas variables en el entorno de build; la aplicación usa la base `/rolgranada/` para el callback OAuth.
 
-Después de crear las tablas `profiles`, `partidas` (incluyendo `notas_dm`), `partida_participantes`, `disponibilidades` y `sesiones` con el esquema acordado, ejecuta `supabase/rls.sql` en el SQL Editor de Supabase. El script configura RLS, crea perfiles para usuarios OAuth nuevos y existentes, define los RPC públicos/privados y solicita recargar el caché de esquema PostgREST. Si el panel conserva un error de RPC, vuelve a cargar la página tras ejecutar el script.
+Si ya tienes `profiles`, `partidas`, `partida_participantes` y `disponibilidades`, ejecuta primero `supabase/schema.sql`: añade `partidas.notas_dm`, crea `sesiones` si falta, agrega `sesiones.imagen_url` y configura el bucket de imágenes. Después ejecuta `supabase/rls.sql`, que configura RLS, corrige autoinscripciones DM antiguas, crea los RPC y recarga el caché de PostgREST. Reejecuta ambos scripts tras estos cambios.
 
-La navegación y consulta del catálogo son anónimas. Google OAuth solo se solicita al crear/unirse a una campaña o al guardar disponibilidad; la vista de agendamiento se descarga al abrirla como DM.
+La navegación y el catálogo son anónimos. Al crear o unirse a una campaña, o guardar disponibilidad, se solicita iniciar sesión. En **Authentication → Providers**, habilita **Email**. Si la confirmación de correo está activa, los usuarios deberán abrir el enlace que reciben antes de entrar. Para producción, configura SMTP propio para que Supabase pueda entregar esos correos de forma fiable.
 
-En Authentication, habilita Google y permite estas URLs de redirección:
-
-- `http://localhost:5173/rolgranada/`
-- `https://dungeoncat.site/rolgranada/`
-
-Configura en Google el URI de callback que indica el panel de Supabase. Para asignar `admin`, cambia `profiles.role` desde el SQL Editor; la aplicación no permite que cada usuario eleve su propio rol.
-
-## Rol Granada en Supabase
-
-Rol Granada lee el proyecto, los perfiles y la disponibilidad desde Supabase. Configura `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en `rolgranada-app/.env.local` para desarrollo; en GitHub Pages, define las mismas variables durante el build.
-
-Antes de iniciar sesión, ejecuta `supabase/rls.sql` en el SQL Editor del proyecto Supabase, después de crear las cuatro tablas indicadas por la aplicación. El script activa RLS, crea/perfila usuarios de Auth y añade los RPC que validan inscripciones y ocultan la ubicación exacta a quien no tenga permiso.
-
-En Supabase Authentication, habilita Google y añade estas URLs a la lista de redirecciones permitidas:
+En **Authentication → URL Configuration**, establece la URL del sitio y añade estas redirecciones permitidas:
 
 - `http://localhost:5173/rolgranada/`
 - `https://dungeoncat.site/rolgranada/`
 
-Configura también el URI de callback de Supabase que muestra el panel del proveedor Google. Para conceder administración, actualiza `profiles.role` a `admin` para el UUID correspondiente desde el SQL Editor; los usuarios no pueden cambiar su propio rol desde la aplicación.
+Google OAuth queda como opción adicional: si quieres conservarlo, habilítalo en **Providers → Google** y configura el callback que indica Supabase en la consola de Google. Para asignar `admin`, cambia `profiles.role` desde el SQL Editor; la aplicación no permite que cada usuario eleve su propio rol.
+
+## Variables de despliegue
+
+Configura `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en `rolgranada-app/.env.local` para desarrollo y como variables del build de GitHub Pages. No publiques `.env.local` ni uses la clave `service_role` en el frontend; Email Auth no necesita secretos adicionales.

@@ -126,6 +126,11 @@
 	color: #444;
 }
 
+.partida-catalogo-imagen span.estado-completa {
+	background: #f6d7a6;
+	color: #663c08;
+}
+
 .partida-catalogo-contenido {
 	display: flex;
 	flex: 1;
@@ -165,13 +170,21 @@
 }
 
 .partida-dm,
+.partida-sesiones,
 .partida-ubicacion,
-.partida-ubicacion-exacta,
-.partida-descripcion {
-	margin-top: 0.6rem;
-	color: #555;
-	font-size: 0.85rem;
-	line-height: 1.45;
+.partida-ubicacion-exacta {
+    font-size: 0.9rem;
+    color: #4a5568; /* Color tenue/secundario para el texto normal */
+    margin: 0.25rem 0;
+    line-height: 1.4;
+}
+
+.partida-dm strong,
+.partida-sesiones strong,
+.partida-ubicacion strong,
+.partida-ubicacion-exacta strong {
+    color: #1a202c; /* Color oscuro/resaltado para la etiqueta en negrita */
+    font-weight: 600;
 }
 
 .partida-ubicacion-exacta {

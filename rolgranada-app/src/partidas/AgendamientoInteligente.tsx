@@ -61,12 +61,13 @@ function BotonFranja({
 }
 
 export default function AgendamientoInteligente({ partida, onClose }: { partida: Partida; onClose: () => void }) {
-	const { sesiones, cargarMapaDisponibilidad, guardarSesion, borrarSesion } = useRolData();
+	const { sesiones, cargarMapaDisponibilidad, subirImagenSesion, guardarSesiones, borrarSesion } = useRolData();
 	const [mesVisible, setMesVisible] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
 	const [resultadoMapa, setResultadoMapa] = useState<{ clave: string; filas: MapaDisponibilidad[] }>({ clave: "", filas: [] });
 	const [error, setError] = useState<string | null>(null);
-	const [seleccion, setSeleccion] = useState<FranjaSeleccionada | null>(null);
+	const [selecciones, setSelecciones] = useState<FranjaSeleccionada[]>([]);
 	const [notas, setNotas] = useState("");
+	const [imagen, setImagen] = useState<File | null>(null);
 	const [guardando, setGuardando] = useState(false);
 	const anio = mesVisible.getFullYear();
 	const mes = mesVisible.getMonth();
@@ -94,12 +95,14 @@ export default function AgendamientoInteligente({ partida, onClose }: { partida:
 	}, [cargarMapaDisponibilidad, fin, inicio, partida.id, claveMes]);
 
 	async function confirmarSesion() {
-		if (!seleccion) return;
+		if (selecciones.length === 0) return;
 		setGuardando(true);
 		try {
-			await guardarSesion(partida.id, seleccion.fecha, seleccion.franja, notas.trim());
-			setSeleccion(null);
+			const imagenUrl = imagen ? await subirImagenSesion(partida.id, imagen) : null;
+			await guardarSesiones(partida.id, selecciones, notas.trim(), imagenUrl);
+			setSelecciones([]);
 			setNotas("");
+			setImagen(null);
 		} catch (saveError) {
 			setError(saveError instanceof Error ? saveError.message : "No se pudo guardar la sesión.");
 		} finally {
@@ -141,10 +144,15 @@ export default function AgendamientoInteligente({ partida, onClose }: { partida:
 							{(["manana", "tarde"] as const).map((franja) => {
 								const slot = mapa.get(`${fecha}:${franja}`);
 								const agendada = sesionesPartida.some((sesion) => sesion.fecha === fecha && sesion.franja === franja);
-								const seleccionada = seleccion?.fecha === fecha && seleccion.franja === franja;
+								const seleccionada = selecciones.some((item) => item.fecha === fecha && item.franja === franja);
 								return <BotonFranja key={franja} fecha={fecha} franja={franja} respuestas={slot} agendada={agendada} seleccionada={Boolean(seleccionada)} onSelect={() => {
 									if (agendada) void quitarSesion(fecha, franja);
-									else { setSeleccion({ fecha, franja }); setError(null); }
+									else {
+										setSelecciones((anteriores) => seleccionada
+											? anteriores.filter((item) => item.fecha !== fecha || item.franja !== franja)
+											: [...anteriores, { fecha, franja }]);
+										setError(null);
+									}
 								}} />;
 							})}
 						</div>;
@@ -157,10 +165,18 @@ export default function AgendamientoInteligente({ partida, onClose }: { partida:
 					<li><span className="leyenda-color heatmap-no-disponible" />Alguien no puede</li>
 					<li><span className="leyenda-color heatmap-seleccionada" />Sesión confirmada</li>
 				</ul>
-				{seleccion && <div className="agendamiento-confirmacion">
-					<p>Confirmar {new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(new Date(`${seleccion.fecha}T12:00:00`))} por la {nombresFranjas[seleccion.franja].toLowerCase()}.</p>
+				{selecciones.length > 0 && <div className="agendamiento-confirmacion">
+					<p>Confirmar {selecciones.length} {selecciones.length === 1 ? "franja" : "franjas"} de sesión.</p>
 					<label>Notas de sesión <input value={notas} maxLength={250} onChange={(event) => setNotas(event.target.value)} /></label>
-					<button type="button" disabled={guardando} onClick={() => { void confirmarSesion(); }}>{guardando ? "Guardando…" : "Confirmar sesión"}</button>
+					<label>Imagen de sesión <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={(event) => {
+						const archivo = event.target.files?.[0] ?? null;
+						if (archivo && !["image/jpeg", "image/png", "image/webp", "image/gif"].includes(archivo.type)) { setError("Usa una imagen JPG, PNG, WebP o GIF."); setImagen(null); return; }
+						if (archivo && archivo.size > 8 * 1024 * 1024) { setError("La imagen no puede superar 8 MB."); setImagen(null); return; }
+						setImagen(archivo);
+						setError(null);
+					}} /></label>
+					{imagen && <span className="agendamiento-imagen-nombre">{imagen.name}</span>}
+					<button type="button" disabled={guardando} onClick={() => { void confirmarSesion(); }}>{guardando ? "Guardando…" : "Confirmar sesiones"}</button>
 				</div>}
 			</section>
 		</div>

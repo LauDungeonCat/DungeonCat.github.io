@@ -21,7 +21,10 @@ type Pagina =
   | "contacto";
 
 function AplicacionAutenticada() {
-  const [pagina, setPagina] = useState<Pagina>(() => new URLSearchParams(window.location.search).has("partida") ? "buscar-partidas" : "generador-encuentros");
+  // ✅ Inicializamos con "inicio" si no hay parámetros en la URL
+  const [pagina, setPagina] = useState<Pagina>(() =>
+    new URLSearchParams(window.location.search).has("partida") ? "buscar-partidas" : "inicio"
+  );
   const { profile, signOut, requestLogin } = useAuth();
 
   function cambiarPagina(nombre: string) {
@@ -30,6 +33,8 @@ function AplicacionAutenticada() {
 
   function renderPagina() {
     switch (pagina) {
+      case "generador-encuentros":
+        return <GeneradorEncuentros />;
       case "disponibilidad":
         return <Disponibilidad />;
       case "mis-partidas":
@@ -41,9 +46,9 @@ function AplicacionAutenticada() {
       case "contacto":
         return <section className="pagina-placeholder"><h1 className="page-title">Contacto</h1><p>Sección de contacto pendiente de desarrollar.</p></section>;
       case "inicio":
-      case "generador-encuentros":
       default:
-        return <GeneradorEncuentros />;
+        // ✅ Por defecto muestra Inicio
+        return <section className="pagina-placeholder"><h1 className="page-title">Inicio</h1><p>Bienvenido a Rol Granada. Explora campañas, organiza tus partidas y encuentra cuándo jugar.</p></section>;
     }
   }
 

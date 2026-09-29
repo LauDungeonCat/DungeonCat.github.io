@@ -16,15 +16,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const [profileUserId, setProfileUserId] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [loginRequested, setLoginRequested] = useState(false);
+	const [recoveryMode, setRecoveryMode] = useState(false);
 
 	useEffect(() => {
 		let activo = true;
-		const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+		const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
 			if (!activo) return;
 			setSession(nextSession);
 			if (!nextSession) {
 				setProfile(null);
 				setProfileUserId(null);
+			} else if (event === "PASSWORD_RECOVERY") {
+				setRecoveryMode(true);
+				setLoginRequested(true);
 			} else {
 				setLoginRequested(false);
 			}
@@ -80,6 +84,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		}
 	}
 
+	async function signInWithEmail(email: string, password: string) {
+		setError(null);
+		const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+		if (signInError) {
+			setError(mensajeError(signInError));
+			throw signInError;
+		}
+		setLoginRequested(false);
+	}
+
+	async function signUpWithEmail(email: string, password: string, username: string) {
+		setError(null);
+		const { data, error: signUpError } = await supabase.auth.signUp({
+			email: email.trim(),
+			password,
+			options: {
+				data: { username: username.trim(), full_name: username.trim() },
+				emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}`,
+			},
+		});
+		if (signUpError) {
+			setError(mensajeError(signUpError));
+			throw signUpError;
+		}
+		if (data.session) setLoginRequested(false);
+		return !data.session;
+	}
+
+	async function sendPasswordReset(email: string) {
+		setError(null);
+		const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+			redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}`,
+		});
+		if (resetError) {
+			setError(mensajeError(resetError));
+			throw resetError;
+		}
+	}
+
+	async function updatePassword(password: string) {
+		setError(null);
+		const { error: updateError } = await supabase.auth.updateUser({ password });
+		if (updateError) {
+			setError(mensajeError(updateError));
+			throw updateError;
+		}
+		setRecoveryMode(false);
+		setLoginRequested(false);
+	}
+
 	async function signOut() {
 		setError(null);
 		const { error: signOutError } = await supabase.auth.signOut();
@@ -95,7 +149,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	}
 
 	return (
-		<AuthContext.Provider value={{ session, profile, loading: authLoading || Boolean(session?.user.id && profileUserId !== session.user.id), error, loginRequested, requestLogin, dismissLogin: () => setLoginRequested(false), signInWithGoogle, signOut }}>
+		<AuthContext.Provider value={{
+			session,
+			profile,
+			loading: authLoading || Boolean(session?.user.id && profileUserId !== session.user.id),
+			error,
+			loginRequested,
+			recoveryMode,
+			requestLogin,
+			dismissLogin: () => setLoginRequested(false),
+			signInWithGoogle,
+			signInWithEmail,
+			signUpWithEmail,
+			sendPasswordReset,
+			updatePassword,
+			signOut,
+		}}>
 			{children}
 		</AuthContext.Provider>
 	);

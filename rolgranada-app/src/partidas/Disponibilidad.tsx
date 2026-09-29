@@ -62,7 +62,7 @@ function reglaAnteriorCubierta(anterior: PlantillaRapida, nueva: Omit<PlantillaR
 }
 
 export default function Disponibilidad() {
-	const { usuario, loading, error, actualizarDisponibilidad, actualizarDisponibilidades, limpiarDisponibilidad } = useRolData();
+	const { usuario, sesiones, loading, error, actualizarDisponibilidad, actualizarDisponibilidades, limpiarDisponibilidad } = useRolData();
 	const { requestLogin } = useAuth();
 	const [mesVisible, setMesVisible] = useState(() => {
 		const ahora = new Date();
@@ -83,12 +83,14 @@ export default function Disponibilidad() {
 	}, [plantillas]);
 
 	const hoy = new Date();
+	const hoyInicioDia = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
 	const mesActual = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
 	const diasRestantes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate() - hoy.getDate();
 	const puedeAbrirMesSiguiente = diasRestantes <= 3;
 	const claveVisible = claveMes(mesVisible);
 	const claveActual = claveMes(mesActual);
 	const mostrarPlantillaAnterior = plantillas.some((regla) => esMesSiguiente(regla.mesOrigen, claveVisible));
+	const sesionesConfirmadas = new Set(sesiones.map((sesion) => `${sesion.fecha}:${sesion.franja}`));
 	const diasEnMes = new Date(mesVisible.getFullYear(), mesVisible.getMonth() + 1, 0).getDate();
 	const desplazamiento = (new Date(mesVisible.getFullYear(), mesVisible.getMonth(), 1).getDay() + 6) % 7;
 	const totalCeldas = Math.ceil((desplazamiento + diasEnMes) / 7) * 7;
@@ -182,7 +184,8 @@ export default function Disponibilidad() {
 		}
 	}
 
-	function iconoEstado(estado?: FranjaEstado) {
+	function iconoEstado(sesionConfirmada: boolean, estado?: FranjaEstado) {
+		if (sesionConfirmada) return "★";
 		if (estado === "puedo") return "✓";
 		if (estado === "podria") return "⊙";
 		if (estado === "no_puedo") return "×";
@@ -242,25 +245,40 @@ export default function Disponibilidad() {
 					{diasCalendario.map((fecha, indice) => {
 						if (!fecha) return <div className="availability-empty-cell" role="gridcell" aria-hidden="true" key={`vacio-${indice}`} />;
 						const clave = claveDia(fecha);
-										const diaDisponibilidad = usuario?.disponibilidad[clave];
-										const estados = diaDisponibilidad as Partial<Record<FranjaHorario, FranjaEstado>> | undefined;
+						const diaDisponibilidad = usuario?.disponibilidad[clave];
+						const estados = diaDisponibilidad as Partial<Record<FranjaHorario, FranjaEstado>> | undefined;
+						const esPasado = fecha < hoyInicioDia;
+
 						return (
-							<div className="availability-day" role="gridcell" key={clave}>
+							<div className={`availability-day${esPasado ? " dia-pasado" : ""}`} role="gridcell" key={clave}>
 								<span className="availability-day-number">{fecha.getDate()}</span>
 								{(["manana", "tarde"] as const).map((franja) => {
-											const estado = diaDisponibilidad?.franjasMarcadas?.includes(franja) ? estados?.[franja] : undefined;
+									const estado = diaDisponibilidad?.franjasMarcadas?.includes(franja) ? estados?.[franja] : undefined;
+									const sesionConfirmada = sesionesConfirmadas.has(`${clave}:${franja}`);
 									const nombreFranja = franja === "manana" ? "Mañana" : "Tarde";
+									
+									// Determinamos las clases CSS aplicables
+									let claseEstado = "";
+									if (sesionConfirmada) {
+										claseEstado = " estado-sesion";
+									} else if (estado) {
+										claseEstado = ` estado-${estado.replace("_", "-")}`;
+									}
+
 									return (
 										<button
 											key={franja}
-											className={`availability-slot${estado ? ` estado-${estado.replace("_", "-")}` : ""}`}
+											className={`availability-slot${claseEstado}`}
 											type="button"
+											disabled={esPasado || sesionConfirmada}
 											onClick={() => cambiarFranja(fecha, franja)}
-											aria-label={`${fecha.getDate()} de ${formatoMes.format(mesVisible)}, ${nombreFranja}: ${estado ? nombresEstado[estado] : "sin marcar"}. Cambiar estado`}
-											title={`${nombreFranja}: ${estado ? nombresEstado[estado] : "sin marcar"}`}
+											aria-label={`${fecha.getDate()} de ${formatoMes.format(mesVisible)}, ${nombreFranja}: ${sesionConfirmada ? "sesión confirmada" : estado ? nombresEstado[estado] : "sin marcar"}.`}
+											title={sesionConfirmada ? `${nombreFranja}: sesión confirmada` : `${nombreFranja}: ${estado ? nombresEstado[estado] : "sin marcar"}`}
 										>
 											<span className="availability-slot-label">{nombreFranja}</span>
-											<span className="availability-slot-icon" aria-hidden="true">{iconoEstado(estado)}</span>
+											<span className="availability-slot-icon" aria-hidden="true">
+												{iconoEstado(sesionConfirmada, estado)}
+											</span>
 										</button>
 									);
 								})}
@@ -274,6 +292,7 @@ export default function Disponibilidad() {
 				<li><span className="legend-swatch estado-puedo">✓</span>Puedo</li>
 				<li><span className="legend-swatch estado-podria">⊙</span>Podría / No conveniente</li>
 				<li><span className="legend-swatch estado-no-puedo">×</span>No puedo</li>
+				<li><span className="legend-swatch estado-sesion">★</span>Hay Sesión</li>
 			</ul>
 
 			{modalAbierto && (

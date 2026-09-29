@@ -1,9 +1,8 @@
 .disponibilidad-page {
-	width: min(100% - 2rem, 1100px);
-	margin: 0 auto;
-	padding: 2rem 0 4rem;
+    width: min(100% - 2rem, 1100px);
+    margin: 0 auto;
+    padding: 2rem 0 4rem;
 }
-
 .disponibilidad-heading,
 .disponibilidad-calendar-header,
 .quick-fill-dialog-header {
@@ -208,6 +207,8 @@
 	color: #8d171d;
 }
 
+
+
 .availability-slot-icon {
 	font-size: 1rem;
 	font-weight: 800;
@@ -383,4 +384,30 @@
 	.quick-fill-sentence {
 		font-size: 1rem;
 	}
+}
+
+/* Sesión Confirmada (Azul brillante + Estrella) */
+.availability-slot.estado-sesion,
+.legend-swatch.estado-sesion {
+    border-color: #1d4ed8;
+    background: #2563eb;
+    color: #ffffff;
+    font-weight: 700;
+    cursor: not-allowed;
+}
+
+/* Oscurecer días pasados */
+.availability-day.dia-pasado {
+    background: #e5e7eb;
+    opacity: 0.6;
+}
+
+/* Deshabilitar botón e impedir hover en días pasados o casillas fijadas */
+.availability-slot:disabled {
+    cursor: not-allowed;
+}
+
+.availability-day.dia-pasado .availability-slot:hover {
+    background: #f4f4f4;
+    border-color: transparent;
 }

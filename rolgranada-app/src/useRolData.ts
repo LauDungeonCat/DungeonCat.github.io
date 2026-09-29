@@ -29,6 +29,7 @@ function mapearPartida(row: PartidaConAccesoRow): Partida {
 		proximaSesion: row.proxima_sesion ?? undefined,
 		proximaSesionFranja: row.proxima_sesion_franja ?? undefined,
 		estado: row.estado,
+		sesionesAlMes: row.sesiones_al_mes,
 	};
 }
 
@@ -71,8 +72,25 @@ export function useRolData() {
 			filasDisponibilidad = disponibilidadResult.data ?? [];
 			sesionesUsuario = sesionesResult.data ?? [];
 		}
+		const ahora = new Date();
+		const partidasActualizadas = (partidasResult.data ?? []).map((row) => {
+			const partida = mapearPartida(row);
+			const siguiente = sesionesUsuario
+				.filter((sesion) => sesion.partida_id === partida.id)
+				.map((sesion) => ({
+					sesion,
+					fechaHora: new Date(`${sesion.fecha}T${sesion.franja === "manana" ? "09:00:00" : "15:00:00"}`),
+				}))
+				.filter(({ fechaHora }) => fechaHora > ahora)
+				.sort((a, b) => a.fechaHora.getTime() - b.fechaHora.getTime())[0];
+			return siguiente ? {
+				...partida,
+				proximaSesion: `${siguiente.sesion.fecha}T${siguiente.sesion.franja === "manana" ? "09:00:00" : "15:00:00"}`,
+				proximaSesionFranja: siguiente.sesion.franja,
+			} : partida;
+		});
 		return {
-			partidas: (partidasResult.data ?? []).map(mapearPartida),
+			partidas: partidasActualizadas,
 			disponibilidad: mapearDisponibilidad(filasDisponibilidad),
 			sesiones: sesionesUsuario,
 		};
@@ -139,41 +157,49 @@ export function useRolData() {
 		});
 	}, [ejecutar, profile]);
 
-	const crearPartida = useCallback(async (datos: PartidaEditable) => {
-		if (!profile) return;
-		await ejecutar(async () => {
-			const { error: insertError } = await supabase.from("partidas").insert({
-				titulo: datos.titulo,
-				sistema: datos.sistema,
-				descripcion: datos.descripcion ?? "",
-				imagen_url: datos.imagenUrl,
-				dm_id: profile.id,
-				participantes_max: datos.participantesMax,
-				proxima_sesion: datos.proximaSesion ?? null,
-				ubicacion_aproximada: datos.ubicacionAproximada,
-				ubicacion_exacta: datos.ubicacionExacta,
-				notas_dm: datos.notasDm,
-			});
-			if (insertError) throw insertError;
-		});
-	}, [ejecutar, profile]);
+const crearPartida = useCallback(
+    async (datos: PartidaEditable) => {
+        if (!profile) return;
+        await ejecutar(async () => {
+            const { error: insertError } = await supabase.from("partidas").insert({
+                titulo: datos.titulo,
+                sistema: datos.sistema,
+                descripcion: datos.descripcion ?? "",
+                imagen_url: datos.imagenUrl ?? null,
+                dm_id: profile.id,
+                participantes_max: datos.participantesMax,
+                sesiones_al_mes: datos.sesionesAlMes,
+                proxima_sesion: datos.proximaSesion ?? null,
+                ubicacion_aproximada: datos.ubicacionAproximada,
+                ubicacion_exacta: datos.ubicacionExacta ?? null,
+                notas_dm: datos.notasDm ?? null,
+            });
+            if (insertError) throw insertError;
+        });
+    },
+    [ejecutar, profile]
+);
 
-	const actualizarPartida = useCallback(async (id: string, datos: PartidaEditable) => {
-		await ejecutar(async () => {
-			const { error: updateError } = await supabase.from("partidas").update({
-				titulo: datos.titulo,
-				sistema: datos.sistema,
-				descripcion: datos.descripcion ?? "",
-				imagen_url: datos.imagenUrl,
-				participantes_max: datos.participantesMax,
-				proxima_sesion: datos.proximaSesion ?? null,
-				ubicacion_aproximada: datos.ubicacionAproximada,
-				ubicacion_exacta: datos.ubicacionExacta,
-				notas_dm: datos.notasDm,
-			}).eq("id", id);
-			if (updateError) throw updateError;
-		});
-	}, [ejecutar]);
+const actualizarPartida = useCallback(
+    async (id: string, datos: PartidaEditable) => {
+        await ejecutar(async () => {
+            const { error: updateError } = await supabase.from("partidas").update({
+                titulo: datos.titulo,
+                sistema: datos.sistema,
+                descripcion: datos.descripcion ?? "",
+                imagen_url: datos.imagenUrl ?? null,
+                participantes_max: datos.participantesMax,
+                sesiones_al_mes: datos.sesionesAlMes,
+                proxima_sesion: datos.proximaSesion ?? null,
+                ubicacion_aproximada: datos.ubicacionAproximada,
+                ubicacion_exacta: datos.ubicacionExacta ?? null,
+                notas_dm: datos.notasDm ?? null,
+            }).eq("id", id);
+            if (updateError) throw updateError;
+        });
+    },
+    [ejecutar]
+);
 
 	const eliminarPartida = useCallback(async (id: string) => {
 		await ejecutar(async () => {
@@ -204,6 +230,7 @@ export function useRolData() {
 			const { error: updateError } = await supabase.from("partidas").update({ participantes_max: capacidad }).eq("id", partidaId);
 			if (updateError) throw updateError;
 		});
+		setPartidas((anteriores) => anteriores.map((partida) => partida.id === partidaId ? { ...partida, participantesMax: capacidad } : partida));
 	}, [ejecutar]);
 
 	const cargarJugadoresPartida = useCallback(async (partidaId: string) => {
@@ -236,10 +263,29 @@ export function useRolData() {
 		return data as DisponibilidadPartidaRow[];
 	}, []);
 
-	const guardarSesion = useCallback(async (partidaId: string, fecha: string, franja: FranjaHorario, notas = "") => {
+	const subirImagenSesion = useCallback(async (partidaId: string, archivo: File) => {
+		if (!profile) throw new Error("Inicia sesión para subir imágenes.");
+		const extension = archivo.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+		const ruta = `${partidaId}/${profile.id}/${crypto.randomUUID()}.${extension}`;
+		const { error: uploadError } = await supabase.storage.from("sesiones").upload(ruta, archivo, {
+			contentType: archivo.type,
+			cacheControl: "3600",
+		});
+		if (uploadError) throw uploadError;
+		return supabase.storage.from("sesiones").getPublicUrl(ruta).data.publicUrl;
+	}, [profile]);
+
+	const guardarSesiones = useCallback(async (
+		partidaId: string,
+		seleccionadas: { fecha: string; franja: FranjaHorario }[],
+		notas = "",
+		imagenUrl: string | null = null,
+	) => {
+		if (seleccionadas.length === 0) return;
 		await ejecutar(async () => {
+			const filas = seleccionadas.map(({ fecha, franja }) => ({ partida_id: partidaId, fecha, franja, notas, imagen_url: imagenUrl }));
 			const { error: sessionError } = await supabase.from("sesiones").upsert(
-				{ partida_id: partidaId, fecha, franja, notas },
+				filas,
 				{ onConflict: "partida_id,fecha,franja" },
 			);
 			if (sessionError) throw sessionError;
@@ -277,7 +323,8 @@ export function useRolData() {
 		invitarJugador,
 		echarJugador,
 		cargarMapaDisponibilidad,
-		guardarSesion,
+		subirImagenSesion,
+		guardarSesiones,
 		borrarSesion,
 		unirseAPartida,
 		desapuntarseDePartida,

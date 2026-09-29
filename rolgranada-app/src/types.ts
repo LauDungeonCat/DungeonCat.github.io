@@ -29,6 +29,20 @@ export interface Partida {
 	proximaSesion?: string;
 	proximaSesionFranja?: FranjaHorario;
 	estado: "abierta" | "en_curso" | "finalizada";
+	sesionesAlMes: number;
+}
+
+export interface PartidaEditable {
+	titulo: string;
+	sistema: string;
+	ubicacionAproximada: string;
+	ubicacionExacta?: string | null;
+	descripcion?: string | null;
+	imagenUrl?: string;
+	participantesMax: number;
+	sesionesAlMes: number;
+	proximaSesion?: string | null;
+	notasDm?: string | null;
 }
 
 export interface UsuarioActivo extends ProfileRow {
@@ -37,7 +51,6 @@ export interface UsuarioActivo extends ProfileRow {
 	disponibilidad: Record<string, DisponibilidadDia>;
 }
 
-export type PartidaEditable = Pick<Partida, "titulo" | "sistema" | "descripcion" | "imagenUrl" | "participantesMax" | "proximaSesion" | "ubicacionAproximada" | "ubicacionExacta" | "notasDm">;
 export type MapaDisponibilidad = DisponibilidadPartidaRow;
 export type SesionAgendada = SesionUsuarioRow;
 export type { RolUsuario };

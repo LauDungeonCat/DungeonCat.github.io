@@ -25,6 +25,44 @@
 	font-size: 0.95rem;
 }
 
+.gestion-partida-roster-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.6rem;
+}
+
+.gestion-partida-roster-header button {
+	min-height: 2.1rem;
+	padding: 0.3rem 0.6rem;
+	font-size: 0.78rem;
+}
+
+.gestion-partida-capacidad {
+	display: flex;
+	align-items: end;
+	flex-wrap: wrap;
+	gap: 0.6rem;
+	margin-top: 0.6rem;
+}
+
+.gestion-partida-capacidad label {
+	display: grid;
+	gap: 0.25rem;
+	color: #444;
+	font-size: 0.8rem;
+	font-weight: 700;
+}
+
+.gestion-partida-capacidad input {
+	width: 6rem;
+	min-height: 2.35rem;
+	border: 1px solid #888;
+	border-radius: 4px;
+	padding: 0.4rem;
+	font: inherit;
+}
+
 .fechar-sesiones-trigger {
 	border-color: #3524d1;
 	background: #4937ed;
@@ -117,4 +155,17 @@
 	margin-top: 0.4rem;
 	color: #666;
 	font-size: 0.85rem;
+}
+
+.gestion-roster-error {
+	margin-top: 0.45rem;
+	color: #8d171d;
+	font-size: 0.82rem;
+}
+
+.gestion-partida-roster > p button {
+	margin-left: 0.5rem;
+	min-height: 2rem;
+	padding: 0.25rem 0.55rem;
+	font-size: 0.76rem;
 }

@@ -17,3 +17,18 @@
 .auth-state button {
 	margin-top: 0.8rem;
 }
+
+.pagina-placeholder {
+	width: min(100% - 2rem, 900px);
+	min-height: 55vh;
+	margin: 0 auto;
+	padding: 3rem 0;
+}
+
+.pagina-placeholder p {
+	max-width: 42rem;
+	margin-top: 0.8rem;
+	color: #555;
+	font-size: 1rem;
+	line-height: 1.6;
+}

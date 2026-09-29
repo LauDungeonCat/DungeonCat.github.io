@@ -83,7 +83,6 @@ export default function Header({ onNavigate, profile, onSignOut, requestLogin }:
               {menuAbierto && (
                 <ul className="tools-dropdown">
                   <li><a href="#generador-encuentros" onClick={(event) => navegarDesdeEnlace(event, 'generador-encuentros')}>Generador de Encuentros</a></li>
-                  <li><a href="#sample-text" onClick={(event) => navegarDesdeEnlace(event, 'sample-text')}>Sample Text</a></li>
                 </ul>
               )}
             </div>

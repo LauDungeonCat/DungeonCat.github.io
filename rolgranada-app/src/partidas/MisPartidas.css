@@ -164,44 +164,80 @@
 }
 
 .carrusel-control {
-	display: grid;
-	place-items: center;
-	width: 2.8rem;
-	height: 2.8rem;
-	border: 2px solid #202020;
-	border-radius: 50%;
-	background: #fff;
-	color: #202020;
-	cursor: pointer;
-	font-size: 2rem;
-	line-height: 1;
+    display: grid;
+    place-items: center;
+    width: 2.8rem;
+    height: 2.8rem;
+    border: 2px solid #202020;
+    border-radius: 50%;
+    background: #fff;
+    color: #202020;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+/* Dibujamos la flecha con un cuadrado rotado */
+.carrusel-control::after {
+    content: "";
+    display: block;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-top: 2.5px solid currentColor;
+    border-right: 2.5px solid currentColor;
+}
+
+/* Orientación para la flecha izquierda (Anterior) */
+.carrusel-control[aria-label="Anterior campaña"]::after,
+.carrusel-control.anterior::after {
+    transform: rotate(-135deg);
+    margin-left: 0.15rem; /* Ajuste óptico de centrado */
+}
+
+/* Orientación para la flecha derecha (Siguiente) */
+.carrusel-control[aria-label="Siguiente campaña"]::after,
+.carrusel-control.siguiente::after {
+    transform: rotate(45deg);
+    margin-right: 0.15rem; /* Ajuste óptico de centrado */
 }
 
 .carrusel-control:hover,
 .crear-partida:hover {
-	transform: translateY(-2px);
+    transform: translateY(-2px);
+    background-color: #f4f4f4;
 }
 
+/* Contenedor de los indicadores: alineación centrada y margen adecuado */
 .carrusel-indicadores {
-	display: flex;
-	justify-content: center;
-	gap: 0.5rem;
-	margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
+    width: 100%;
 }
 
+/* Estilo individual del indicador: dimensiones iguales para garantizar un círculo perfecto */
 .indicador {
-	width: 0.65rem;
-	height: 0.65rem;
-	padding: 0;
-	border: 0;
-	border-radius: 50%;
-	background: #cfcfcf;
-	cursor: pointer;
+    width: 0.75rem;
+    height: 0.75rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%; /* Asegura la forma circular */
+    background-color: #d1d5db; /* Color inactivo */
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    flex-shrink: 0; /* Impide que flexbox deforme los círculos */
 }
 
+/* Indicador activo */
 .indicador.activo {
-	background: #c71920;
-	transform: scale(1.25);
+    background-color: #991b1b; /* Tono rojo coordinado con el diseño */
+    transform: scale(1.2);
+}
+
+.indicador:hover {
+    background-color: #ef4444;
 }
 
 .calendario-sesiones {
@@ -300,6 +336,13 @@
 	background: #fbeaec;
 	color: #492024;
 	font-size: 0.72rem;
+}
+
+.evento-sesion img {
+	width: 100%;
+	height: 2.4rem;
+	border-radius: 2px;
+	object-fit: cover;
 }
 
 .evento-sesion span {
