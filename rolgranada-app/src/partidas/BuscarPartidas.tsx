@@ -44,14 +44,11 @@ export default function BuscarPartidas() {
 
   const [busqueda, setBusqueda] = useState("");
   const [crearAbierto, setCrearAbierto] = useState(false);
-  const [formulario, setFormulario] =
-    useState<FormularioPartida>(formularioVacio);
+  const [formulario, setFormulario] = useState<FormularioPartida>(formularioVacio);
   const [partidaEnEdicion, setPartidaEnEdicion] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
 
-  const partidaEnlaceId = new URLSearchParams(window.location.search).get(
-    "partida",
-  );
+  const partidaEnlaceId = new URLSearchParams(window.location.search).get("partida");
   const termino = busqueda.trim().toLocaleLowerCase("es");
 
   const partidasFiltradas = partidas.filter((partida) => {
@@ -83,7 +80,7 @@ export default function BuscarPartidas() {
             ubicacionAproximada: partida.ubicacionAproximada,
             ubicacionExacta: partida.ubicacionExacta ?? "",
             descripcion: partida.descripcion ?? "",
-            participantesMax: String(partida.participantesMax),
+            participantesMax: String(partida.participantesMax ?? 4),
             sesionesAlMes: String(partida.sesionesAlMes ?? 2),
             imagenUrl: partida.imagenUrl ?? "",
           }
@@ -96,6 +93,9 @@ export default function BuscarPartidas() {
     event.preventDefault();
     setGuardando(true);
 
+    const numSesiones = parseInt(formulario.sesionesAlMes, 10);
+    const numParticipantes = parseInt(formulario.participantesMax, 10);
+
     const datos = {
       titulo: formulario.titulo.trim(),
       sistema: formulario.sistema.trim(),
@@ -103,8 +103,8 @@ export default function BuscarPartidas() {
       ubicacionExacta: formulario.ubicacionExacta.trim() || null,
       imagenUrl: formulario.imagenUrl.trim() || IMAGEN_DEFAULT,
       descripcion: formulario.descripcion.trim(),
-      participantesMax: Number(formulario.participantesMax),
-      sesionesAlMes: Number(formulario.sesionesAlMes) || 2,
+      participantesMax: Number.isNaN(numParticipantes) || numParticipantes < 1 ? 4 : numParticipantes,
+      sesionesAlMes: Number.isNaN(numSesiones) || numSesiones < 1 ? 2 : numSesiones,
     };
 
     try {
@@ -288,12 +288,7 @@ export default function BuscarPartidas() {
                   )}
 
                   <div className="partida-catalogo-pie">
-                    <p>
-                      {etiquetaProximaSesion(
-                        partida.proximaSesion,
-                        partida.proximaSesionFranja,
-                      )}
-                    </p>
+                    <p>{etiquetaProximaSesion(partida.proximaSesion)}</p>
                     <button
                       type="button"
                       onClick={() => {
@@ -448,13 +443,22 @@ export default function BuscarPartidas() {
                   <input
                     required
                     type="number"
-                    min="2"
+                    min="1"
                     max="20"
                     value={formulario.participantesMax}
                     onChange={(event) =>
                       setFormulario((actual) => ({
                         ...actual,
                         participantesMax: event.target.value,
+                      }))
+                    }
+                    onBlur={() =>
+                      setFormulario((actual) => ({
+                        ...actual,
+                        participantesMax:
+                          !actual.participantesMax || parseInt(actual.participantesMax, 10) < 1
+                            ? "1"
+                            : actual.participantesMax,
                       }))
                     }
                   />
@@ -472,6 +476,15 @@ export default function BuscarPartidas() {
                       setFormulario((actual) => ({
                         ...actual,
                         sesionesAlMes: event.target.value,
+                      }))
+                    }
+                    onBlur={() =>
+                      setFormulario((actual) => ({
+                        ...actual,
+                        sesionesAlMes:
+                          !actual.sesionesAlMes || parseInt(actual.sesionesAlMes, 10) < 1
+                            ? "1"
+                            : actual.sesionesAlMes,
                       }))
                     }
                   />
@@ -534,14 +547,11 @@ function etiquetaEstado(estado: "abierta" | "en_curso" | "finalizada") {
   return "Abierta";
 }
 
-function etiquetaProximaSesion(fecha?: string, franja?: "manana" | "tarde") {
+function etiquetaProximaSesion(fecha?: string) {
   if (!fecha) return "Fecha por decidir";
   const formato = new Intl.DateTimeFormat("es-ES", {
     dateStyle: "medium",
-    ...(franja ? {} : { timeStyle: "short" as const }),
+    timeStyle: "short",
   });
-  const fechaTexto = formato.format(new Date(fecha));
-  return `Próxima sesión: ${fechaTexto}${
-    franja ? ` · ${franja === "manana" ? "Mañana" : "Tarde"}` : ""
-  }`;
+  return `Próxima sesión: ${formato.format(new Date(fecha))}`;
 }
