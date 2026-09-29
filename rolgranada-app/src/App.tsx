@@ -21,7 +21,6 @@ type Pagina =
   | "contacto";
 
 function AplicacionAutenticada() {
-  // ✅ Inicializamos con "inicio" si no hay parámetros en la URL
   const [pagina, setPagina] = useState<Pagina>(() =>
     new URLSearchParams(window.location.search).has("partida") ? "buscar-partidas" : "inicio"
   );
