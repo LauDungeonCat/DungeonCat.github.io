@@ -1,0 +1,120 @@
+.gestion-partida {
+	margin-top: 1.25rem;
+	border-top: 1px solid #d7d7d7;
+	padding-top: 1rem;
+}
+
+.gestion-partida-header,
+.gestion-partida-campos,
+.gestion-partida-invitar > div,
+.gestion-partida-roster li {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.65rem;
+}
+
+.gestion-partida-header {
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+}
+
+.gestion-partida-header h3,
+.gestion-partida-roster h4 {
+	color: #252525;
+	font-size: 0.95rem;
+}
+
+.fechar-sesiones-trigger {
+	border-color: #3524d1;
+	background: #4937ed;
+	color: #fff;
+	font-weight: 700;
+}
+
+.gestion-partida-campos {
+	margin-bottom: 0.85rem;
+}
+
+.gestion-partida-campos label {
+	display: grid;
+	gap: 0.25rem;
+	color: #444;
+	font-size: 0.8rem;
+	font-weight: 700;
+}
+
+.gestion-partida-campos input,
+.gestion-partida-invitar input {
+	min-height: 2.5rem;
+	border: 1px solid #888;
+	border-radius: 4px;
+	padding: 0.45rem 0.6rem;
+	font: inherit;
+}
+
+.gestion-partida-campos button,
+.gestion-partida-invitar button,
+.gestion-partida-roster button {
+	min-height: 2.35rem;
+	padding: 0.35rem 0.65rem;
+	font-size: 0.8rem;
+	font-weight: 700;
+}
+
+.copiar-invitacion {
+	border-color: #666;
+	background: #fff;
+}
+
+.gestion-enlace-mensaje {
+	color: #125b30;
+	font-size: 0.8rem;
+}
+
+.gestion-partida-invitar {
+	display: grid;
+	gap: 0.35rem;
+	max-width: 32rem;
+	margin-bottom: 1rem;
+	color: #444;
+	font-size: 0.82rem;
+	font-weight: 700;
+}
+
+.gestion-partida-invitar > div input {
+	flex: 1 1 12rem;
+}
+
+.gestion-partida-invitar button {
+	border-color: #a8131a;
+	background: #c71920;
+	color: #fff;
+}
+
+.gestion-partida-roster ul {
+	display: grid;
+	gap: 0.35rem;
+	margin-top: 0.5rem;
+	list-style: none;
+}
+
+.gestion-partida-roster li {
+	justify-content: space-between;
+	border-bottom: 1px solid #e1e1e1;
+	padding: 0.3rem 0;
+	color: #444;
+	font-size: 0.85rem;
+}
+
+.gestion-partida-roster button {
+	min-height: 2rem;
+	border-color: #a8131a;
+	color: #8d171d;
+}
+
+.gestion-partida-roster > p {
+	margin-top: 0.4rem;
+	color: #666;
+	font-size: 0.85rem;
+}

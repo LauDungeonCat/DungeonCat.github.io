@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import './Header.css';
 import logo from '../assets/logo.svg';
+import type { ProfileRow } from '../lib/database.types';
 
 type HeaderProps = {
   onNavigate: (pagina: string) => void;
+  profile: ProfileRow | null;
+  onSignOut: () => Promise<void>;
+  requestLogin: () => void;
 };
 
-export default function Header({ onNavigate }: HeaderProps) {
+export default function Header({ onNavigate, profile, onSignOut, requestLogin }: HeaderProps) {
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [partidasAbierto, setPartidasAbierto] = useState(false);
 
@@ -88,7 +92,13 @@ export default function Header({ onNavigate }: HeaderProps) {
         </ul>
       </nav>
 
-      <div className="header-actions" />
+      <div className="header-actions">
+        {profile ? <>
+          <span className="header-user-name">{profile.username}</span>
+          {profile.role === 'admin' && <span className="header-user-role">Admin</span>}
+          <button className="header-sign-out" type="button" onClick={() => { void onSignOut().catch(() => undefined); }}>Salir</button>
+        </> : <button className="header-sign-out" type="button" onClick={requestLogin}>Acceder</button>}
+      </div>
     </header>
   );
 }

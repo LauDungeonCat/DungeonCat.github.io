@@ -1,0 +1,82 @@
+.auth-modal-overlay {
+	position: fixed;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	padding: 1rem;
+	background: rgba(20, 20, 20, 0.55);
+	z-index: 1200;
+}
+
+.auth-panel {
+	position: relative;
+	width: min(100%, 440px);
+	border: 2px solid #222;
+	border-radius: 8px;
+	padding: 2rem;
+	background: #fff;
+	box-shadow: 0 7px 0 #222;
+}
+
+.auth-close {
+	position: absolute;
+	top: 1rem;
+	right: 1rem;
+	width: 2.4rem;
+	min-height: 2.4rem;
+	padding: 0;
+	font-size: 1.4rem;
+}
+
+.auth-panel .seccion-etiqueta {
+	margin-bottom: 0.5rem;
+}
+
+.auth-panel h1 {
+	color: #202020;
+	font-family: Georgia, "Times New Roman", serif;
+	font-size: 2rem;
+	line-height: 1.1;
+}
+
+.auth-panel > p:not(.seccion-etiqueta, .auth-error) {
+	margin-top: 0.75rem;
+	color: #555;
+	line-height: 1.5;
+}
+
+.google-login-button {
+	width: 100%;
+	margin-top: 1.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.75rem;
+	border-color: #777;
+	background: #fff;
+	font-weight: 700;
+}
+
+.google-login-button:hover {
+	background: #f2f2f2;
+}
+
+.google-mark {
+	font-family: Arial, sans-serif;
+	font-size: 1.2rem;
+	font-weight: 800;
+	color: #4285f4;
+}
+
+.auth-error {
+	margin-top: 1rem;
+	color: #a8131a;
+	font-size: 0.9rem;
+	line-height: 1.45;
+}
+
+@media (max-width: 480px) {
+	.auth-panel {
+		padding: 1.5rem;
+	}
+}

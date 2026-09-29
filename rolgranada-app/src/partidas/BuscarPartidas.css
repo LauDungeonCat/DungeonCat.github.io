@@ -17,6 +17,20 @@
 	color: #5e5e5e;
 }
 
+.crear-campana-trigger,
+.crear-campana-enviar {
+	margin-top: 0.85rem;
+	border-color: #a8131a;
+	background: #c71920;
+	color: #fff;
+	font-weight: 700;
+}
+
+.crear-campana-trigger:hover,
+.crear-campana-enviar:hover {
+	background: #a8131a;
+}
+
 .buscar-partidas-busqueda {
 	display: grid;
 	gap: 0.4rem;
@@ -65,6 +79,11 @@
 	box-shadow: 0 5px 0 #222;
 }
 
+.partida-catalogo-card.partida-destacada {
+	border-color: #4937ed;
+	box-shadow: 0 5px 0 #4937ed, 0 0 0 3px rgba(73, 55, 237, 0.18);
+}
+
 .partida-catalogo-imagen {
 	position: relative;
 	flex: 0 0 34%;
@@ -90,6 +109,21 @@
 	color: #222;
 	font-size: 0.7rem;
 	font-weight: 700;
+}
+
+.partida-catalogo-imagen span.estado-abierta {
+	background: #d9f1e2;
+	color: #125b30;
+}
+
+.partida-catalogo-imagen span.estado-en-curso {
+	background: #fff0d5;
+	color: #824600;
+}
+
+.partida-catalogo-imagen span.estado-finalizada {
+	background: #e8e8e8;
+	color: #444;
 }
 
 .partida-catalogo-contenido {
@@ -131,6 +165,8 @@
 }
 
 .partida-dm,
+.partida-ubicacion,
+.partida-ubicacion-exacta,
 .partida-descripcion {
 	margin-top: 0.6rem;
 	color: #555;
@@ -138,8 +174,30 @@
 	line-height: 1.45;
 }
 
+.partida-ubicacion-exacta {
+	font-size: 0.78rem;
+}
+
 .partida-descripcion {
 	flex: 1;
+}
+
+.partida-gestion {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 0.75rem;
+}
+
+.partida-gestion button {
+	min-height: 2.1rem;
+	padding: 0.3rem 0.65rem;
+	font-size: 0.8rem;
+}
+
+.partida-gestion .partida-borrar {
+	border-color: #a8131a;
+	color: #8d171d;
 }
 
 .partida-catalogo-pie {
@@ -189,6 +247,131 @@
 	font-family: Georgia, "Times New Roman", serif;
 }
 
+.crear-campana-overlay {
+	position: fixed;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	padding: 1rem;
+	background: rgba(20, 20, 20, 0.55);
+	z-index: 1000;
+}
+
+.crear-campana-dialog {
+	width: min(100%, 680px);
+	max-height: calc(100vh - 2rem);
+	overflow-y: auto;
+	border: 2px solid #222;
+	border-radius: 8px;
+	padding: 1.5rem;
+	background: #fff;
+	box-shadow: 0 16px 50px rgba(0, 0, 0, 0.25);
+}
+
+.crear-campana-header {
+	display: flex;
+	align-items: start;
+	justify-content: space-between;
+	gap: 1rem;
+	margin-bottom: 1.25rem;
+}
+
+.crear-campana-header .seccion-etiqueta {
+	margin: 0 0 0.4rem;
+	color: #c71920;
+	font-size: 0.78rem;
+	font-weight: 700;
+	text-transform: uppercase;
+}
+
+.crear-campana-header h2 {
+	margin: 0;
+	font-family: Georgia, "Times New Roman", serif;
+}
+
+.crear-campana-cerrar {
+	width: 2.5rem;
+	min-height: 2.5rem;
+	padding: 0;
+	font-size: 1.5rem;
+}
+
+.crear-campana-form {
+	display: grid;
+	gap: 1rem;
+}
+
+.crear-campana-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1rem;
+}
+
+.crear-campana-grid label {
+	display: grid;
+	align-content: start;
+	gap: 0.4rem;
+	min-width: 0;
+	color: #333;
+	font-size: 0.88rem;
+	font-weight: 700;
+}
+
+.crear-campana-dm {
+	align-self: center;
+	color: #444;
+	font-size: 0.9rem;
+}
+
+.crear-campana-grid label span {
+	color: #666;
+	font-weight: 400;
+}
+
+.crear-campana-grid input,
+.crear-campana-grid textarea {
+	width: 100%;
+	min-height: 2.65rem;
+	border: 1px solid #8d8d8d;
+	border-radius: 4px;
+	padding: 0.6rem 0.7rem;
+	background: #fff;
+	color: #222;
+	font: inherit;
+	font-weight: 400;
+}
+
+.crear-campana-grid textarea {
+	resize: vertical;
+}
+
+.crear-campana-grid input:focus-visible,
+.crear-campana-grid textarea:focus-visible {
+	outline: 2px solid #c71920;
+	outline-offset: 2px;
+}
+
+.crear-campana-campo-amplio {
+	grid-column: 1 / -1;
+}
+
+.crear-campana-aviso {
+	margin: 0;
+	color: #5e5e5e;
+	font-size: 0.85rem;
+	line-height: 1.5;
+}
+
+.crear-campana-acciones {
+	display: flex;
+	justify-content: end;
+	gap: 0.75rem;
+}
+
+.crear-campana-cancelar {
+	background: #fff;
+}
+
 @media (max-width: 800px) {
 	.buscar-partidas-cabecera {
 		align-items: start;
@@ -202,6 +385,16 @@
 
 	.partidas-catalogo {
 		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 560px) {
+	.crear-campana-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.crear-campana-campo-amplio {
+		grid-column: auto;
 	}
 }
 
@@ -222,5 +415,9 @@
 	.partida-catalogo-pie {
 		align-items: stretch;
 		flex-direction: column;
+	}
+
+	.crear-campana-dialog {
+		padding: 1rem;
 	}
 }

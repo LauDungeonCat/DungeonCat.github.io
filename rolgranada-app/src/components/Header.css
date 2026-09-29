@@ -190,6 +190,39 @@
   justify-self: end;
 }
 
+.header-user-name {
+  max-width: 10rem;
+  overflow: hidden;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-user-role {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 3px;
+  padding: 0.2rem 0.4rem;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.header-sign-out {
+  min-height: 2.25rem;
+  border-color: rgba(255, 255, 255, 0.8);
+  padding: 0.35rem 0.65rem;
+  background: transparent;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.header-sign-out:hover {
+  background: #a8131a;
+}
+
 @media (max-width: 800px) {
   .main-header {
     display: flex;

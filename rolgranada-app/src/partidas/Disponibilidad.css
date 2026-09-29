@@ -13,6 +13,12 @@
 	gap: 1rem;
 }
 
+.disponibilidad-heading-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.6rem;
+}
+
 .disponibilidad-heading {
 	align-items: end;
 	margin-bottom: 1.5rem;
@@ -43,6 +49,17 @@
 
 .relleno-rapido-trigger:hover {
 	background: #a8131a;
+}
+
+.vaciar-calendario-button {
+	border-color: #b4232a;
+	background: #fff;
+	color: #8d171d;
+	font-weight: 700;
+}
+
+.vaciar-calendario-button:hover {
+	background: #f9dfe0;
 }
 
 .plantilla-banner {

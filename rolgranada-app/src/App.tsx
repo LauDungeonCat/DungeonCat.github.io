@@ -1,10 +1,15 @@
-import GeneradorEncuentros from "./herramientas/generador_encuentros/GeneradorEncuentros";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import Disponibilidad from "./partidas/Disponibilidad";
-import MisPartidas from "./partidas/MisPartidas";
-import BuscarPartidas from "./partidas/BuscarPartidas";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
+import { AuthProvider } from "./auth/AuthContext";
+import Login from "./auth/Login";
+import { useAuth } from "./auth/useAuth";
+import "./App.css";
+
+const GeneradorEncuentros = lazy(() => import("./herramientas/generador_encuentros/GeneradorEncuentros"));
+const Disponibilidad = lazy(() => import("./partidas/Disponibilidad"));
+const MisPartidas = lazy(() => import("./partidas/MisPartidas"));
+const BuscarPartidas = lazy(() => import("./partidas/BuscarPartidas"));
 
 type Pagina =
   | "generador-encuentros"
@@ -15,8 +20,9 @@ type Pagina =
   | "sample-text"
   | "contacto";
 
-export default function App() {
-  const [pagina, setPagina] = useState<Pagina>("generador-encuentros");
+function AplicacionAutenticada() {
+  const [pagina, setPagina] = useState<Pagina>(() => new URLSearchParams(window.location.search).has("partida") ? "buscar-partidas" : "generador-encuentros");
+  const { profile, signOut, requestLogin } = useAuth();
 
   function cambiarPagina(nombre: string) {
     setPagina(nombre as Pagina);
@@ -43,11 +49,18 @@ export default function App() {
 
   return (
     <>
-      <Header onNavigate={cambiarPagina} />
+      <Header profile={profile} onSignOut={signOut} requestLogin={requestLogin} onNavigate={cambiarPagina} />
       <main>
-        {renderPagina()}
+        <Suspense fallback={<section className="auth-state" role="status">Cargando sección…</section>}>
+          {renderPagina()}
+        </Suspense>
       </main>
       <Footer />
+      <Login />
     </>
   );
+}
+
+export default function App() {
+  return <AuthProvider><AplicacionAutenticada /></AuthProvider>;
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useRolData } from "../useRolData";
-import type { FranjaEstado, FranjaHorario } from "../types";
+import { useAuth } from "../auth/useAuth";
+import type { CambioDisponibilidad, FranjaEstado, FranjaHorario } from "../types";
 import "./Disponibilidad.css";
 
 type PlantillaRapida = {
@@ -20,6 +21,11 @@ const nombresEstado: Record<FranjaEstado, string> = {
 
 function claveMes(fecha: Date) {
 	return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function esMesSiguiente(mesOrigen: string, mesDestino: string) {
+	const [anio, mes] = mesOrigen.split("-").map(Number);
+	return claveMes(new Date(anio, mes, 1)) === mesDestino;
 }
 
 function claveDia(fecha: Date) {
@@ -49,21 +55,32 @@ function esDiaSeleccionado(fecha: Date, dias: PlantillaRapida["dias"]) {
 	return dia >= 1 && dia <= 5;
 }
 
+function reglaAnteriorCubierta(anterior: PlantillaRapida, nueva: Omit<PlantillaRapida, "mesOrigen">) {
+	const cubreDias = nueva.dias === "todos" || nueva.dias === anterior.dias;
+	const cubreFranjas = nueva.franja === "todo-dia" || nueva.franja === anterior.franja;
+	return cubreDias && cubreFranjas;
+}
+
 export default function Disponibilidad() {
-	const { usuario, actualizarDisponibilidad } = useRolData();
+	const { usuario, loading, error, actualizarDisponibilidad, actualizarDisponibilidades, limpiarDisponibilidad } = useRolData();
+	const { requestLogin } = useAuth();
 	const [mesVisible, setMesVisible] = useState(() => {
 		const ahora = new Date();
 		return new Date(ahora.getFullYear(), ahora.getMonth(), 1);
 	});
-	const [plantilla, setPlantilla] = useState<PlantillaRapida | null>(() => leerAlmacen<PlantillaRapida | null>(CLAVE_PLANTILLA, null));
+	const [plantillas, setPlantillas] = useState<PlantillaRapida[]>(() => {
+		const guardadas = leerAlmacen<PlantillaRapida | PlantillaRapida[] | null>(CLAVE_PLANTILLA, null);
+		if (!guardadas) return [];
+		return Array.isArray(guardadas) ? guardadas : [guardadas];
+	});
 	const [modalAbierto, setModalAbierto] = useState(false);
 	const [estadoFormulario, setEstadoFormulario] = useState<FranjaEstado>("puedo");
 	const [diasFormulario, setDiasFormulario] = useState<PlantillaRapida["dias"]>("diario");
 	const [franjaFormulario, setFranjaFormulario] = useState<PlantillaRapida["franja"]>("manana");
 
 	useEffect(() => {
-		if (plantilla) localStorage.setItem(CLAVE_PLANTILLA, JSON.stringify(plantilla));
-	}, [plantilla]);
+		localStorage.setItem(CLAVE_PLANTILLA, JSON.stringify(plantillas));
+	}, [plantillas]);
 
 	const hoy = new Date();
 	const mesActual = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
@@ -71,7 +88,7 @@ export default function Disponibilidad() {
 	const puedeAbrirMesSiguiente = diasRestantes <= 3;
 	const claveVisible = claveMes(mesVisible);
 	const claveActual = claveMes(mesActual);
-	const mostrarPlantillaAnterior = Boolean(plantilla && plantilla.mesOrigen !== claveVisible);
+	const mostrarPlantillaAnterior = plantillas.some((regla) => esMesSiguiente(regla.mesOrigen, claveVisible));
 	const diasEnMes = new Date(mesVisible.getFullYear(), mesVisible.getMonth() + 1, 0).getDate();
 	const desplazamiento = (new Date(mesVisible.getFullYear(), mesVisible.getMonth(), 1).getDay() + 6) % 7;
 	const totalCeldas = Math.ceil((desplazamiento + diasEnMes) / 7) * 7;
@@ -89,28 +106,80 @@ export default function Disponibilidad() {
 		setMesVisible(new Date(mesVisible.getFullYear(), mesVisible.getMonth() + direccion, 1));
 	}
 
-	function cambiarFranja(fecha: Date, franja: FranjaHorario) {
+	async function cambiarFranja(fecha: Date, franja: FranjaHorario) {
+		if (!usuario) {
+			requestLogin();
+			return;
+		}
 		const dia = claveDia(fecha);
 		const diaActual = usuario.disponibilidad[dia];
-		actualizarDisponibilidad(dia, { [franja]: siguienteEstado(diaActual?.[franja]) });
-	}
-
-	function aplicarPlantilla(configuracion: Omit<PlantillaRapida, "mesOrigen">) {
-		for (let numeroDia = 1; numeroDia <= diasEnMes; numeroDia += 1) {
-			const fecha = new Date(mesVisible.getFullYear(), mesVisible.getMonth(), numeroDia);
-			if (!esDiaSeleccionado(fecha, configuracion.dias)) continue;
-			const cambios: Partial<Record<FranjaHorario, FranjaEstado>> = {};
-			if (configuracion.franja === "manana" || configuracion.franja === "todo-dia") cambios.manana = configuracion.estado;
-			if (configuracion.franja === "tarde" || configuracion.franja === "todo-dia") cambios.tarde = configuracion.estado;
-			actualizarDisponibilidad(claveDia(fecha), cambios);
+		try {
+			await actualizarDisponibilidad(dia, { [franja]: siguienteEstado(diaActual?.[franja]) });
+		} catch {
+			return;
 		}
-		setPlantilla({ ...configuracion, mesOrigen: claveVisible });
 	}
 
-	function enviarRellenoRapido(event: FormEvent<HTMLFormElement>) {
+	async function aplicarReglas(reglas: Omit<PlantillaRapida, "mesOrigen">[]) {
+		const cambiosPorFecha = new Map<string, CambioDisponibilidad>();
+		for (const configuracion of reglas) {
+			for (let numeroDia = 1; numeroDia <= diasEnMes; numeroDia += 1) {
+				const fecha = new Date(mesVisible.getFullYear(), mesVisible.getMonth(), numeroDia);
+				if (!esDiaSeleccionado(fecha, configuracion.dias)) continue;
+				const clave = claveDia(fecha);
+				const cambios = cambiosPorFecha.get(clave) ?? { fecha: clave };
+				if (configuracion.franja === "manana" || configuracion.franja === "todo-dia") cambios.manana = configuracion.estado;
+				if (configuracion.franja === "tarde" || configuracion.franja === "todo-dia") cambios.tarde = configuracion.estado;
+				cambiosPorFecha.set(clave, cambios);
+			}
+		}
+		await actualizarDisponibilidades([...cambiosPorFecha.values()]);
+	}
+
+	async function enviarRellenoRapido(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
-		aplicarPlantilla({ estado: estadoFormulario, dias: diasFormulario, franja: franjaFormulario });
+		if (!usuario) {
+			requestLogin();
+			return;
+		}
+		const regla = { estado: estadoFormulario, dias: diasFormulario, franja: franjaFormulario };
+		try {
+			await aplicarReglas([regla]);
+		} catch {
+			return;
+		}
+		setPlantillas((anteriores) => [
+			...anteriores.filter((anterior) => !reglaAnteriorCubierta(anterior, regla)),
+			{ ...regla, mesOrigen: claveVisible },
+		]);
 		setModalAbierto(false);
+	}
+
+	async function usarPlantillasAnteriores() {
+		if (!usuario) {
+			requestLogin();
+			return;
+		}
+		try {
+			await aplicarReglas(plantillas);
+		} catch {
+			return;
+		}
+		setPlantillas((anteriores) => anteriores.map((regla) => ({ ...regla, mesOrigen: claveVisible })));
+	}
+
+	async function vaciarCalendario() {
+		if (!usuario) {
+			requestLogin();
+			return;
+		}
+		if (window.confirm("¿Quieres borrar toda la disponibilidad de todos los meses?")) {
+			try {
+				await limpiarDisponibilidad();
+			} catch {
+				return;
+			}
+		}
 	}
 
 	function iconoEstado(estado?: FranjaEstado) {
@@ -120,6 +189,8 @@ export default function Disponibilidad() {
 		return "·";
 	}
 
+	if (loading) return <section className="disponibilidad-page" role="status">Cargando disponibilidad…</section>;
+
 	return (
 		<section className="disponibilidad-page" aria-labelledby="disponibilidad-title">
 			<header className="disponibilidad-heading">
@@ -128,15 +199,22 @@ export default function Disponibilidad() {
 					<h1 className="page-title" id="disponibilidad-title">Disponibilidad</h1>
 					<p>Indica cuándo te viene bien jugar. Pulsa cada franja para cambiar su estado.</p>
 				</div>
-				<button className="relleno-rapido-trigger" type="button" onClick={() => setModalAbierto(true)}>
-					Relleno Rápido
-				</button>
+				<div className="disponibilidad-heading-actions">
+					<button className="relleno-rapido-trigger" type="button" onClick={() => setModalAbierto(true)}>
+						Relleno Rápido
+					</button>
+					<button className="vaciar-calendario-button" type="button" onClick={vaciarCalendario}>
+						Vaciar calendario
+					</button>
+				</div>
 			</header>
+			{!usuario && <p className="availability-login-note">El calendario es público. Inicia sesión para guardar tu disponibilidad. <button type="button" onClick={requestLogin}>Acceder</button></p>}
+			{error && <p className="datos-error" role="alert">{error}</p>}
 
-			{mostrarPlantillaAnterior && plantilla && (
+			{mostrarPlantillaAnterior && (
 				<div className="plantilla-banner" role="status">
 					<span>¿Usar la misma plantilla de Relleno Rápido del mes pasado?</span>
-					<button type="button" onClick={() => aplicarPlantilla(plantilla)}>Usar plantilla</button>
+					<button type="button" onClick={usarPlantillasAnteriores}>Usar plantilla</button>
 				</div>
 			)}
 
@@ -164,13 +242,13 @@ export default function Disponibilidad() {
 					{diasCalendario.map((fecha, indice) => {
 						if (!fecha) return <div className="availability-empty-cell" role="gridcell" aria-hidden="true" key={`vacio-${indice}`} />;
 						const clave = claveDia(fecha);
-						const diaDisponibilidad = usuario.disponibilidad[clave];
-						const estados = diaDisponibilidad ?? {};
+										const diaDisponibilidad = usuario?.disponibilidad[clave];
+										const estados = diaDisponibilidad as Partial<Record<FranjaHorario, FranjaEstado>> | undefined;
 						return (
 							<div className="availability-day" role="gridcell" key={clave}>
 								<span className="availability-day-number">{fecha.getDate()}</span>
 								{(["manana", "tarde"] as const).map((franja) => {
-									const estado = diaDisponibilidad?.franjasMarcadas?.includes(franja) ? estados[franja] : undefined;
+											const estado = diaDisponibilidad?.franjasMarcadas?.includes(franja) ? estados?.[franja] : undefined;
 									const nombreFranja = franja === "manana" ? "Mañana" : "Tarde";
 									return (
 										<button

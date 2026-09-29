@@ -1,0 +1,19 @@
+.auth-state,
+.datos-error {
+	width: min(100% - 2rem, 1100px);
+	margin: 1.5rem auto;
+	border-left: 4px solid #b4232a;
+	padding: 0.9rem 1rem;
+	background: #fff;
+	color: #8d171d;
+	line-height: 1.5;
+}
+
+.auth-state {
+	color: #333;
+}
+
+.auth-state p + p,
+.auth-state button {
+	margin-top: 0.8rem;
+}
