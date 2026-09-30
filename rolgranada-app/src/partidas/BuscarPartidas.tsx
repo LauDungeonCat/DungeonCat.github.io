@@ -259,12 +259,6 @@ export default function BuscarPartidas() {
                     <strong>Zona aproximada:</strong>{" "}
                     {partida.ubicacionAproximada}
                   </p>
-                  {partida.ubicacionExacta && (
-                    <p className="partida-ubicacion-exacta">
-                      <strong>Dirección exacta:</strong>{" "}
-                      {partida.ubicacionExacta}
-                    </p>
-                  )}
                   <p className="partida-descripcion">{partida.descripcion}</p>
 
                   {puedeGestionar && (
