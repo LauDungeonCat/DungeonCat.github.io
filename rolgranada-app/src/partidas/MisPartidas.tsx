@@ -10,7 +10,6 @@ type Sesion = {
     titulo: string;
     campana: string;
     hora: string;
-    imagenUrl: string | null;
 };
 
 const hoy = new Date();
@@ -35,7 +34,6 @@ export default function MisPartidas() {
         titulo: `Sesión · ${sesion.franja === "manana" ? "Mañana" : "Tarde"}`,
         campana: sesion.titulo_partida,
         hora: sesion.franja === "manana" ? "Mañana" : "Tarde",
-        imagenUrl: sesion.imagen_url,
     }));
     const campana = misPartidas[indiceCampanaActiva];
 
@@ -92,10 +90,11 @@ export default function MisPartidas() {
                                     <div><dt>DM:</dt><dd>{campana.dm}</dd></div>
                                     <div><dt>Siguiente Sesión:</dt><dd>{campana.proximaSesion ? new Intl.DateTimeFormat("es-ES", { dateStyle: "medium", timeStyle: "short" }).format(new Date(campana.proximaSesion)) : "Por decidir"}</dd></div>
                                     <div><dt>Zona aproximada:</dt><dd>{campana.ubicacionAproximada}</dd></div>
+                                    <div><dt>Sesiones al mes:</dt><dd>{campana.sesionesAlMes}</dd></div>
+                                    {campana.duracionEstimada && <div><dt>Duración estimada:</dt><dd>{campana.duracionEstimada}</dd></div>}
                                     {campana.ubicacionExacta && <div><dt>Ubicación exacta:</dt><dd>{campana.ubicacionExacta}</dd></div>}
                                     <div><dt>Estado:</dt><dd>{etiquetaEstado(campana)}</dd></div>
                                 </dl>
-                                {campana.notasDm && campana.dmId === usuario?.id && <div className="campana-descripcion"><h3>Notas del DM:</h3><p>{campana.notasDm}</p></div>}
                                 <div className="campana-descripcion">
                                     <h3>Descripción:</h3>
                                     <p>{campana.descripcion}</p>
@@ -154,7 +153,6 @@ export default function MisPartidas() {
                             >
                                 <time dateTime={fechaClave(fecha)}>{fecha.getDate()}</time>
                                 {sesionesDia.map((sesion) => <div className="evento-sesion" key={`${sesion.campana}-${sesion.hora}`}>
-                                    {sesion.imagenUrl && <img src={sesion.imagenUrl} alt="" loading="lazy" />}
                                     <strong>{sesion.titulo}</strong>
                                     <span>{sesion.campana}</span>
                                 </div>)}

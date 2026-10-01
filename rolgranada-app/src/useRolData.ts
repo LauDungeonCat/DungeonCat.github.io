@@ -10,25 +10,28 @@ function mensajeError(error: unknown) {
   return "No se pudo completar la operación.";
 }
 
-function mapearPartida(row: PartidaConAccesoRow & { sesiones_al_mes?: number }): Partida {
+function mapearPartida(row: PartidaConAccesoRow): Partida {
   return {
     id: row.id,
     titulo: row.titulo,
     sistema: row.sistema,
-    dmId: row.dm_id,
+    dmId: row.dm_id ?? "",
     dm: row.dm_username,
     dmAvatarUrl: row.dm_avatar_url,
-    ubicacionAproximada: row.ubicacion_aproximada,
+    ubicacionAproximada: row.ubicacion_aproximada ?? "",
     ubicacionExacta: row.ubicacion_exacta,
-    notasDm: row.notas_dm,
     imagenUrl: row.imagen_url ?? "",
     descripcion: row.descripcion ?? "",
-    participantesMax: row.participantes_max,
+    participantesMax: row.participantes_max ?? 4,
     participantesCount: row.participantes_count,
     viewerIsParticipant: row.viewer_is_participant,
+    viewerHasRequested: row.viewer_has_requested,
+    esPrivada: row.es_privada,
     proximaSesion: row.proxima_sesion ?? undefined,
-    estado: row.estado,
+    proximaSesionFranja: row.proxima_sesion_franja ?? undefined,
+    estado: row.estado ?? "abierta",
     sesionesAlMes: row.sesiones_al_mes ?? 2,
+    duracionEstimada: row.duracion_estimada,
   };
 }
 
@@ -68,7 +71,11 @@ export function useRolData() {
       ]);
       if (disponibilidadResult.error) throw disponibilidadResult.error;
       if (sesionesResult.error) throw sesionesResult.error;
-      filasDisponibilidad = disponibilidadResult.data ?? [];
+      filasDisponibilidad = (disponibilidadResult.data ?? []).map((fila) => ({
+        ...fila,
+        manana: fila.manana ?? "no_indicado",
+        tarde: fila.tarde ?? "no_indicado",
+      }));
       sesionesUsuario = sesionesResult.data ?? [];
     }
     const ahora = new Date();
@@ -85,6 +92,7 @@ export function useRolData() {
       return siguiente ? {
         ...partida,
         proximaSesion: `${siguiente.sesion.fecha}T${siguiente.sesion.franja === "manana" ? "09:00:00" : "15:00:00"}`,
+        proximaSesionFranja: siguiente.sesion.franja,
       } : partida;
     });
     return {
@@ -167,10 +175,10 @@ export function useRolData() {
           dm_id: profile.id,
           participantes_max: datos.participantesMax,
           sesiones_al_mes: datos.sesionesAlMes,
-          proxima_sesion: datos.proximaSesion ?? null,
+          duracion_estimada: datos.duracionEstimada,
           ubicacion_aproximada: datos.ubicacionAproximada,
           ubicacion_exacta: datos.ubicacionExacta ?? null,
-          notas_dm: datos.notasDm ?? null,
+          es_privada: datos.esPrivada ?? false,
         });
         if (insertError) throw insertError;
       });
@@ -188,10 +196,10 @@ export function useRolData() {
           imagen_url: datos.imagenUrl ?? null,
           participantes_max: datos.participantesMax,
           sesiones_al_mes: datos.sesionesAlMes,
-          proxima_sesion: datos.proximaSesion ?? null,
+          duracion_estimada: datos.duracionEstimada,
           ubicacion_aproximada: datos.ubicacionAproximada,
           ubicacion_exacta: datos.ubicacionExacta ?? null,
-          notas_dm: datos.notasDm ?? null,
+          es_privada: datos.esPrivada ?? false,
         }).eq("id", id);
         if (updateError) throw updateError;
       });
@@ -209,6 +217,23 @@ export function useRolData() {
   const unirseAPartida = useCallback(async (partidaId: string) => {
     await ejecutar(async () => {
       const { error: joinError } = await supabase.rpc("unirse_partida", { p_partida_id: partidaId });
+      if (joinError) throw joinError;
+    });
+  }, [ejecutar]);
+
+  const solicitarUnirseAPartida = useCallback(async (partidaId: string) => {
+    await ejecutar(async () => {
+      const { error: requestError } = await supabase.rpc("solicitar_unirse_partida", { p_partida_id: partidaId });
+      if (requestError) throw requestError;
+    });
+  }, [ejecutar]);
+
+  const unirsePorInvitacion = useCallback(async (partidaId: string, codigoInvitacion: string) => {
+    await ejecutar(async () => {
+      const { error: joinError } = await supabase.rpc("unirse_por_invitacion", {
+        p_partida_id: partidaId,
+        p_codigo_invitacion: codigoInvitacion,
+      });
       if (joinError) throw joinError;
     });
   }, [ejecutar]);
@@ -237,6 +262,29 @@ export function useRolData() {
     return data as JugadorPartidaRow[];
   }, []);
 
+  const cargarSolicitudesPartida = useCallback(async (partidaId: string) => {
+    const { data, error: requestsError } = await supabase.rpc("listar_solicitudes_partida", { p_partida_id: partidaId });
+    if (requestsError) throw requestsError;
+    return data;
+  }, []);
+
+  const resolverSolicitudPartida = useCallback(async (partidaId: string, userId: string, aceptar: boolean) => {
+    await ejecutar(async () => {
+      const { error: resolveError } = await supabase.rpc("resolver_solicitud_partida", {
+        p_partida_id: partidaId,
+        p_user_id: userId,
+        p_aceptar: aceptar,
+      });
+      if (resolveError) throw resolveError;
+    });
+  }, [ejecutar]);
+
+  const obtenerCodigoInvitacion = useCallback(async (partidaId: string) => {
+    const { data, error: codeError } = await supabase.rpc("obtener_codigo_invitacion", { p_partida_id: partidaId });
+    if (codeError) throw codeError;
+    return data;
+  }, []);
+
   const invitarJugador = useCallback(async (partidaId: string, username: string) => {
     await ejecutar(async () => {
       const { error: inviteError } = await supabase.rpc("invitar_jugador_partida", { p_partida_id: partidaId, p_username: username });
@@ -261,27 +309,13 @@ export function useRolData() {
     return data as DisponibilidadPartidaRow[];
   }, []);
 
-  const subirImagenSesion = useCallback(async (partidaId: string, archivo: File) => {
-    if (!profile) throw new Error("Inicia sesión para subir imágenes.");
-    const extension = archivo.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-    const ruta = `${partidaId}/${profile.id}/${crypto.randomUUID()}.${extension}`;
-    const { error: uploadError } = await supabase.storage.from("sesiones").upload(ruta, archivo, {
-      contentType: archivo.type,
-      cacheControl: "3600",
-    });
-    if (uploadError) throw uploadError;
-    return supabase.storage.from("sesiones").getPublicUrl(ruta).data.publicUrl;
-  }, [profile]);
-
   const guardarSesiones = useCallback(async (
     partidaId: string,
     seleccionadas: { fecha: string; franja: FranjaHorario }[],
-    notas = "",
-    imagenUrl: string | null = null,
   ) => {
     if (seleccionadas.length === 0) return;
     await ejecutar(async () => {
-      const filas = seleccionadas.map(({ fecha, franja }) => ({ partida_id: partidaId, fecha, franja, notas, imagen_url: imagenUrl }));
+      const filas = seleccionadas.map(({ fecha, franja }) => ({ partida_id: partidaId, fecha, franja }));
       const { error: sessionError } = await supabase.from("sesiones").upsert(
         filas,
         { onConflict: "partida_id,fecha,franja" },
@@ -319,13 +353,17 @@ export function useRolData() {
     actualizarCapacidad,
     eliminarPartida,
     cargarJugadoresPartida,
+    cargarSolicitudesPartida,
+    resolverSolicitudPartida,
+    obtenerCodigoInvitacion,
     invitarJugador,
     echarJugador,
     cargarMapaDisponibilidad,
-    subirImagenSesion,
     guardarSesiones,
     borrarSesion,
     unirseAPartida,
+    solicitarUnirseAPartida,
+    unirsePorInvitacion,
     desapuntarseDePartida,
   };
 }

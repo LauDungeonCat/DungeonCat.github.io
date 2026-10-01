@@ -7,7 +7,8 @@
 .gestion-partida-header,
 .gestion-partida-campos,
 .gestion-partida-invitar > div,
-.gestion-partida-roster li {
+.gestion-partida-roster li,
+.gestion-solicitudes li {
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
@@ -36,6 +37,46 @@
 	min-height: 2.1rem;
 	padding: 0.3rem 0.6rem;
 	font-size: 0.78rem;
+}
+
+.gestion-solicitudes {
+	margin: 0 0 1rem;
+	border-left: 3px solid #c71920;
+	padding: 0.25rem 0 0.25rem 0.75rem;
+}
+
+.gestion-solicitudes h4 {
+	margin: 0.25rem 0 0.5rem;
+}
+
+.gestion-solicitudes ul {
+	display: grid;
+	gap: 0.35rem;
+	margin: 0;
+	list-style: none;
+}
+
+.gestion-solicitudes li {
+	justify-content: space-between;
+	border-bottom: 1px solid #e1e1e1;
+	padding: 0.35rem 0;
+}
+
+.gestion-solicitudes li div {
+	display: flex;
+	gap: 0.4rem;
+}
+
+.gestion-solicitudes button {
+	min-height: 2rem;
+	padding: 0.25rem 0.55rem;
+	font-size: 0.76rem;
+}
+
+.gestion-solicitudes p {
+	margin: 0;
+	color: #666;
+	font-size: 0.82rem;
 }
 
 .gestion-partida-capacidad {
@@ -143,6 +184,25 @@
 	padding: 0.3rem 0;
 	color: #444;
 	font-size: 0.85rem;
+}
+
+.gestion-jugador-identidad {
+	display: grid;
+	gap: 0.15rem;
+	min-width: 0;
+}
+
+.jugador-disponibilidad {
+	font-size: 0.74rem;
+	line-height: 1.35;
+}
+
+.jugador-disponibilidad.sin-disponibilidad {
+	color: #8d171d;
+}
+
+.jugador-disponibilidad.con-disponibilidad {
+	color: #555;
 }
 
 .gestion-partida-roster button {

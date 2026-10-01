@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "../auth/useAuth";
 import { useRolData } from "../useRolData";
-import type { JugadorPartidaRow } from "../lib/database.types";
+import type { JugadorPartidaRow, SolicitudPartidaRow } from "../lib/database.types";
 import type { Partida } from "../types";
 import "./GestionPartida.css";
 
@@ -22,12 +22,13 @@ function mensajeError(value: unknown, fallback: string): string {
 
 export default function GestionPartida({ partida }: { partida: Partida }) {
 	const { profile, requestLogin } = useAuth();
-	const { error, actualizarCapacidad, cargarJugadoresPartida, invitarJugador, echarJugador } = useRolData();
+	const { error, actualizarCapacidad, cargarJugadoresPartida, cargarSolicitudesPartida, resolverSolicitudPartida, obtenerCodigoInvitacion, invitarJugador, echarJugador } = useRolData();
 
 	const [jugadores, setJugadores] = useState<JugadorPartidaRow[]>([]);
+	const [solicitudes, setSolicitudes] = useState<SolicitudPartidaRow[]>([]);
 	const [jugadoresCargadosId, setJugadoresCargadosId] = useState<string | null>(null);
 	const [errorRoster, setErrorRoster] = useState<string | null>(null);
-	const [capacidad, setCapacidad] = useState(String(partida.participantesMax));
+	const [capacidad, setCapacidad] = useState<string | null>(null);
 	const [username, setUsername] = useState("");
 	const [errorLocal, setErrorLocal] = useState<string | null>(null);
 	const [mensajeEnlace, setMensajeEnlace] = useState("");
@@ -37,25 +38,11 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
 
 	const puedeGestionar = profile?.id === partida.dmId || profile?.role === "admin";
 
-	// Sincronizar el input de capacidad si la prop de la partida cambia externamente
-	useEffect(() => {
-		setCapacidad(String(partida.participantesMax));
-	}, [partida.participantesMax]);
-
 	// Cargar roster al cambiar de partida o permisos
 	useEffect(() => {
 		let activa = true;
 
-		if (!puedeGestionar) {
-			setJugadores([]);
-			setJugadoresCargadosId(null);
-			return () => {
-				activa = false;
-			};
-		}
-
-		setJugadoresCargadosId(null);
-		setErrorRoster(null);
+		if (!puedeGestionar) return () => { activa = false; };
 
 		void cargarJugadoresPartida(partida.id)
 			.then((lista) => {
@@ -70,11 +57,18 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
 					setErrorRoster(mensajeError(loadError, "No se pudo cargar el roster."));
 				}
 			});
+		void cargarSolicitudesPartida(partida.id)
+			.then((lista) => {
+				if (activa) setSolicitudes(lista);
+			})
+			.catch((loadError: unknown) => {
+				if (activa) setErrorRoster(mensajeError(loadError, "No se pudieron cargar las solicitudes."));
+			});
 
 		return () => {
 			activa = false;
 		};
-	}, [cargarJugadoresPartida, partida.id, puedeGestionar]);
+	}, [cargarJugadoresPartida, cargarSolicitudesPartida, partida.id, puedeGestionar]);
 
 	// Temporizador para limpiar el mensaje de "Enlace copiado"
 	useEffect(() => {
@@ -95,12 +89,23 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
 		}
 	}
 
+	async function resolverSolicitud(userId: string, aceptar: boolean) {
+		setErrorLocal(null);
+		try {
+			await resolverSolicitudPartida(partida.id, userId, aceptar);
+			setSolicitudes(await cargarSolicitudesPartida(partida.id));
+			if (aceptar) await actualizarRoster();
+		} catch (requestError) {
+			setErrorLocal(mensajeError(requestError, "No se pudo resolver la solicitud."));
+		}
+	}
+
 	async function guardarCapacidad() {
 		if (!profile) {
 			requestLogin();
 			return;
 		}
-		const nuevaCapacidad = Number(capacidad);
+		const nuevaCapacidad = Number(capacidad ?? partida.participantesMax);
 		const minPermitido = Math.max(2, jugadores.length);
 
 		if (!Number.isInteger(nuevaCapacidad) || nuevaCapacidad < minPermitido) {
@@ -158,6 +163,15 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
 	async function copiarEnlace() {
 		const enlace = new URL(import.meta.env.BASE_URL, window.location.origin);
 		enlace.searchParams.set("partida", partida.id);
+		if (partida.esPrivada) {
+			try {
+				const codigo = await obtenerCodigoInvitacion(partida.id);
+				enlace.searchParams.set("invitacion", codigo);
+			} catch {
+				setMensajeEnlace("No se pudo generar el enlace de invitación.");
+				return;
+			}
+		}
 		try {
 			await navigator.clipboard.writeText(enlace.toString());
 			setMensajeEnlace("Enlace copiado");
@@ -195,6 +209,25 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
 					</span>
 				)}
 			</div>
+
+			{partida.esPrivada && (
+				<div className="gestion-solicitudes">
+					<h4>Solicitudes pendientes ({solicitudes.length})</h4>
+					{solicitudes.length ? (
+						<ul>
+							{solicitudes.map((solicitud) => (
+								<li key={solicitud.user_id}>
+									<span>{solicitud.username}</span>
+									<div>
+										<button type="button" onClick={() => void resolverSolicitud(solicitud.user_id, true)}>Aceptar</button>
+										<button type="button" onClick={() => void resolverSolicitud(solicitud.user_id, false)}>Rechazar</button>
+									</div>
+								</li>
+							))}
+						</ul>
+					) : <p>No hay solicitudes pendientes.</p>}
+				</div>
+			)}
 
 			<form className="gestion-partida-invitar" onSubmit={enviarInvitacion}>
 				<label htmlFor={`username-${partida.id}`}>Invitar por username</label>
@@ -243,7 +276,7 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
 								type="number"
 								min={Math.max(2, jugadores.length)}
 								max="20"
-								value={capacidad}
+								value={capacidad ?? String(partida.participantesMax)}
 								onChange={(event) => setCapacidad(event.target.value)}
 								disabled={guardando}
 							/>
@@ -276,9 +309,27 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
 					</p>
 				) : jugadores.length ? (
 					<ul>
-						{jugadores.map((jugador) => (
-							<li key={jugador.user_id}>
-								<span>{jugador.username}</span>
+						{jugadores.map((jugador) => {
+							const estadisticasDisponibles = Number.isFinite(jugador.franjas_indicadas)
+								&& Number.isFinite(jugador.franjas_sin_indicar);
+							const franjasIndicadas = jugador.franjas_indicadas ?? 0;
+							const franjasSinIndicar = jugador.franjas_sin_indicar ?? 0;
+							return <li key={jugador.user_id}>
+								<div className="gestion-jugador-identidad">
+									<span>{jugador.username}</span>
+									<span
+										className={`jugador-disponibilidad ${!estadisticasDisponibles || franjasIndicadas === 0 ? "sin-disponibilidad" : "con-disponibilidad"}`}
+										title="El resumen cuenta las fechas guardadas; los días sin fila no se pueden distinguir de un mes aún no editado."
+									>
+										{!estadisticasDisponibles
+											? "Resumen no disponible; actualiza el SQL de Supabase"
+											: franjasIndicadas === 0
+											? "No ha rellenado nada"
+											: franjasSinIndicar > 0
+												? `Parcial: ${franjasIndicadas} franjas indicadas, ${franjasSinIndicar} sin indicar`
+												: `${franjasIndicadas} franjas indicadas en los días guardados`}
+									</span>
+								</div>
 								<button
 									type="button"
 									onClick={() => void quitarJugador(jugador)}
@@ -287,8 +338,8 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
 								>
 									Quitar
 								</button>
-							</li>
-						))}
+							</li>;
+						})}
 					</ul>
 				) : (
 					<p>Aún no hay jugadores inscritos.</p>

@@ -7,7 +7,7 @@ export type ProfileRow = {
   username: string;
   avatar_url: string | null;
   role: RolUsuario;
-  created_at: string;
+  created_at: string | null;
 };
 
 export type PartidaRow = {
@@ -16,29 +16,32 @@ export type PartidaRow = {
   sistema: string;
   descripcion: string | null;
   imagen_url: string | null;
-  dm_id: string;
-  participantes_max: number;
-  sesiones_al_mes: number;
-  proxima_sesion: string | null;
-  ubicacion_aproximada: string;
+  dm_id: string | null;
+  participantes_max: number | null;
+  sesiones_al_mes: number | null;
+  duracion_estimada: string | null;
+  ubicacion_aproximada: string | null;
   ubicacion_exacta: string | null;
-  notas_dm: string | null;
-  estado: EstadoPartida;
-  created_at: string;
+  es_privada: boolean;
+  codigo_invitacion: string;
+  estado: EstadoPartida | null;
+  created_at: string | null;
 };
 
 export type PartidaParticipanteRow = {
   partida_id: string;
   user_id: string;
-  fecha_union: string;
+  estado: string | null;
+  fecha_union: string | null;
 };
 
 export type DisponibilidadRow = {
   id: string;
   user_id: string;
   fecha: string;
-  manana: EstadoDisponibilidad;
-  tarde: EstadoDisponibilidad;
+  manana: EstadoDisponibilidad | null;
+  tarde: EstadoDisponibilidad | null;
+  created_at: string | null;
 };
 
 export type SesionRow = {
@@ -46,28 +49,34 @@ export type SesionRow = {
   partida_id: string;
   fecha: string;
   franja: "manana" | "tarde";
-  notas: string | null;
-  imagen_url: string | null;
-  created_at: string;
+  created_at: string | null;
 };
 
-export type PartidaConAccesoRow = Omit<
-  PartidaRow,
-  "ubicacion_exacta" | "notas_dm" | "proxima_sesion"
-> & {
+export type PartidaConAccesoRow = Omit<PartidaRow, "ubicacion_exacta" | "codigo_invitacion"> & {
   ubicacion_exacta: string | null;
-  notas_dm: string | null;
   proxima_sesion: string | null;
+  proxima_sesion_franja: "manana" | "tarde" | null;
   dm_username: string;
   dm_avatar_url: string | null;
   participantes_count: number;
   viewer_is_participant: boolean;
+  viewer_has_requested: boolean;
+  es_privada: boolean;
 };
 
 export type JugadorPartidaRow = {
   user_id: string;
   username: string;
   avatar_url: string | null;
+  fecha_union: string;
+  dias_indicados: number;
+  franjas_indicadas: number;
+  franjas_sin_indicar: number;
+};
+
+export type SolicitudPartidaRow = {
+  user_id: string;
+  username: string;
   fecha_union: string;
 };
 
@@ -97,21 +106,7 @@ export type Database = {
       };
       partidas: {
         Row: PartidaRow;
-        Insert: Omit<PartidaRow, "id" | "created_at" | "estado"> &
-          Partial<
-            Pick<
-              PartidaRow,
-              | "id"
-              | "created_at"
-              | "estado"
-              | "sesiones_al_mes"
-              | "proxima_sesion"
-              | "notas_dm"
-              | "ubicacion_exacta"
-              | "descripcion"
-              | "imagen_url"
-            >
-          >;
+        Insert: Pick<PartidaRow, "titulo" | "sistema"> & Partial<Omit<PartidaRow, "titulo" | "sistema">>;
         Update: Partial<Omit<PartidaRow, "id" | "created_at" | "dm_id">>;
         Relationships: [];
       };
@@ -124,15 +119,14 @@ export type Database = {
       };
       disponibilidades: {
         Row: DisponibilidadRow;
-        Insert: Omit<DisponibilidadRow, "id"> & Partial<Pick<DisponibilidadRow, "id">>;
+        Insert: Pick<DisponibilidadRow, "user_id" | "fecha"> & Partial<Omit<DisponibilidadRow, "user_id" | "fecha">>;
         Update: Partial<Omit<DisponibilidadRow, "id" | "user_id" | "fecha">>;
         Relationships: [];
       };
       sesiones: {
         Row: SesionRow;
-        Insert: Omit<SesionRow, "id" | "created_at" | "imagen_url"> &
-          Partial<Pick<SesionRow, "id" | "created_at" | "imagen_url">>;
-        Update: Partial<Pick<SesionRow, "notas">>;
+        Insert: Omit<SesionRow, "id" | "created_at"> & Partial<Pick<SesionRow, "id" | "created_at">>;
+        Update: Partial<Pick<SesionRow, "franja">>;
         Relationships: [];
       };
     };
@@ -141,7 +135,12 @@ export type Database = {
       listar_partidas: { Args: { [_ in never]: never }; Returns: PartidaConAccesoRow[] };
       unirse_partida: { Args: { p_partida_id: string }; Returns: undefined };
       listar_jugadores_partida: { Args: { p_partida_id: string }; Returns: JugadorPartidaRow[] };
+      listar_solicitudes_partida: { Args: { p_partida_id: string }; Returns: SolicitudPartidaRow[] };
       invitar_jugador_partida: { Args: { p_partida_id: string; p_username: string }; Returns: undefined };
+      solicitar_unirse_partida: { Args: { p_partida_id: string }; Returns: undefined };
+      unirse_por_invitacion: { Args: { p_partida_id: string; p_codigo_invitacion: string }; Returns: undefined };
+      resolver_solicitud_partida: { Args: { p_partida_id: string; p_user_id: string; p_aceptar: boolean }; Returns: undefined };
+      obtener_codigo_invitacion: { Args: { p_partida_id: string }; Returns: string };
       echar_jugador_partida: { Args: { p_partida_id: string; p_user_id: string }; Returns: undefined };
       listar_disponibilidad_partida: {
         Args: { p_partida_id: string; p_inicio: string; p_fin: string };

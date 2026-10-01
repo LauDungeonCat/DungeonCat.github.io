@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { useRolData } from "../useRolData";
 import type { FranjaHorario, MapaDisponibilidad, Partida } from "../types";
+import { obtenerRangoMeses } from "./rangoMeses";
 import "./AgendamientoInteligente.css";
 
 type FranjaSeleccionada = { fecha: string; franja: FranjaHorario };
@@ -61,16 +62,17 @@ function BotonFranja({
 }
 
 export default function AgendamientoInteligente({ partida, onClose }: { partida: Partida; onClose: () => void }) {
-	const { sesiones, cargarMapaDisponibilidad, subirImagenSesion, guardarSesiones, borrarSesion } = useRolData();
-	const [mesVisible, setMesVisible] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+	const { sesiones, cargarMapaDisponibilidad, guardarSesiones, borrarSesion } = useRolData();
+	const [mesVisible, setMesVisible] = useState(() => obtenerRangoMeses().mesInicial);
 	const [resultadoMapa, setResultadoMapa] = useState<{ clave: string; filas: MapaDisponibilidad[] }>({ clave: "", filas: [] });
 	const [error, setError] = useState<string | null>(null);
 	const [selecciones, setSelecciones] = useState<FranjaSeleccionada[]>([]);
-	const [notas, setNotas] = useState("");
-	const [imagen, setImagen] = useState<File | null>(null);
 	const [guardando, setGuardando] = useState(false);
 	const anio = mesVisible.getFullYear();
 	const mes = mesVisible.getMonth();
+	const rangoMeses = obtenerRangoMeses();
+	const claveMesActual = fechaIso(rangoMeses.mesActual).slice(0, 7);
+	const claveMesSiguiente = fechaIso(rangoMeses.mesSiguiente).slice(0, 7);
 	const claveMes = `${anio}-${String(mes + 1).padStart(2, "0")}`;
 	const inicio = fechaIso(new Date(anio, mes, 1));
 	const fin = fechaIso(new Date(anio, mes + 1, 0));
@@ -86,23 +88,41 @@ export default function AgendamientoInteligente({ partida, onClose }: { partida:
 	});
 	const jugadoresFaltantes = Math.max(0, partida.participantesMax - partida.participantesCount);
 
+	function cambiarMes(direccion: -1 | 1) {
+		const siguiente = new Date(anio, mes + direccion, 1);
+		const claveDestino = fechaIso(siguiente).slice(0, 7);
+		if (claveDestino !== claveMesActual && !(rangoMeses.siguienteDisponible && claveDestino === claveMesSiguiente)) return;
+		setMesVisible(siguiente);
+	}
+
 	useEffect(() => {
 		let activa = true;
-		void cargarMapaDisponibilidad(partida.id, inicio, fin)
-			.then((filas) => { if (activa) { setResultadoMapa({ clave: `${partida.id}:${claveMes}`, filas }); setError(null); } })
-			.catch((loadError: unknown) => { if (activa) setError(loadError instanceof Error ? loadError.message : "No se pudo cargar el mapa de disponibilidad."); });
-		return () => { activa = false; };
+		async function refrescarMapa() {
+			try {
+				const filas = await cargarMapaDisponibilidad(partida.id, inicio, fin);
+				if (activa) {
+					setResultadoMapa({ clave: `${partida.id}:${claveMes}`, filas });
+					setError(null);
+				}
+			} catch (loadError) {
+				if (activa) setError(loadError instanceof Error ? loadError.message : "No se pudo cargar el mapa de disponibilidad.");
+			}
+		}
+
+		void refrescarMapa();
+		const intervalo = window.setInterval(() => { void refrescarMapa(); }, 15_000);
+		return () => {
+			activa = false;
+			window.clearInterval(intervalo);
+		};
 	}, [cargarMapaDisponibilidad, fin, inicio, partida.id, claveMes]);
 
 	async function confirmarSesion() {
 		if (selecciones.length === 0) return;
 		setGuardando(true);
 		try {
-			const imagenUrl = imagen ? await subirImagenSesion(partida.id, imagen) : null;
-			await guardarSesiones(partida.id, selecciones, notas.trim(), imagenUrl);
+			await guardarSesiones(partida.id, selecciones);
 			setSelecciones([]);
-			setNotas("");
-			setImagen(null);
 		} catch (saveError) {
 			setError(saveError instanceof Error ? saveError.message : "No se pudo guardar la sesión.");
 		} finally {
@@ -130,9 +150,9 @@ export default function AgendamientoInteligente({ partida, onClose }: { partida:
 				{!mapaListo && <p className="agendamiento-cargando" role="status">Calculando disponibilidad de los jugadores…</p>}
 				{error && <p className="datos-error" role="alert">{error}</p>}
 				<div className="agendamiento-mes">
-					<button type="button" onClick={() => setMesVisible(new Date(anio, mes - 1, 1))} aria-label="Mes anterior">‹</button>
+					<button type="button" onClick={() => cambiarMes(-1)} disabled={!rangoMeses.siguienteDisponible || claveMes !== claveMesSiguiente} aria-label="Mes anterior">‹</button>
 					<h3>{formatoMes.format(mesVisible)}</h3>
-					<button type="button" onClick={() => setMesVisible(new Date(anio, mes + 1, 1))} aria-label="Mes siguiente">›</button>
+					<button type="button" onClick={() => cambiarMes(1)} disabled={!rangoMeses.siguienteDisponible || claveMes !== claveMesActual} aria-label="Mes siguiente">›</button>
 				</div>
 				<div className="agendamiento-grid" role="grid" aria-label={`Disponibilidad de ${formatoMes.format(mesVisible)}`}>
 					{nombresDias.map((dia) => <div className="agendamiento-dia-semana" role="columnheader" key={dia}>{dia}</div>)}
@@ -167,15 +187,6 @@ export default function AgendamientoInteligente({ partida, onClose }: { partida:
 				</ul>
 				{selecciones.length > 0 && <div className="agendamiento-confirmacion">
 					<p>Confirmar {selecciones.length} {selecciones.length === 1 ? "franja" : "franjas"} de sesión.</p>
-					<label>Notas de sesión <input value={notas} maxLength={250} onChange={(event) => setNotas(event.target.value)} /></label>
-					<label>Imagen de sesión <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={(event) => {
-						const archivo = event.target.files?.[0] ?? null;
-						if (archivo && !["image/jpeg", "image/png", "image/webp", "image/gif"].includes(archivo.type)) { setError("Usa una imagen JPG, PNG, WebP o GIF."); setImagen(null); return; }
-						if (archivo && archivo.size > 8 * 1024 * 1024) { setError("La imagen no puede superar 8 MB."); setImagen(null); return; }
-						setImagen(archivo);
-						setError(null);
-					}} /></label>
-					{imagen && <span className="agendamiento-imagen-nombre">{imagen.name}</span>}
 					<button type="button" disabled={guardando} onClick={() => { void confirmarSesion(); }}>{guardando ? "Guardando…" : "Confirmar sesiones"}</button>
 				</div>}
 			</section>

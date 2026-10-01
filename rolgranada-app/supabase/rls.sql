@@ -67,15 +67,15 @@ with check (id = (select auth.uid()));
 revoke all on public.partidas from anon, authenticated;
 grant select (
   id, titulo, sistema, descripcion, imagen_url, dm_id, participantes_max,
-  proxima_sesion, ubicacion_aproximada, estado, created_at
+  sesiones_al_mes, duracion_estimada, ubicacion_aproximada, estado, created_at
 ) on public.partidas to authenticated;
 grant insert (
   titulo, sistema, descripcion, imagen_url, dm_id, participantes_max,
-  proxima_sesion, ubicacion_aproximada, ubicacion_exacta, notas_dm
+  sesiones_al_mes, duracion_estimada, ubicacion_aproximada, ubicacion_exacta, es_privada
 ) on public.partidas to authenticated;
 grant update (
-  titulo, sistema, descripcion, imagen_url, participantes_max, proxima_sesion,
-  ubicacion_aproximada, ubicacion_exacta, notas_dm, estado
+  titulo, sistema, descripcion, imagen_url, participantes_max,
+  sesiones_al_mes, duracion_estimada, ubicacion_aproximada, ubicacion_exacta, estado, es_privada
 ) on public.partidas to authenticated;
 grant delete on public.partidas to authenticated;
 
@@ -149,9 +149,14 @@ begin
     raise exception 'El DM ya dirige esta partida y no puede unirse como participante.' using errcode = '22023';
   end if;
 
+  if partida_actual.es_privada then
+    raise exception 'Esta campaña es privada. Solicita acceso o usa un enlace de invitación.' using errcode = '42501';
+  end if;
+
   if exists (
     select 1 from public.partida_participantes
     where partida_id = p_partida_id and user_id = current_user_id
+      and lower(trim(coalesce(estado, ''))) = 'aceptado'
   ) then
     return;
   end if;
@@ -160,12 +165,21 @@ begin
     raise exception 'La partida no está abierta.' using errcode = '22023';
   end if;
 
-  if (select count(*) from public.partida_participantes where partida_id = p_partida_id) >= partida_actual.participantes_max then
+  if (select count(*) from public.partida_participantes where partida_id = p_partida_id and lower(trim(coalesce(estado, ''))) = 'aceptado') >= partida_actual.participantes_max then
     raise exception 'La partida está completa.' using errcode = '22023';
   end if;
 
-  insert into public.partida_participantes (partida_id, user_id)
-  values (p_partida_id, current_user_id);
+  if exists (
+    select 1 from public.partida_participantes
+    where partida_id = p_partida_id and user_id = current_user_id
+  ) then
+    update public.partida_participantes
+    set estado = 'Aceptado'
+    where partida_id = p_partida_id and user_id = current_user_id;
+  else
+    insert into public.partida_participantes (partida_id, user_id, estado)
+    values (p_partida_id, current_user_id, 'Aceptado');
+  end if;
 end;
 $$;
 revoke all on function public.unirse_partida(uuid) from public, anon;
@@ -191,7 +205,7 @@ drop policy if exists "disponibilidades_delete_self" on public.disponibilidades;
 create policy "disponibilidades_delete_self" on public.disponibilidades
 for delete to authenticated using (user_id = (select auth.uid()));
 
--- Public campaign listing: private exact addresses and DM notes are returned only to authorized viewers.
+-- Public campaign listing: private exact addresses are returned only to authorized viewers.
 drop function if exists public.listar_partidas();
 create function public.listar_partidas()
 returns table (
@@ -202,17 +216,20 @@ returns table (
   imagen_url text,
   dm_id uuid,
   participantes_max integer,
+  sesiones_al_mes integer,
+  duracion_estimada text,
   proxima_sesion timestamptz,
   ubicacion_aproximada text,
   ubicacion_exacta text,
-  notas_dm text,
   estado text,
-  created_at timestamp,
+  created_at timestamptz,
   proxima_sesion_franja text,
   dm_username text,
   dm_avatar_url text,
   participantes_count integer,
-  viewer_is_participant boolean
+  viewer_is_participant boolean,
+  viewer_has_requested boolean,
+  es_privada boolean
 )
 language sql
 stable
@@ -227,23 +244,22 @@ as $$
     partida.imagen_url,
     partida.dm_id,
     partida.participantes_max,
-    coalesce(
-      case
-        when siguiente.fecha is null then null
-        else (siguiente.fecha + case when siguiente.franja = 'manana' then time '09:00' else time '15:00' end) at time zone 'Europe/Madrid'
-      end,
-      partida.proxima_sesion
-    ),
+    partida.sesiones_al_mes,
+    partida.duracion_estimada,
+    case when siguiente.fecha is null then null
+      else (siguiente.fecha + case when siguiente.franja = 'manana' then time '09:00' else time '15:00' end) at time zone 'Europe/Madrid'
+    end,
     partida.ubicacion_aproximada,
     case when autorizacion.puede_ver then partida.ubicacion_exacta else null end,
-    case when auth.uid() = partida.dm_id or autorizacion.es_admin then partida.notas_dm else null end,
     partida.estado,
     partida.created_at,
     coalesce(siguiente.franja, null),
     coalesce(dm.username, 'DM'),
     dm.avatar_url,
-    (select count(*)::integer from public.partida_participantes pp_count where pp_count.partida_id = partida.id),
-    coalesce(existe_participante.value, false)
+    (select count(*)::integer from public.partida_participantes pp_count where pp_count.partida_id = partida.id and lower(trim(coalesce(pp_count.estado, ''))) = 'aceptado'),
+    coalesce(existe_participante.value, false),
+    coalesce(existe_solicitud.value, false),
+    partida.es_privada
   from public.partidas partida
   left join public.profiles dm on dm.id = partida.dm_id
   left join lateral (
@@ -259,22 +275,190 @@ as $$
       (
         auth.uid() = partida.dm_id
         or exists (select 1 from public.profiles perfil where perfil.id = auth.uid() and perfil.role = 'admin')
-        or exists (select 1 from public.partida_participantes pp where pp.partida_id = partida.id and pp.user_id = auth.uid())
+        or exists (
+          select 1 from public.partida_participantes pp
+          where pp.partida_id = partida.id and pp.user_id = auth.uid()
+            and lower(trim(coalesce(pp.estado, ''))) = 'aceptado'
+        )
       ) as puede_ver
   ) autorizacion on true
   left join lateral (
     select exists (
       select 1 from public.partida_participantes pp
       where pp.partida_id = partida.id and pp.user_id = auth.uid()
+        and lower(trim(coalesce(pp.estado, ''))) = 'aceptado'
     ) as value
   ) existe_participante on true
+  left join lateral (
+    select exists (
+      select 1 from public.partida_participantes pp
+      where pp.partida_id = partida.id and pp.user_id = auth.uid()
+        and lower(trim(coalesce(pp.estado, ''))) = 'solicitado'
+    ) as value
+  ) existe_solicitud on true
   order by partida.created_at desc;
 $$;
+
+create or replace function public.solicitar_unirse_partida(p_partida_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_user_id uuid := auth.uid();
+  partida_actual public.partidas%rowtype;
+begin
+  if current_user_id is null then
+    raise exception 'Debes iniciar sesión para solicitar acceso.' using errcode = '42501';
+  end if;
+  select * into partida_actual from public.partidas where id = p_partida_id for update;
+  if not found then raise exception 'La partida no existe.' using errcode = 'P0002'; end if;
+  if not partida_actual.es_privada then raise exception 'Esta campaña es pública; puedes unirte directamente.' using errcode = '22023'; end if;
+  if partida_actual.dm_id = current_user_id then raise exception 'El DM ya dirige esta partida.' using errcode = '22023'; end if;
+  if partida_actual.estado <> 'abierta' then raise exception 'La partida no está abierta.' using errcode = '22023'; end if;
+  if (select count(*) from public.partida_participantes where partida_id = p_partida_id and lower(trim(coalesce(estado, ''))) = 'aceptado') >= partida_actual.participantes_max then
+    raise exception 'La partida está completa.' using errcode = '22023';
+  end if;
+  if exists (
+    select 1 from public.partida_participantes
+    where partida_id = p_partida_id and user_id = current_user_id
+      and lower(trim(coalesce(estado, ''))) = 'aceptado'
+  ) then return; end if;
+  if exists (select 1 from public.partida_participantes where partida_id = p_partida_id and user_id = current_user_id) then
+    update public.partida_participantes set estado = 'Solicitado'
+    where partida_id = p_partida_id and user_id = current_user_id;
+  else
+    insert into public.partida_participantes (partida_id, user_id, estado)
+    values (p_partida_id, current_user_id, 'Solicitado');
+  end if;
+end;
+$$;
+revoke all on function public.solicitar_unirse_partida(uuid) from public, anon;
+grant execute on function public.solicitar_unirse_partida(uuid) to authenticated;
+
+create or replace function public.unirse_por_invitacion(p_partida_id uuid, p_codigo_invitacion uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_user_id uuid := auth.uid();
+  partida_actual public.partidas%rowtype;
+begin
+  if current_user_id is null then raise exception 'Debes iniciar sesión para aceptar la invitación.' using errcode = '42501'; end if;
+  select * into partida_actual from public.partidas where id = p_partida_id for update;
+  if not found or not partida_actual.es_privada or partida_actual.codigo_invitacion <> p_codigo_invitacion then
+    raise exception 'El enlace de invitación no es válido.' using errcode = '42501';
+  end if;
+  if partida_actual.dm_id = current_user_id then raise exception 'El DM ya dirige esta partida.' using errcode = '22023'; end if;
+  if partida_actual.estado <> 'abierta' then raise exception 'La partida no está abierta.' using errcode = '22023'; end if;
+  if exists (select 1 from public.partida_participantes where partida_id = p_partida_id and user_id = current_user_id and lower(trim(coalesce(estado, ''))) = 'aceptado') then return; end if;
+  if (select count(*) from public.partida_participantes where partida_id = p_partida_id and lower(trim(coalesce(estado, ''))) = 'aceptado') >= partida_actual.participantes_max then
+    raise exception 'La partida está completa.' using errcode = '22023';
+  end if;
+  if exists (select 1 from public.partida_participantes where partida_id = p_partida_id and user_id = current_user_id) then
+    update public.partida_participantes set estado = 'Aceptado'
+    where partida_id = p_partida_id and user_id = current_user_id;
+  else
+    insert into public.partida_participantes (partida_id, user_id, estado)
+    values (p_partida_id, current_user_id, 'Aceptado');
+  end if;
+end;
+$$;
+revoke all on function public.unirse_por_invitacion(uuid, uuid) from public, anon;
+grant execute on function public.unirse_por_invitacion(uuid, uuid) to authenticated;
+
+create or replace function public.obtener_codigo_invitacion(p_partida_id uuid)
+returns uuid
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  codigo uuid;
+begin
+  select partida.codigo_invitacion into codigo
+  from public.partidas partida
+  where partida.id = p_partida_id and partida.es_privada and (
+    partida.dm_id = auth.uid()
+    or exists (select 1 from public.profiles perfil where perfil.id = auth.uid() and perfil.role = 'admin')
+  );
+  if codigo is null then raise exception 'Solo el DM o un administrador puede generar el enlace.' using errcode = '42501'; end if;
+  return codigo;
+end;
+$$;
+revoke all on function public.obtener_codigo_invitacion(uuid) from public, anon;
+grant execute on function public.obtener_codigo_invitacion(uuid) to authenticated;
+
+create or replace function public.listar_solicitudes_partida(p_partida_id uuid)
+returns table (user_id uuid, username text, fecha_union timestamptz)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+begin
+  if not exists (select 1 from public.partidas partida where partida.id = p_partida_id and (
+    partida.dm_id = auth.uid()
+    or exists (select 1 from public.profiles perfil where perfil.id = auth.uid() and perfil.role = 'admin')
+  )) then raise exception 'Solo el DM o un administrador puede ver las solicitudes.' using errcode = '42501'; end if;
+  return query
+  select pp.user_id, perfil.username, pp.fecha_union
+  from public.partida_participantes pp
+  join public.profiles perfil on perfil.id = pp.user_id
+  where pp.partida_id = p_partida_id and lower(trim(coalesce(pp.estado, ''))) = 'solicitado'
+  order by pp.fecha_union;
+end;
+$$;
+revoke all on function public.listar_solicitudes_partida(uuid) from public, anon;
+grant execute on function public.listar_solicitudes_partida(uuid) to authenticated;
+
+create or replace function public.resolver_solicitud_partida(p_partida_id uuid, p_user_id uuid, p_aceptar boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  partida_actual public.partidas%rowtype;
+begin
+  select * into partida_actual from public.partidas where id = p_partida_id for update;
+  if not found or (partida_actual.dm_id <> auth.uid() and not exists (
+    select 1 from public.profiles perfil where perfil.id = auth.uid() and perfil.role = 'admin'
+  )) then raise exception 'Solo el DM o un administrador puede resolver solicitudes.' using errcode = '42501'; end if;
+  if not exists (select 1 from public.partida_participantes where partida_id = p_partida_id and user_id = p_user_id and lower(trim(coalesce(estado, ''))) = 'solicitado') then
+    raise exception 'La solicitud ya no está pendiente.' using errcode = '22023';
+  end if;
+  if p_aceptar then
+    if partida_actual.estado <> 'abierta' then raise exception 'La partida no está abierta.' using errcode = '22023'; end if;
+    if (select count(*) from public.partida_participantes where partida_id = p_partida_id and lower(trim(coalesce(estado, ''))) = 'aceptado') >= partida_actual.participantes_max then
+      raise exception 'La partida está completa.' using errcode = '22023';
+    end if;
+    update public.partida_participantes set estado = 'Aceptado' where partida_id = p_partida_id and user_id = p_user_id;
+  else
+    update public.partida_participantes set estado = 'Rechazado' where partida_id = p_partida_id and user_id = p_user_id;
+  end if;
+end;
+$$;
+revoke all on function public.resolver_solicitud_partida(uuid, uuid, boolean) from public, anon;
+grant execute on function public.resolver_solicitud_partida(uuid, uuid, boolean) to authenticated;
 revoke all on function public.listar_partidas() from public;
 grant execute on function public.listar_partidas() to anon, authenticated;
 
-create or replace function public.listar_jugadores_partida(p_partida_id uuid)
-returns table (user_id uuid, username text, avatar_url text, fecha_union timestamp)
+drop function if exists public.listar_jugadores_partida(uuid);
+create function public.listar_jugadores_partida(p_partida_id uuid)
+returns table (
+  user_id uuid,
+  username text,
+  avatar_url text,
+  fecha_union timestamptz,
+  dias_indicados integer,
+  franjas_indicadas integer,
+  franjas_sin_indicar integer
+)
 language plpgsql
 stable
 security definer
@@ -292,10 +476,29 @@ begin
   end if;
 
   return query
-  select pp.user_id, perfil.username, perfil.avatar_url, pp.fecha_union
+  select
+    pp.user_id,
+    perfil.username,
+    perfil.avatar_url,
+    pp.fecha_union,
+    count(distinct disp.fecha) filter (
+      where coalesce(disp.manana::text, 'no_indicado') <> 'no_indicado'
+        or coalesce(disp.tarde::text, 'no_indicado') <> 'no_indicado'
+    )::integer,
+    (
+      count(*) filter (where disp.fecha is not null and coalesce(disp.manana::text, 'no_indicado') <> 'no_indicado')
+      + count(*) filter (where disp.fecha is not null and coalesce(disp.tarde::text, 'no_indicado') <> 'no_indicado')
+    )::integer,
+    greatest(0, (count(disp.fecha) * 2)::integer - (
+      count(*) filter (where disp.fecha is not null and coalesce(disp.manana::text, 'no_indicado') <> 'no_indicado')
+      + count(*) filter (where disp.fecha is not null and coalesce(disp.tarde::text, 'no_indicado') <> 'no_indicado')
+    )::integer)
   from public.partida_participantes pp
   join public.profiles perfil on perfil.id = pp.user_id
+  left join public.disponibilidades disp on disp.user_id = pp.user_id
   where pp.partida_id = p_partida_id
+    and lower(trim(coalesce(pp.estado, ''))) = 'aceptado'
+  group by pp.user_id, perfil.username, perfil.avatar_url, pp.fecha_union
   order by pp.fecha_union;
 end;
 $$;
@@ -321,13 +524,23 @@ begin
 
   select id into jugador_id from public.profiles where lower(username) = lower(trim(p_username));
   if jugador_id is null then raise exception 'No existe un perfil con ese username.' using errcode = 'P0002'; end if;
-  if exists (select 1 from public.partida_participantes where partida_id = p_partida_id and user_id = jugador_id) then return; end if;
+  if exists (
+    select 1 from public.partida_participantes
+    where partida_id = p_partida_id and user_id = jugador_id
+      and lower(trim(coalesce(estado, ''))) = 'aceptado'
+  ) then return; end if;
   if partida_actual.estado <> 'abierta' then raise exception 'La partida no está abierta.' using errcode = '22023'; end if;
-  if (select count(*) from public.partida_participantes where partida_id = p_partida_id) >= partida_actual.participantes_max then
+  if (select count(*) from public.partida_participantes where partida_id = p_partida_id and lower(trim(coalesce(estado, ''))) = 'aceptado') >= partida_actual.participantes_max then
     raise exception 'La partida está completa.' using errcode = '22023';
   end if;
 
-  insert into public.partida_participantes (partida_id, user_id) values (p_partida_id, jugador_id);
+  if exists (select 1 from public.partida_participantes where partida_id = p_partida_id and user_id = jugador_id) then
+    update public.partida_participantes set estado = 'Aceptado'
+    where partida_id = p_partida_id and user_id = jugador_id;
+  else
+    insert into public.partida_participantes (partida_id, user_id, estado)
+    values (p_partida_id, jugador_id, 'Aceptado');
+  end if;
 end;
 $$;
 revoke all on function public.invitar_jugador_partida(uuid, text) from public, anon;
@@ -388,6 +601,7 @@ begin
     select pp.user_id
     from public.partida_participantes pp
     where pp.partida_id = p_partida_id
+      and lower(trim(coalesce(pp.estado, ''))) = 'aceptado'
     union
     select partida.dm_id
     from public.partidas partida
@@ -413,6 +627,7 @@ begin
         join public.partidas partida_ocupada on partida_ocupada.id = sesion_ocupada.partida_id
         left join public.partida_participantes pp_ocupado
           on pp_ocupado.partida_id = partida_ocupada.id and pp_ocupado.user_id = jugadores.user_id
+          and lower(trim(coalesce(pp_ocupado.estado, ''))) = 'aceptado'
         where sesion_ocupada.partida_id <> p_partida_id
           and sesion_ocupada.fecha = dias.dia::date
           and sesion_ocupada.franja = franjas.franja
@@ -438,9 +653,7 @@ returns table (
   partida_id uuid,
   fecha date,
   franja text,
-  notas text,
-  imagen_url text,
-  created_at timestamp,
+  created_at timestamptz,
   titulo_partida text
 )
 language sql
@@ -449,12 +662,13 @@ security definer
 set search_path = public
 as $$
   select sesion.id, sesion.partida_id, sesion.fecha, sesion.franja,
-    sesion.notas, sesion.imagen_url, sesion.created_at, partida.titulo
+    sesion.created_at, partida.titulo
   from public.sesiones sesion
   join public.partidas partida on partida.id = sesion.partida_id
   where exists (
     select 1 from public.partida_participantes pp
     where pp.partida_id = sesion.partida_id and pp.user_id = auth.uid()
+      and lower(trim(coalesce(pp.estado, ''))) = 'aceptado'
   ) or partida.dm_id = auth.uid()
   order by sesion.fecha, sesion.franja;
 $$;
@@ -472,7 +686,11 @@ for select to authenticated using (
     select 1 from public.partidas partida
     where partida.id = partida_id and (
       partida.dm_id = (select auth.uid())
-      or exists (select 1 from public.partida_participantes pp where pp.partida_id = partida.id and pp.user_id = (select auth.uid()))
+      or exists (
+        select 1 from public.partida_participantes pp
+        where pp.partida_id = partida.id and pp.user_id = (select auth.uid())
+          and lower(trim(coalesce(pp.estado, ''))) = 'aceptado'
+      )
     )
   )
 );
@@ -502,23 +720,6 @@ for delete to authenticated using (
 );
 
 drop policy if exists "session_images_upload_dm" on storage.objects;
-create policy "session_images_upload_dm" on storage.objects
-for insert to authenticated with check (
-  bucket_id = 'sesiones'
-  and exists (
-    select 1 from public.partidas partida
-    where partida.id = split_part(name, '/', 1)::uuid and partida.dm_id = (select auth.uid())
-  )
-);
-
 drop policy if exists "session_images_delete_dm" on storage.objects;
-create policy "session_images_delete_dm" on storage.objects
-for delete to authenticated using (
-  bucket_id = 'sesiones'
-  and exists (
-    select 1 from public.partidas partida
-    where partida.id = split_part(name, '/', 1)::uuid and partida.dm_id = (select auth.uid())
-  )
-);
 
 notify pgrst, 'reload schema';

@@ -12,10 +12,7 @@ export type CambioDisponibilidad = { fecha: string } & Partial<
   Record<FranjaHorario, FranjaEstado>
 >;
 
-// Extendemos el tipo de la RPC de Supabase para incluir 'sesiones_al_mes' por si acaso no está generado en database.types.ts
-export type PartidaConAccesoRow = PartidaConAccesoRowOriginal & {
-  sesiones_al_mes?: number;
-};
+export type PartidaConAccesoRow = PartidaConAccesoRowOriginal;
 
 export interface DisponibilidadDia {
   fecha: string;
@@ -33,16 +30,18 @@ export interface Partida {
   dmAvatarUrl: string | null;
   ubicacionAproximada: string;
   ubicacionExacta: string | null;
-  notasDm: string | null;
   imagenUrl: string;
   descripcion: string | null;
   participantesMax: number;
   participantesCount: number;
   viewerIsParticipant: boolean;
+  viewerHasRequested: boolean;
+  esPrivada: boolean;
   proximaSesion?: string;
   proximaSesionFranja?: FranjaHorario;
   estado: "abierta" | "en_curso" | "finalizada";
   sesionesAlMes: number;
+  duracionEstimada: string | null;
 }
 
 export interface PartidaEditable {
@@ -54,8 +53,8 @@ export interface PartidaEditable {
   imagenUrl?: string | null;
   participantesMax: number;
   sesionesAlMes: number;
-  proximaSesion?: string | null;
-  notasDm?: string | null;
+  duracionEstimada: string;
+  esPrivada?: boolean;
 }
 
 export interface UsuarioActivo extends ProfileRow {

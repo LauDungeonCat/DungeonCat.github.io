@@ -14,7 +14,9 @@ type FormularioPartida = {
   descripcion: string;
   participantesMax: string;
   sesionesAlMes: string;
+  duracionEstimada: string;
   imagenUrl: string;
+  esPrivada: boolean;
 };
 
 const formularioVacio: FormularioPartida = {
@@ -25,7 +27,9 @@ const formularioVacio: FormularioPartida = {
   descripcion: "",
   participantesMax: "4",
   sesionesAlMes: "2",
+  duracionEstimada: "",
   imagenUrl: "",
+  esPrivada: false,
 };
 
 export default function BuscarPartidas() {
@@ -35,6 +39,8 @@ export default function BuscarPartidas() {
     loading,
     error,
     unirseAPartida,
+    solicitarUnirseAPartida,
+    unirsePorInvitacion,
     desapuntarseDePartida,
     crearPartida,
     actualizarPartida,
@@ -49,6 +55,7 @@ export default function BuscarPartidas() {
   const [guardando, setGuardando] = useState(false);
 
   const partidaEnlaceId = new URLSearchParams(window.location.search).get("partida");
+  const codigoInvitacion = new URLSearchParams(window.location.search).get("invitacion");
   const termino = busqueda.trim().toLocaleLowerCase("es");
 
   const partidasFiltradas = partidas.filter((partida) => {
@@ -82,7 +89,9 @@ export default function BuscarPartidas() {
             descripcion: partida.descripcion ?? "",
             participantesMax: String(partida.participantesMax ?? 4),
             sesionesAlMes: String(partida.sesionesAlMes ?? 2),
+            duracionEstimada: partida.duracionEstimada ?? "",
             imagenUrl: partida.imagenUrl ?? "",
+            esPrivada: partida.esPrivada,
           }
         : formularioVacio,
     );
@@ -105,6 +114,8 @@ export default function BuscarPartidas() {
       descripcion: formulario.descripcion.trim(),
       participantesMax: Number.isNaN(numParticipantes) || numParticipantes < 1 ? 4 : numParticipantes,
       sesionesAlMes: Number.isNaN(numSesiones) || numSesiones < 1 ? 2 : numSesiones,
+      duracionEstimada: formulario.duracionEstimada.trim(),
+      esPrivada: formulario.esPrivada,
     };
 
     try {
@@ -123,13 +134,15 @@ export default function BuscarPartidas() {
     }
   }
 
-  async function cambiarInscripcion(partidaId: string, yaInscrito: boolean) {
+  async function cambiarInscripcion(partidaId: string, yaInscrito: boolean, conInvitacion: boolean, privada: boolean) {
     if (!usuario) {
       requestLogin();
       return;
     }
     try {
       if (yaInscrito) await desapuntarseDePartida(partidaId);
+      else if (conInvitacion && codigoInvitacion) await unirsePorInvitacion(partidaId, codigoInvitacion);
+      else if (privada) await solicitarUnirseAPartida(partidaId);
       else await unirseAPartida(partidaId);
     } catch {
       return;
@@ -208,6 +221,7 @@ export default function BuscarPartidas() {
             const completa =
               partida.participantesCount >= partida.participantesMax;
             const esDm = usuario?.id === partida.dmId;
+            const tieneInvitacion = partida.id === partidaEnlaceId && Boolean(codigoInvitacion);
             const puedeGestionar =
               usuario?.id === partida.dmId || usuario?.role === "admin";
             const sesiones = partida.sesionesAlMes ?? 2;
@@ -243,6 +257,7 @@ export default function BuscarPartidas() {
                     <div>
                       <p className="partida-sistema">{partida.sistema}</p>
                       <h2>{partida.titulo}</h2>
+                      {partida.esPrivada && <span className="partida-privada-etiqueta">Privada</span>}
                     </div>
                     <span className="partida-aforo">
                       {partida.participantesCount}/{partida.participantesMax}
@@ -255,6 +270,11 @@ export default function BuscarPartidas() {
                     <strong>Frecuencia:</strong> {sesiones}{" "}
                     {sesiones === 1 ? "sesión" : "sesiones"}/mes
                   </p>
+                  {partida.duracionEstimada && (
+                    <p className="partida-duracion">
+                      <strong>Duración estimada:</strong> {partida.duracionEstimada}
+                    </p>
+                  )}
                   <p className="partida-ubicacion">
                     <strong>Zona aproximada:</strong>{" "}
                     {partida.ubicacionAproximada}
@@ -282,13 +302,13 @@ export default function BuscarPartidas() {
                   )}
 
                   <div className="partida-catalogo-pie">
-                    <p>{etiquetaProximaSesion(partida.proximaSesion)}</p>
+                    <p>{etiquetaProximaSesion(partida.proximaSesion, partida.proximaSesionFranja)}</p>
                     <button
                       type="button"
                       onClick={() => {
-                        void cambiarInscripcion(partida.id, yaInscrito);
+                        void cambiarInscripcion(partida.id, yaInscrito, tieneInvitacion, partida.esPrivada);
                       }}
-                      disabled={esDm || (!yaInscrito && (!abierta || completa))}
+                      disabled={esDm || (!yaInscrito && (!abierta || completa || (partida.esPrivada && partida.viewerHasRequested && !tieneInvitacion)))}
                       title={
                         completa && !yaInscrito
                           ? "La partida está completa"
@@ -299,6 +319,12 @@ export default function BuscarPartidas() {
                         ? "Eres DM"
                         : yaInscrito
                           ? "Desapuntarse"
+                          : tieneInvitacion
+                            ? "Entrar con invitación"
+                            : partida.esPrivada && partida.viewerHasRequested
+                              ? "Solicitud enviada"
+                              : partida.esPrivada
+                                ? "Solicitar unirse"
                           : !abierta
                             ? etiquetaEstado(partida.estado)
                             : completa
@@ -398,6 +424,17 @@ export default function BuscarPartidas() {
                   />
                 </label>
 
+                <label className="crear-campana-privacidad crear-campana-campo-amplio">
+                  <input
+                    type="checkbox"
+                    checked={formulario.esPrivada}
+                    onChange={(event) =>
+                      setFormulario((actual) => ({ ...actual, esPrivada: event.target.checked }))
+                    }
+                  />
+                  Campaña privada: requiere aprobación o enlace de invitación
+                </label>
+
                 <label>
                   Ubicación aproximada
                   <input
@@ -485,6 +522,21 @@ export default function BuscarPartidas() {
                 </label>
 
                 <label className="crear-campana-campo-amplio">
+                  Duración estimada de campaña
+                  <input
+                    value={formulario.duracionEstimada}
+                    maxLength={80}
+                    onChange={(event) =>
+                      setFormulario((actual) => ({
+                        ...actual,
+                        duracionEstimada: event.target.value,
+                      }))
+                    }
+                    placeholder="Ej. 6 meses o 12 sesiones"
+                  />
+                </label>
+
+                <label className="crear-campana-campo-amplio">
                   Descripción
                   <textarea
                     required
@@ -541,11 +593,11 @@ function etiquetaEstado(estado: "abierta" | "en_curso" | "finalizada") {
   return "Abierta";
 }
 
-function etiquetaProximaSesion(fecha?: string) {
+function etiquetaProximaSesion(fecha?: string, franja?: "manana" | "tarde") {
   if (!fecha) return "Fecha por decidir";
   const formato = new Intl.DateTimeFormat("es-ES", {
     dateStyle: "medium",
-    timeStyle: "short",
   });
-  return `Próxima sesión: ${formato.format(new Date(fecha))}`;
+  const etiquetaFranja = franja === "manana" ? "por la mañana" : franja === "tarde" ? "por la tarde" : "";
+  return `Próxima sesión: ${formato.format(new Date(fecha))}${etiquetaFranja ? `, ${etiquetaFranja}` : ""}`;
 }

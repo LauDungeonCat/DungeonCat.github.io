@@ -109,7 +109,7 @@
 
 .campana-contenido dl div {
 	display: grid;
-	grid-template-columns: 9.5rem 1fr;
+	grid-template-columns: max-content minmax(0, 1fr);
 	gap: 0.5rem;
 	padding: 0.35rem 0;
 	border-bottom: 1px solid #dedede;
@@ -118,6 +118,10 @@
 .campana-contenido dt,
 .campana-contenido dd {
 	margin: 0;
+}
+
+.campana-contenido dt {
+	white-space: nowrap;
 }
 
 .campana-contenido dt,
@@ -336,13 +340,6 @@
 	background: #fbeaec;
 	color: #492024;
 	font-size: 0.72rem;
-}
-
-.evento-sesion img {
-	width: 100%;
-	height: 2.4rem;
-	border-radius: 2px;
-	object-fit: cover;
 }
 
 .evento-sesion span {

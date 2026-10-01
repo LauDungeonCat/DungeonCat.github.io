@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useRolData } from "../useRolData";
 import { useAuth } from "../auth/useAuth";
 import type { CambioDisponibilidad, FranjaEstado, FranjaHorario } from "../types";
+import { obtenerRangoMeses } from "./rangoMeses";
 import "./Disponibilidad.css";
 
 type PlantillaRapida = {
@@ -64,10 +65,7 @@ function reglaAnteriorCubierta(anterior: PlantillaRapida, nueva: Omit<PlantillaR
 export default function Disponibilidad() {
 	const { usuario, sesiones, loading, error, actualizarDisponibilidad, actualizarDisponibilidades, limpiarDisponibilidad } = useRolData();
 	const { requestLogin } = useAuth();
-	const [mesVisible, setMesVisible] = useState(() => {
-		const ahora = new Date();
-		return new Date(ahora.getFullYear(), ahora.getMonth(), 1);
-	});
+	const [mesVisible, setMesVisible] = useState(() => obtenerRangoMeses().mesInicial);
 	const [plantillas, setPlantillas] = useState<PlantillaRapida[]>(() => {
 		const guardadas = leerAlmacen<PlantillaRapida | PlantillaRapida[] | null>(CLAVE_PLANTILLA, null);
 		if (!guardadas) return [];
@@ -82,13 +80,12 @@ export default function Disponibilidad() {
 		localStorage.setItem(CLAVE_PLANTILLA, JSON.stringify(plantillas));
 	}, [plantillas]);
 
-	const hoy = new Date();
-	const hoyInicioDia = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
-	const mesActual = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-	const diasRestantes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate() - hoy.getDate();
-	const puedeAbrirMesSiguiente = diasRestantes <= 3;
+	const ahora = new Date();
+	const hoyInicioDia = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+	const rangoMeses = obtenerRangoMeses(ahora);
 	const claveVisible = claveMes(mesVisible);
-	const claveActual = claveMes(mesActual);
+	const claveActual = claveMes(rangoMeses.mesActual);
+	const claveSiguiente = claveMes(rangoMeses.mesSiguiente);
 	const mostrarPlantillaAnterior = plantillas.some((regla) => esMesSiguiente(regla.mesOrigen, claveVisible));
 	const sesionesConfirmadas = new Set(sesiones.map((sesion) => `${sesion.fecha}:${sesion.franja}`));
 	const diasEnMes = new Date(mesVisible.getFullYear(), mesVisible.getMonth() + 1, 0).getDate();
@@ -103,9 +100,10 @@ export default function Disponibilidad() {
 	const formatoMes = new Intl.DateTimeFormat("es-ES", { month: "long", year: "numeric" });
 
 	function cambiarMes(direccion: -1 | 1) {
-		if (direccion === 1 && (!puedeAbrirMesSiguiente || claveVisible !== claveActual)) return;
-		if (direccion === -1 && claveVisible === claveActual) return;
-		setMesVisible(new Date(mesVisible.getFullYear(), mesVisible.getMonth() + direccion, 1));
+		const nuevoMes = new Date(mesVisible.getFullYear(), mesVisible.getMonth() + direccion, 1);
+		const claveDestino = claveMes(nuevoMes);
+		if (claveDestino !== claveActual && !(rangoMeses.siguienteDisponible && claveDestino === claveSiguiente)) return;
+		setMesVisible(nuevoMes);
 	}
 
 	async function cambiarFranja(fecha: Date, franja: FranjaHorario) {
@@ -225,15 +223,15 @@ export default function Disponibilidad() {
 				<div className="disponibilidad-calendar-header">
 					<h2 className="section-title">{formatoMes.format(mesVisible)}</h2>
 					<div className="calendar-month-actions">
-						{claveVisible !== claveActual && (
+						{rangoMeses.siguienteDisponible && claveVisible === claveSiguiente && (
 							<button type="button" onClick={() => cambiarMes(-1)} aria-label="Volver al mes actual">‹</button>
 						)}
 						<button
 							type="button"
 							onClick={() => cambiarMes(1)}
-							disabled={!puedeAbrirMesSiguiente || claveVisible !== claveActual}
+							disabled={!rangoMeses.siguienteDisponible || claveVisible !== claveActual}
 							aria-label="Ver el próximo mes"
-							title={puedeAbrirMesSiguiente ? "Ver el próximo mes" : "Disponible durante los últimos tres días del mes"}
+							title={rangoMeses.siguienteDisponible ? "Ver el próximo mes" : "Disponible durante los últimos tres días del mes"}
 						>
 							›
 						</button>
