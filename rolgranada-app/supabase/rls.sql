@@ -501,6 +501,7 @@ as $$
 declare
   inicio_mes date := date_trunc('month', now() at time zone 'Europe/Madrid')::date;
   inicio_mes_siguiente date := (date_trunc('month', now() at time zone 'Europe/Madrid') + interval '1 month')::date;
+  hoy date := (now() at time zone 'Europe/Madrid')::date;
 begin
   if not exists (
     select 1 from public.partidas partida
@@ -513,33 +514,64 @@ begin
   end if;
 
   return query
+  with jugadores as (
+    select pp.user_id, perfil.username, perfil.avatar_url, pp.fecha_union
+    from public.partida_participantes pp
+    join public.profiles perfil on perfil.id = pp.user_id
+    where pp.partida_id = p_partida_id
+      and lower(trim(coalesce(pp.estado, ''))) = 'aceptado'
+  ),
+  franjas_mes as (
+    select fechas.dia::date as fecha, franjas.franja
+    from generate_series(hoy, inicio_mes_siguiente - 1, interval '1 day') fechas(dia)
+    cross join (values ('manana'::text), ('tarde'::text)) franjas(franja)
+  ),
+  estado_franjas as (
+    select
+      jugadores.user_id,
+      jugadores.username,
+      jugadores.avatar_url,
+      jugadores.fecha_union,
+      franjas_mes.fecha,
+      franjas_mes.franja,
+      coalesce(
+        case when franjas_mes.franja = 'manana' then disp.manana::text else disp.tarde::text end,
+        'no_indicado'
+      ) <> 'no_indicado' as marcada,
+      exists (
+        select 1
+        from public.sesiones sesion
+        join public.partidas partida_sesion on partida_sesion.id = sesion.partida_id
+        where sesion.partida_id = p_partida_id
+          and sesion.fecha = franjas_mes.fecha
+          and sesion.franja = franjas_mes.franja
+          and (
+            partida_sesion.dm_id = jugadores.user_id
+            or exists (
+              select 1 from public.partida_participantes pp_sesion
+              where pp_sesion.partida_id = sesion.partida_id
+                and pp_sesion.user_id = jugadores.user_id
+                and lower(trim(coalesce(pp_sesion.estado, ''))) = 'aceptado'
+            )
+          )
+      ) as sesion_confirmada
+    from jugadores
+    cross join franjas_mes
+    left join public.disponibilidades disp
+      on disp.user_id = jugadores.user_id
+      and disp.fecha = franjas_mes.fecha
+  )
   select
-    pp.user_id,
-    perfil.username,
-    perfil.avatar_url,
-    pp.fecha_union,
-    count(distinct disp.fecha) filter (
-      where coalesce(disp.manana::text, 'no_indicado') <> 'no_indicado'
-        or coalesce(disp.tarde::text, 'no_indicado') <> 'no_indicado'
-    )::integer,
-    (
-      count(distinct disp.fecha) filter (where coalesce(disp.manana::text, 'no_indicado') <> 'no_indicado')
-      + count(distinct disp.fecha) filter (where coalesce(disp.tarde::text, 'no_indicado') <> 'no_indicado')
-    )::integer,
-    (
-      count(distinct disp.fecha) filter (where coalesce(disp.manana::text, 'no_indicado') = 'no_indicado')
-      + count(distinct disp.fecha) filter (where coalesce(disp.tarde::text, 'no_indicado') = 'no_indicado')
-    )::integer
-  from public.partida_participantes pp
-  join public.profiles perfil on perfil.id = pp.user_id
-  left join public.disponibilidades disp
-    on disp.user_id = pp.user_id
-    and disp.fecha >= inicio_mes
-    and disp.fecha < inicio_mes_siguiente
-  where pp.partida_id = p_partida_id
-    and lower(trim(coalesce(pp.estado, ''))) = 'aceptado'
-  group by pp.user_id, perfil.username, perfil.avatar_url, pp.fecha_union
-  order by pp.fecha_union;
+    estado_franjas.user_id,
+    estado_franjas.username,
+    estado_franjas.avatar_url,
+    estado_franjas.fecha_union,
+    count(distinct estado_franjas.fecha) filter (where estado_franjas.marcada)::integer,
+    count(*) filter (where estado_franjas.marcada and not estado_franjas.sesion_confirmada)::integer,
+    count(*) filter (where not estado_franjas.marcada and not estado_franjas.sesion_confirmada)::integer
+  from estado_franjas
+  group by estado_franjas.user_id, estado_franjas.username, estado_franjas.avatar_url, estado_franjas.fecha_union
+  order by estado_franjas.fecha_union;
 end;
 $$;
 revoke all on function public.listar_jugadores_partida(uuid) from public, anon;
