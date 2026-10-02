@@ -7,6 +7,16 @@ alter table public.partidas
   add column if not exists es_privada boolean not null default false,
   add column if not exists codigo_invitacion uuid not null default gen_random_uuid();
 
+alter table public.partida_participantes
+  drop constraint if exists partida_participantes_estado_check;
+
+alter table public.partida_participantes
+  add constraint partida_participantes_estado_check
+  check (
+    estado is null
+    or lower(trim(estado)) in ('aceptado', 'solicitado', 'rechazado', 'pendiente')
+  );
+
 create table if not exists public.sesiones (
   id uuid primary key default gen_random_uuid(),
   partida_id uuid not null references public.partidas(id) on delete cascade,

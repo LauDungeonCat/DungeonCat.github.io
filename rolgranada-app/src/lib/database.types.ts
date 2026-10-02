@@ -80,6 +80,11 @@ export type SolicitudPartidaRow = {
   fecha_union: string;
 };
 
+export type SolicitudPendienteRow = SolicitudPartidaRow & {
+  partida_id: string;
+  partida_titulo: string;
+};
+
 export type DisponibilidadPartidaRow = {
   fecha: string;
   franja: "manana" | "tarde";
@@ -136,6 +141,7 @@ export type Database = {
       unirse_partida: { Args: { p_partida_id: string }; Returns: undefined };
       listar_jugadores_partida: { Args: { p_partida_id: string }; Returns: JugadorPartidaRow[] };
       listar_solicitudes_partida: { Args: { p_partida_id: string }; Returns: SolicitudPartidaRow[] };
+      listar_solicitudes_usuario: { Args: { [_ in never]: never }; Returns: SolicitudPendienteRow[] };
       invitar_jugador_partida: { Args: { p_partida_id: string; p_username: string }; Returns: undefined };
       solicitar_unirse_partida: { Args: { p_partida_id: string }; Returns: undefined };
       unirse_por_invitacion: { Args: { p_partida_id: string; p_codigo_invitacion: string }; Returns: undefined };

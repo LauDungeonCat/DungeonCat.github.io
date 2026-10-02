@@ -134,6 +134,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		setLoginRequested(false);
 	}
 
+	async function updateProfile(username: string, avatarUrl: string | null) {
+		if (!profile) throw new Error("Debes iniciar sesión para editar el perfil.");
+		setError(null);
+		const { data, error: updateError } = await supabase
+			.from("profiles")
+			.update({ username: username.trim(), avatar_url: avatarUrl })
+			.eq("id", profile.id)
+			.select("id, username, avatar_url, role, created_at")
+			.single();
+		if (updateError) {
+			setError(mensajeError(updateError));
+			throw updateError;
+		}
+		setProfile(data);
+	}
+
 	async function signOut() {
 		setError(null);
 		const { error: signOutError } = await supabase.auth.signOut();
@@ -163,6 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			signUpWithEmail,
 			sendPasswordReset,
 			updatePassword,
+			updateProfile,
 			signOut,
 		}}>
 			{children}

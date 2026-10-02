@@ -262,12 +262,6 @@ export function useRolData() {
     return data as JugadorPartidaRow[];
   }, []);
 
-  const cargarSolicitudesPartida = useCallback(async (partidaId: string) => {
-    const { data, error: requestsError } = await supabase.rpc("listar_solicitudes_partida", { p_partida_id: partidaId });
-    if (requestsError) throw requestsError;
-    return data;
-  }, []);
-
   const resolverSolicitudPartida = useCallback(async (partidaId: string, userId: string, aceptar: boolean) => {
     await ejecutar(async () => {
       const { error: resolveError } = await supabase.rpc("resolver_solicitud_partida", {
@@ -353,7 +347,6 @@ export function useRolData() {
     actualizarCapacidad,
     eliminarPartida,
     cargarJugadoresPartida,
-    cargarSolicitudesPartida,
     resolverSolicitudPartida,
     obtenerCodigoInvitacion,
     invitarJugador,

@@ -174,11 +174,11 @@ begin
     where partida_id = p_partida_id and user_id = current_user_id
   ) then
     update public.partida_participantes
-    set estado = 'Aceptado'
+    set estado = 'aceptado'
     where partida_id = p_partida_id and user_id = current_user_id;
   else
     insert into public.partida_participantes (partida_id, user_id, estado)
-    values (p_partida_id, current_user_id, 'Aceptado');
+    values (p_partida_id, current_user_id, 'aceptado');
   end if;
 end;
 $$;
@@ -326,11 +326,11 @@ begin
       and lower(trim(coalesce(estado, ''))) = 'aceptado'
   ) then return; end if;
   if exists (select 1 from public.partida_participantes where partida_id = p_partida_id and user_id = current_user_id) then
-    update public.partida_participantes set estado = 'Solicitado'
+    update public.partida_participantes set estado = 'solicitado'
     where partida_id = p_partida_id and user_id = current_user_id;
   else
     insert into public.partida_participantes (partida_id, user_id, estado)
-    values (p_partida_id, current_user_id, 'Solicitado');
+    values (p_partida_id, current_user_id, 'solicitado');
   end if;
 end;
 $$;
@@ -359,11 +359,11 @@ begin
     raise exception 'La partida está completa.' using errcode = '22023';
   end if;
   if exists (select 1 from public.partida_participantes where partida_id = p_partida_id and user_id = current_user_id) then
-    update public.partida_participantes set estado = 'Aceptado'
+    update public.partida_participantes set estado = 'aceptado'
     where partida_id = p_partida_id and user_id = current_user_id;
   else
     insert into public.partida_participantes (partida_id, user_id, estado)
-    values (p_partida_id, current_user_id, 'Aceptado');
+    values (p_partida_id, current_user_id, 'aceptado');
   end if;
 end;
 $$;
@@ -416,6 +416,40 @@ $$;
 revoke all on function public.listar_solicitudes_partida(uuid) from public, anon;
 grant execute on function public.listar_solicitudes_partida(uuid) to authenticated;
 
+create or replace function public.listar_solicitudes_usuario()
+returns table (
+  partida_id uuid,
+  partida_titulo text,
+  user_id uuid,
+  username text,
+  fecha_union timestamptz
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'Debes iniciar sesión para ver las notificaciones.' using errcode = '42501';
+  end if;
+
+  return query
+  select partida.id, partida.titulo, pp.user_id, perfil.username, pp.fecha_union
+  from public.partida_participantes pp
+  join public.partidas partida on partida.id = pp.partida_id
+  join public.profiles perfil on perfil.id = pp.user_id
+  where lower(trim(coalesce(pp.estado, ''))) = 'solicitado'
+    and (
+      partida.dm_id = auth.uid()
+      or exists (select 1 from public.profiles admin where admin.id = auth.uid() and admin.role = 'admin')
+    )
+  order by pp.fecha_union desc;
+end;
+$$;
+revoke all on function public.listar_solicitudes_usuario() from public, anon;
+grant execute on function public.listar_solicitudes_usuario() to authenticated;
+
 create or replace function public.resolver_solicitud_partida(p_partida_id uuid, p_user_id uuid, p_aceptar boolean)
 returns void
 language plpgsql
@@ -437,9 +471,9 @@ begin
     if (select count(*) from public.partida_participantes where partida_id = p_partida_id and lower(trim(coalesce(estado, ''))) = 'aceptado') >= partida_actual.participantes_max then
       raise exception 'La partida está completa.' using errcode = '22023';
     end if;
-    update public.partida_participantes set estado = 'Aceptado' where partida_id = p_partida_id and user_id = p_user_id;
+    update public.partida_participantes set estado = 'aceptado' where partida_id = p_partida_id and user_id = p_user_id;
   else
-    update public.partida_participantes set estado = 'Rechazado' where partida_id = p_partida_id and user_id = p_user_id;
+    update public.partida_participantes set estado = 'rechazado' where partida_id = p_partida_id and user_id = p_user_id;
   end if;
 end;
 $$;
@@ -464,6 +498,9 @@ stable
 security definer
 set search_path = public
 as $$
+declare
+  inicio_mes date := date_trunc('month', now() at time zone 'Europe/Madrid')::date;
+  inicio_mes_siguiente date := (date_trunc('month', now() at time zone 'Europe/Madrid') + interval '1 month')::date;
 begin
   if not exists (
     select 1 from public.partidas partida
@@ -486,16 +523,19 @@ begin
         or coalesce(disp.tarde::text, 'no_indicado') <> 'no_indicado'
     )::integer,
     (
-      count(*) filter (where disp.fecha is not null and coalesce(disp.manana::text, 'no_indicado') <> 'no_indicado')
-      + count(*) filter (where disp.fecha is not null and coalesce(disp.tarde::text, 'no_indicado') <> 'no_indicado')
+      count(distinct disp.fecha) filter (where coalesce(disp.manana::text, 'no_indicado') <> 'no_indicado')
+      + count(distinct disp.fecha) filter (where coalesce(disp.tarde::text, 'no_indicado') <> 'no_indicado')
     )::integer,
-    greatest(0, (count(disp.fecha) * 2)::integer - (
-      count(*) filter (where disp.fecha is not null and coalesce(disp.manana::text, 'no_indicado') <> 'no_indicado')
-      + count(*) filter (where disp.fecha is not null and coalesce(disp.tarde::text, 'no_indicado') <> 'no_indicado')
-    )::integer)
+    (
+      count(distinct disp.fecha) filter (where coalesce(disp.manana::text, 'no_indicado') = 'no_indicado')
+      + count(distinct disp.fecha) filter (where coalesce(disp.tarde::text, 'no_indicado') = 'no_indicado')
+    )::integer
   from public.partida_participantes pp
   join public.profiles perfil on perfil.id = pp.user_id
-  left join public.disponibilidades disp on disp.user_id = pp.user_id
+  left join public.disponibilidades disp
+    on disp.user_id = pp.user_id
+    and disp.fecha >= inicio_mes
+    and disp.fecha < inicio_mes_siguiente
   where pp.partida_id = p_partida_id
     and lower(trim(coalesce(pp.estado, ''))) = 'aceptado'
   group by pp.user_id, perfil.username, perfil.avatar_url, pp.fecha_union
@@ -535,11 +575,11 @@ begin
   end if;
 
   if exists (select 1 from public.partida_participantes where partida_id = p_partida_id and user_id = jugador_id) then
-    update public.partida_participantes set estado = 'Aceptado'
+    update public.partida_participantes set estado = 'aceptado'
     where partida_id = p_partida_id and user_id = jugador_id;
   else
     insert into public.partida_participantes (partida_id, user_id, estado)
-    values (p_partida_id, jugador_id, 'Aceptado');
+    values (p_partida_id, jugador_id, 'aceptado');
   end if;
 end;
 $$;

@@ -24,10 +24,17 @@ function AplicacionAutenticada() {
   const [pagina, setPagina] = useState<Pagina>(() =>
     new URLSearchParams(window.location.search).has("partida") ? "buscar-partidas" : "inicio"
   );
-  const { profile, signOut, requestLogin } = useAuth();
+  const [abrirCreacionCampana, setAbrirCreacionCampana] = useState(false);
+  const { profile, signOut, requestLogin, updateProfile } = useAuth();
 
   function cambiarPagina(nombre: string) {
+    if (nombre !== "buscar-partidas") setAbrirCreacionCampana(false);
     setPagina(nombre as Pagina);
+  }
+
+  function crearCampanaDesdeMisPartidas() {
+    setAbrirCreacionCampana(true);
+    setPagina("buscar-partidas");
   }
 
   function renderPagina() {
@@ -37,23 +44,37 @@ function AplicacionAutenticada() {
       case "disponibilidad":
         return <Disponibilidad />;
       case "mis-partidas":
-        return <MisPartidas />;
+        return <MisPartidas onCrearCampana={crearCampanaDesdeMisPartidas} />;
       case "buscar-partidas":
-        return <BuscarPartidas />;
+        return <BuscarPartidas abrirCreacionInicial={abrirCreacionCampana} />;
       case "sample-text":
         return <section className="pagina-placeholder"><h1 className="page-title">Sample Text</h1><p>Proyecto de ejemplo pendiente de desarrollar.</p></section>;
       case "contacto":
-        return <section className="pagina-placeholder"><h1 className="page-title">Contacto</h1><p>Sección de contacto pendiente de desarrollar.</p></section>;
+        return (
+          <section className="contact-page" aria-labelledby="contact-title">
+            <div className="contact-identity">
+              <p className="contact-eyebrow">Contacto</p>
+              <h1 id="contact-title">Dungeon Cat</h1>
+              <p className="contact-name">Laura R.A</p>
+              <p className="contact-role">TTRPG Designer <span>&amp; Web Developer</span></p>
+            </div>
+            <address className="contact-details">
+              <a href="tel:+34652585634"><span>Teléfono y WhatsApp</span><strong>652 58 56 34</strong></a>
+              <a href="https://dungeoncat.site" target="_blank" rel="noreferrer"><span>Web</span><strong>dungeoncat.site</strong></a>
+              <a href="mailto:lau.ra.dungeoncat@gmail.com"><span>Correo</span><strong>lau.ra.dungeoncat@gmail.com</strong></a>
+              <a href="https://www.instagram.com/dungeon_cat_" target="_blank" rel="noreferrer"><span>Instagram</span><strong>@dungeon_cat_</strong></a>
+            </address>
+          </section>
+        );
       case "inicio":
       default:
-        // ✅ Por defecto muestra Inicio
         return <section className="pagina-placeholder"><h1 className="page-title">Inicio</h1><p>Bienvenido a Rol Granada. Explora campañas, organiza tus partidas y encuentra cuándo jugar.</p></section>;
     }
   }
 
   return (
     <>
-      <Header profile={profile} onSignOut={signOut} requestLogin={requestLogin} onNavigate={cambiarPagina} />
+      <Header profile={profile} onSignOut={signOut} requestLogin={requestLogin} updateProfile={updateProfile} onNavigate={cambiarPagina} />
       <main>
         <Suspense fallback={<section className="auth-state" role="status">Cargando sección…</section>}>
           {renderPagina()}

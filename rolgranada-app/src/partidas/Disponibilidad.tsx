@@ -13,6 +13,7 @@ type PlantillaRapida = {
 };
 
 const CLAVE_PLANTILLA = "rol-granada-plantilla-rapida";
+const CLAVE_PLANTILLA_DESCARTADA = "rol-granada-plantilla-rapida-descartada";
 const diasSemana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 const nombresEstado: Record<FranjaEstado, string> = {
 	puedo: "Puedo",
@@ -71,6 +72,9 @@ export default function Disponibilidad() {
 		if (!guardadas) return [];
 		return Array.isArray(guardadas) ? guardadas : [guardadas];
 	});
+	const [mesPlantillaDescartada, setMesPlantillaDescartada] = useState<string | null>(
+		() => leerAlmacen<string | null>(CLAVE_PLANTILLA_DESCARTADA, null),
+	);
 	const [modalAbierto, setModalAbierto] = useState(false);
 	const [estadoFormulario, setEstadoFormulario] = useState<FranjaEstado>("puedo");
 	const [diasFormulario, setDiasFormulario] = useState<PlantillaRapida["dias"]>("diario");
@@ -86,9 +90,21 @@ export default function Disponibilidad() {
 	const claveVisible = claveMes(mesVisible);
 	const claveActual = claveMes(rangoMeses.mesActual);
 	const claveSiguiente = claveMes(rangoMeses.mesSiguiente);
-	const mostrarPlantillaAnterior = plantillas.some((regla) => esMesSiguiente(regla.mesOrigen, claveVisible));
 	const sesionesConfirmadas = new Set(sesiones.map((sesion) => `${sesion.fecha}:${sesion.franja}`));
 	const diasEnMes = new Date(mesVisible.getFullYear(), mesVisible.getMonth() + 1, 0).getDate();
+	const calendarioCompleto = Array.from({ length: diasEnMes }, (_, indice) =>
+		new Date(mesVisible.getFullYear(), mesVisible.getMonth(), indice + 1),
+	).every((fecha) => {
+		if (fecha < hoyInicioDia) return true;
+		const fechaDia = claveDia(fecha);
+		return (["manana", "tarde"] as const).every((franja) =>
+			sesionesConfirmadas.has(`${fechaDia}:${franja}`) || Boolean(usuario?.disponibilidad[fechaDia]?.[franja]),
+		);
+	});
+	const mostrarPlantillaAnterior = Boolean(usuario)
+		&& !calendarioCompleto
+		&& mesPlantillaDescartada !== claveVisible
+		&& plantillas.some((regla) => esMesSiguiente(regla.mesOrigen, claveVisible));
 	const desplazamiento = (new Date(mesVisible.getFullYear(), mesVisible.getMonth(), 1).getDay() + 6) % 7;
 	const totalCeldas = Math.ceil((desplazamiento + diasEnMes) / 7) * 7;
 	const diasCalendario = Array.from({ length: totalCeldas }, (_, indice) => {
@@ -168,6 +184,15 @@ export default function Disponibilidad() {
 		setPlantillas((anteriores) => anteriores.map((regla) => ({ ...regla, mesOrigen: claveVisible })));
 	}
 
+	function noUsarPlantillaAnterior() {
+		setMesPlantillaDescartada(claveVisible);
+		try {
+			localStorage.setItem(CLAVE_PLANTILLA_DESCARTADA, JSON.stringify(claveVisible));
+		} catch {
+			return;
+		}
+	}
+
 	async function vaciarCalendario() {
 		if (!usuario) {
 			requestLogin();
@@ -215,7 +240,10 @@ export default function Disponibilidad() {
 			{mostrarPlantillaAnterior && (
 				<div className="plantilla-banner" role="status">
 					<span>¿Usar la misma plantilla de Relleno Rápido del mes pasado?</span>
-					<button type="button" onClick={usarPlantillasAnteriores}>Usar plantilla</button>
+					<div className="plantilla-banner-acciones">
+						<button type="button" onClick={usarPlantillasAnteriores}>Usar plantilla</button>
+						<button type="button" className="plantilla-banner-rechazar" onClick={noUsarPlantillaAnterior}>No usar plantilla</button>
+					</div>
 				</div>
 			)}
 

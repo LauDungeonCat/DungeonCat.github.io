@@ -1,0 +1,27 @@
+.aviso-disponibilidad {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin: 0 auto 1rem;
+	border-left: 4px solid #b7791f;
+	padding: 0.8rem 1rem;
+	background: #fff4d6;
+	color: #593b0c;
+}
+
+.aviso-disponibilidad img {
+	flex: 0 0 auto;
+	width: 1.5rem;
+	height: 1.5rem;
+}
+
+.aviso-disponibilidad p {
+	margin: 0;
+	font-size: 0.9rem;
+	font-weight: 600;
+	line-height: 1.45;
+}
+
+.aviso-disponibilidad p + p {
+	margin-top: 0.2rem;
+}

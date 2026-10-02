@@ -3,6 +3,7 @@ import { useRolData } from "../useRolData";
 import { useAuth } from "../auth/useAuth";
 import type { Partida } from "../types";
 import GestionPartida from "./GestionPartida";
+import AvisoDisponibilidad from "./AvisoDisponibilidad";
 import "./MisPartidas.css";
 
 type Sesion = {
@@ -22,7 +23,7 @@ function fechaClave(fecha: Date) {
     return `${fecha.getFullYear()}-${mes}-${dia}`;
 }
 
-export default function MisPartidas() {
+export default function MisPartidas({ onCrearCampana }: { onCrearCampana: () => void }) {
     const { usuario, partidas, sesiones: sesionesAgendadas, loading, error, desapuntarseDePartida } = useRolData();
     const { requestLogin } = useAuth();
     const [campanaActiva, setCampanaActiva] = useState(0);
@@ -65,9 +66,13 @@ export default function MisPartidas() {
                     <h1 className="page-title" id="mis-partidas-titulo">Mis Partidas</h1>
                     <p>Campañas que estás preparando o siguiendo.</p>
                 </div>
-                <p className="campana-count">{misPartidas.length} {misPartidas.length === 1 ? "partida inscrita" : "partidas inscritas"}</p>
+                <div className="mis-partidas-cabecera-acciones">
+                    {usuario && <button className="mis-partidas-crear" type="button" onClick={onCrearCampana}>Crear campaña</button>}
+                    <p className="campana-count">{misPartidas.length} {misPartidas.length === 1 ? "partida inscrita" : "partidas inscritas"}</p>
+                </div>
             </div>
             {error && <p className="datos-error" role="alert">{error}</p>}
+            <AvisoDisponibilidad disponibilidad={usuario?.disponibilidad} sesiones={sesionesAgendadas} />
 
             {campana ? (
                 <div className="campanas-carrusel-wrapper">

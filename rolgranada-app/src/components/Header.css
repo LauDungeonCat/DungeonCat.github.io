@@ -223,6 +223,204 @@
   background: #a8131a;
 }
 
+.header-action {
+  min-height: 2.25rem;
+  border-color: rgba(255, 255, 255, 0.8);
+  padding: 0.35rem 0.65rem;
+  background: transparent;
+  color: #fff;
+  font-size: 0.82rem;
+}
+
+.header-action:hover {
+  background: #a8131a;
+}
+
+.header-notifications-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.header-notification-icon {
+  flex: 0 0 auto;
+  width: 1.2rem;
+  height: 1.2rem;
+  filter: brightness(0) invert(1);
+}
+
+.header-notification-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  margin-left: 0.4rem;
+  border-radius: 50%;
+  padding: 0 0.2rem;
+  background: #fff;
+  color: #a8131a;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.header-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(20, 20, 20, 0.58);
+}
+
+.header-dialog {
+  width: min(100%, 620px);
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  border: 2px solid #222;
+  border-radius: 8px;
+  padding: 1.25rem;
+  background: #fff;
+  color: #222;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
+}
+
+.header-dialog-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.header-dialog-heading h2 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.35rem;
+}
+
+.header-dialog-close {
+  width: 2.25rem;
+  min-height: 2.25rem;
+  padding: 0;
+  font-size: 1.35rem;
+}
+
+.notifications-list {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notifications-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid #ddd;
+  padding: 0.75rem 0;
+}
+
+.notification-details {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+  font-size: 0.88rem;
+}
+
+.notification-details time {
+  color: #666;
+  font-size: 0.75rem;
+}
+
+.notification-actions,
+.profile-form-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.5rem;
+}
+
+.notification-actions button,
+.profile-form-actions button {
+  min-height: 2.25rem;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.8rem;
+}
+
+.notification-accept,
+.profile-form-actions button[type='submit'] {
+  border-color: #a8131a;
+  background: #c71920;
+  color: #fff;
+}
+
+.notification-accept:hover:not(:disabled),
+.profile-form-actions button[type='submit']:hover:not(:disabled) {
+  background: #a8131a;
+}
+
+.notification-reject {
+  background: #fff;
+}
+
+.notifications-empty {
+  margin: 0;
+  color: #555;
+}
+
+.profile-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.profile-form label {
+  display: grid;
+  gap: 0.4rem;
+  color: #333;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.profile-form label span {
+  color: #666;
+  font-weight: 400;
+}
+
+.profile-form input {
+  width: 100%;
+  min-height: 2.6rem;
+  border: 1px solid #888;
+  border-radius: 4px;
+  padding: 0.55rem 0.65rem;
+  background: #fff;
+  color: #222;
+  font: inherit;
+  font-weight: 400;
+}
+
+.profile-form input:focus-visible {
+  outline: 2px solid #c71920;
+  outline-offset: 2px;
+}
+
+.profile-form-actions {
+  justify-content: end;
+}
+
+@media (max-width: 560px) {
+  .notifications-list li {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .notification-actions button {
+    flex: 1;
+  }
+}
+
 @media (max-width: 800px) {
   .main-header {
     display: flex;
@@ -248,6 +446,14 @@
   .header-nav {
     order: 3;
     flex: 1 0 100%;
+  }
+
+  .header-actions {
+    order: 2;
+    flex: 1 0 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
 
   .header-nav ul {

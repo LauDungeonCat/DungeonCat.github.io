@@ -73,10 +73,22 @@
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+.plantilla-banner-acciones {
+	display: flex;
+	flex: 0 0 auto;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
 .plantilla-banner button {
 	border-color: #c71920;
 	color: #a8131a;
 	font-weight: 700;
+}
+
+.plantilla-banner .plantilla-banner-rechazar {
+	border-color: #888;
+	color: #444;
 }
 
 .disponibilidad-calendar {

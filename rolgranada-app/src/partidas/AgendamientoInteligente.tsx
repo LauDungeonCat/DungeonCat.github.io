@@ -26,6 +26,7 @@ function BotonFranja({
 	respuestas,
 	seleccionada,
 	agendada,
+	fechaPasada,
 	onSelect,
 }: {
 	fecha: string;
@@ -33,6 +34,7 @@ function BotonFranja({
 	respuestas?: MapaDisponibilidad;
 	seleccionada: boolean;
 	agendada: boolean;
+	fechaPasada: boolean;
 	onSelect: () => void;
 }) {
 	const estado = clasificarFranja(respuestas);
@@ -47,7 +49,7 @@ function BotonFranja({
 		<button
 			className={`heatmap-slot heatmap-${estado}${seleccionada || agendada ? " heatmap-seleccionada" : ""}`}
 			type="button"
-			disabled={!seleccionable && !agendada}
+			disabled={fechaPasada || (!seleccionable && !agendada)}
 			onClick={onSelect}
 			style={style}
 			aria-pressed={seleccionada || agendada}
@@ -72,11 +74,11 @@ export default function AgendamientoInteligente({ partida, onClose }: { partida:
 	const mes = mesVisible.getMonth();
 	const rangoMeses = obtenerRangoMeses();
 	const claveMesActual = fechaIso(rangoMeses.mesActual).slice(0, 7);
-	const claveMesSiguiente = fechaIso(rangoMeses.mesSiguiente).slice(0, 7);
 	const claveMes = `${anio}-${String(mes + 1).padStart(2, "0")}`;
 	const inicio = fechaIso(new Date(anio, mes, 1));
 	const fin = fechaIso(new Date(anio, mes + 1, 0));
 	const formatoMes = new Intl.DateTimeFormat("es-ES", { month: "long", year: "numeric" });
+	const puedeAvanzarMes = claveMes < claveMesActual || (claveMes === claveMesActual && rangoMeses.siguienteDisponible);
 	const cantidadDias = new Date(anio, mes + 1, 0).getDate();
 	const desplazamiento = (new Date(anio, mes, 1).getDay() + 6) % 7;
 	const mapaListo = resultadoMapa.clave === `${partida.id}:${claveMes}`;
@@ -90,8 +92,7 @@ export default function AgendamientoInteligente({ partida, onClose }: { partida:
 
 	function cambiarMes(direccion: -1 | 1) {
 		const siguiente = new Date(anio, mes + direccion, 1);
-		const claveDestino = fechaIso(siguiente).slice(0, 7);
-		if (claveDestino !== claveMesActual && !(rangoMeses.siguienteDisponible && claveDestino === claveMesSiguiente)) return;
+		if (direccion === 1 && !puedeAvanzarMes) return;
 		setMesVisible(siguiente);
 	}
 
@@ -150,9 +151,9 @@ export default function AgendamientoInteligente({ partida, onClose }: { partida:
 				{!mapaListo && <p className="agendamiento-cargando" role="status">Calculando disponibilidad de los jugadores…</p>}
 				{error && <p className="datos-error" role="alert">{error}</p>}
 				<div className="agendamiento-mes">
-					<button type="button" onClick={() => cambiarMes(-1)} disabled={!rangoMeses.siguienteDisponible || claveMes !== claveMesSiguiente} aria-label="Mes anterior">‹</button>
+					<button type="button" onClick={() => cambiarMes(-1)} aria-label="Mes anterior" title="Consultar el mes anterior">‹</button>
 					<h3>{formatoMes.format(mesVisible)}</h3>
-					<button type="button" onClick={() => cambiarMes(1)} disabled={!rangoMeses.siguienteDisponible || claveMes !== claveMesActual} aria-label="Mes siguiente">›</button>
+					<button type="button" onClick={() => cambiarMes(1)} disabled={!puedeAvanzarMes} aria-label="Mes siguiente" title={puedeAvanzarMes ? "Ver el mes siguiente" : "Disponible durante los últimos tres días del mes actual"}>›</button>
 				</div>
 				<div className="agendamiento-grid" role="grid" aria-label={`Disponibilidad de ${formatoMes.format(mesVisible)}`}>
 					{nombresDias.map((dia) => <div className="agendamiento-dia-semana" role="columnheader" key={dia}>{dia}</div>)}
@@ -165,7 +166,8 @@ export default function AgendamientoInteligente({ partida, onClose }: { partida:
 								const slot = mapa.get(`${fecha}:${franja}`);
 								const agendada = sesionesPartida.some((sesion) => sesion.fecha === fecha && sesion.franja === franja);
 								const seleccionada = selecciones.some((item) => item.fecha === fecha && item.franja === franja);
-								return <BotonFranja key={franja} fecha={fecha} franja={franja} respuestas={slot} agendada={agendada} seleccionada={Boolean(seleccionada)} onSelect={() => {
+								const fechaPasada = fecha < fechaIso(new Date());
+								return <BotonFranja key={franja} fecha={fecha} franja={franja} respuestas={slot} agendada={agendada} fechaPasada={fechaPasada} seleccionada={Boolean(seleccionada)} onSelect={() => {
 									if (agendada) void quitarSesion(fecha, franja);
 									else {
 										setSelecciones((anteriores) => seleccionada

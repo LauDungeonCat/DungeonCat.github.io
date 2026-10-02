@@ -1,1 +1,0 @@
-function e(e=new Date){let t=new Date(e.getFullYear(),e.getMonth(),1),n=new Date(e.getFullYear(),e.getMonth()+1,0).getDate()-e.getDate()<=3,r=new Date(e.getFullYear(),e.getMonth()+1,1);return{mesActual:t,mesSiguiente:r,siguienteDisponible:n,mesInicial:n?r:t}}export{e as t};

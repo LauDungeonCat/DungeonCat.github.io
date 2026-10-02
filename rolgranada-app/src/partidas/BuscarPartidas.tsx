@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useRolData } from "../useRolData";
 import { useAuth } from "../auth/useAuth";
+import AvisoDisponibilidad from "./AvisoDisponibilidad";
 import "./BuscarPartidas.css";
 
 const IMAGEN_DEFAULT =
@@ -32,10 +33,11 @@ const formularioVacio: FormularioPartida = {
   esPrivada: false,
 };
 
-export default function BuscarPartidas() {
+export default function BuscarPartidas({ abrirCreacionInicial = false }: { abrirCreacionInicial?: boolean }) {
   const {
     usuario,
     partidas,
+    sesiones,
     loading,
     error,
     unirseAPartida,
@@ -49,7 +51,7 @@ export default function BuscarPartidas() {
   const { requestLogin } = useAuth();
 
   const [busqueda, setBusqueda] = useState("");
-  const [crearAbierto, setCrearAbierto] = useState(false);
+  const [crearAbierto, setCrearAbierto] = useState(abrirCreacionInicial);
   const [formulario, setFormulario] = useState<FormularioPartida>(formularioVacio);
   const [partidaEnEdicion, setPartidaEnEdicion] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
@@ -206,6 +208,8 @@ export default function BuscarPartidas() {
           {error}
         </p>
       )}
+
+      <AvisoDisponibilidad disponibilidad={usuario?.disponibilidad} sesiones={sesiones} />
 
       <p className="buscar-partidas-contador">
         {partidasFiltradas.length}{" "}
