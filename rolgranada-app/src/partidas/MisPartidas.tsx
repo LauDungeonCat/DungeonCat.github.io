@@ -23,8 +23,8 @@ function fechaClave(fecha: Date) {
     return `${fecha.getFullYear()}-${mes}-${dia}`;
 }
 
-export default function MisPartidas({ onCrearCampana }: { onCrearCampana: () => void }) {
-    const { usuario, partidas, sesiones: sesionesAgendadas, loading, error, desapuntarseDePartida } = useRolData();
+export default function MisPartidas({ onCrearCampana, onEditarCampana }: { onCrearCampana: () => void; onEditarCampana: (partida: Partida) => void }) {
+    const { usuario, partidas, sesiones: sesionesAgendadas, loading, error, desapuntarseDePartida, eliminarPartida } = useRolData();
     const { requestLogin } = useAuth();
     const [campanaActiva, setCampanaActiva] = useState(0);
     const [mesVisible, setMesVisible] = useState(() => new Date(hoy.getFullYear(), hoy.getMonth(), 1));
@@ -41,6 +41,15 @@ export default function MisPartidas({ onCrearCampana }: { onCrearCampana: () => 
     function moverCarrusel(direccion: number) {
         if (misPartidas.length === 0) return;
         setCampanaActiva((actual) => (actual + direccion + misPartidas.length) % misPartidas.length);
+    }
+
+    async function borrarCampana(partida: Partida) {
+        if (!window.confirm(`¿Quieres borrar la campaña "${partida.titulo}"? Esta acción no se puede deshacer.`)) return;
+        try {
+            await eliminarPartida(partida.id);
+        } catch {
+            return;
+        }
     }
     const inicioMes = new Date(mesVisible.getFullYear(), mesVisible.getMonth(), 1);
     const desplazamientoInicio = (inicioMes.getDay() + 6) % 7;
@@ -104,6 +113,12 @@ export default function MisPartidas({ onCrearCampana }: { onCrearCampana: () => 
                                     <h3>Descripción:</h3>
                                     <p>{campana.descripcion}</p>
                                 </div>
+                                {campana.dmId === usuario?.id && (
+                                    <div className="mis-partidas-acciones-campana">
+                                        <button type="button" onClick={() => onEditarCampana(campana)}>Editar campaña</button>
+                                        <button type="button" className="mis-partidas-eliminar" onClick={() => { void borrarCampana(campana); }}>Eliminar campaña</button>
+                                    </div>
+                                )}
                                 {campana.viewerIsParticipant && campana.dmId !== usuario?.id && <button className="abandonar-partida" type="button" onClick={() => { void desapuntarseDePartida(campana.id).catch(() => undefined); }}>Salir de la partida</button>}
                                 {campana.dmId === usuario?.id && <GestionPartida key={campana.id} partida={campana} />}
                             </div>

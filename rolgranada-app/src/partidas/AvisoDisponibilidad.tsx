@@ -26,7 +26,7 @@ export default function AvisoDisponibilidad({ disponibilidad, sesiones = [] }: P
       .filter((sesion) => sesion.fecha >= hoy && sesion.fecha.startsWith(`${mesActual}-`))
       .map((sesion) => `${sesion.fecha}:${sesion.franja}`),
   );
-  let franjasRellenadas = 0;
+  let franjasConDisponibilidad = 0;
   let franjasPendientes = 0;
 
   for (let dia = ahora.getDate(); dia <= diasEnMes; dia += 1) {
@@ -34,7 +34,9 @@ export default function AvisoDisponibilidad({ disponibilidad, sesiones = [] }: P
     const disponibilidadDia = disponibilidad[fecha];
     for (const franja of ["manana", "tarde"] as const) {
       if (sesionesConfirmadas.has(`${fecha}:${franja}`)) continue;
-      if (disponibilidadDia?.[franja]) franjasRellenadas += 1;
+      const marcada = disponibilidadDia?.franjasMarcadas?.includes(franja)
+        && Boolean(disponibilidadDia[franja]);
+      if (marcada) franjasConDisponibilidad += 1;
       else franjasPendientes += 1;
     }
   }
@@ -42,7 +44,7 @@ export default function AvisoDisponibilidad({ disponibilidad, sesiones = [] }: P
   const mensajes: string[] = [];
   if (franjasPendientes > 0) {
     mensajes.push(
-      franjasRellenadas === 0
+      franjasConDisponibilidad === 0
         ? "No has rellenado la disponibilidad de este mes."
         : `Te faltan ${franjasPendientes} franjas por rellenar.`,
     );

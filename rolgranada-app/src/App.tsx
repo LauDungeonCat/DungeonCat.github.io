@@ -4,6 +4,7 @@ import { lazy, Suspense, useState } from "react";
 import { AuthProvider } from "./auth/AuthContext";
 import Login from "./auth/Login";
 import { useAuth } from "./auth/useAuth";
+import type { Partida } from "./types";
 import "./App.css";
 
 const GeneradorEncuentros = lazy(() => import("./herramientas/generador_encuentros/GeneradorEncuentros"));
@@ -25,15 +26,26 @@ function AplicacionAutenticada() {
     new URLSearchParams(window.location.search).has("partida") ? "buscar-partidas" : "inicio"
   );
   const [abrirCreacionCampana, setAbrirCreacionCampana] = useState(false);
+  const [partidaAEditar, setPartidaAEditar] = useState<Partida | null>(null);
   const { profile, signOut, requestLogin, updateProfile } = useAuth();
 
   function cambiarPagina(nombre: string) {
-    if (nombre !== "buscar-partidas") setAbrirCreacionCampana(false);
+    if (nombre !== "buscar-partidas") {
+      setAbrirCreacionCampana(false);
+      setPartidaAEditar(null);
+    }
     setPagina(nombre as Pagina);
   }
 
   function crearCampanaDesdeMisPartidas() {
+    setPartidaAEditar(null);
     setAbrirCreacionCampana(true);
+    setPagina("buscar-partidas");
+  }
+
+  function editarCampanaDesdeMisPartidas(partida: Partida) {
+    setAbrirCreacionCampana(false);
+    setPartidaAEditar(partida);
     setPagina("buscar-partidas");
   }
 
@@ -44,9 +56,9 @@ function AplicacionAutenticada() {
       case "disponibilidad":
         return <Disponibilidad />;
       case "mis-partidas":
-        return <MisPartidas onCrearCampana={crearCampanaDesdeMisPartidas} />;
+        return <MisPartidas onCrearCampana={crearCampanaDesdeMisPartidas} onEditarCampana={editarCampanaDesdeMisPartidas} />;
       case "buscar-partidas":
-        return <BuscarPartidas abrirCreacionInicial={abrirCreacionCampana} />;
+        return <BuscarPartidas abrirCreacionInicial={abrirCreacionCampana} partidaInicialAEditar={partidaAEditar} />;
       case "sample-text":
         return <section className="pagina-placeholder"><h1 className="page-title">Sample Text</h1><p>Proyecto de ejemplo pendiente de desarrollar.</p></section>;
       case "contacto":

@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useRolData } from "../useRolData";
 import { useAuth } from "../auth/useAuth";
+import type { Partida } from "../types";
 import AvisoDisponibilidad from "./AvisoDisponibilidad";
 import "./BuscarPartidas.css";
 
@@ -33,7 +34,13 @@ const formularioVacio: FormularioPartida = {
   esPrivada: false,
 };
 
-export default function BuscarPartidas({ abrirCreacionInicial = false }: { abrirCreacionInicial?: boolean }) {
+export default function BuscarPartidas({
+  abrirCreacionInicial = false,
+  partidaInicialAEditar = null,
+}: {
+  abrirCreacionInicial?: boolean;
+  partidaInicialAEditar?: Partida | null;
+}) {
   const {
     usuario,
     partidas,
@@ -51,9 +58,22 @@ export default function BuscarPartidas({ abrirCreacionInicial = false }: { abrir
   const { requestLogin } = useAuth();
 
   const [busqueda, setBusqueda] = useState("");
-  const [crearAbierto, setCrearAbierto] = useState(abrirCreacionInicial);
-  const [formulario, setFormulario] = useState<FormularioPartida>(formularioVacio);
-  const [partidaEnEdicion, setPartidaEnEdicion] = useState<string | null>(null);
+  const [crearAbierto, setCrearAbierto] = useState(abrirCreacionInicial || partidaInicialAEditar !== null);
+  const [formulario, setFormulario] = useState<FormularioPartida>(() => partidaInicialAEditar
+    ? {
+        titulo: partidaInicialAEditar.titulo,
+        sistema: partidaInicialAEditar.sistema,
+        ubicacionAproximada: partidaInicialAEditar.ubicacionAproximada,
+        ubicacionExacta: partidaInicialAEditar.ubicacionExacta ?? "",
+        descripcion: partidaInicialAEditar.descripcion ?? "",
+        participantesMax: String(partidaInicialAEditar.participantesMax ?? 4),
+        sesionesAlMes: String(partidaInicialAEditar.sesionesAlMes ?? 2),
+        duracionEstimada: partidaInicialAEditar.duracionEstimada ?? "",
+        imagenUrl: partidaInicialAEditar.imagenUrl ?? "",
+        esPrivada: partidaInicialAEditar.esPrivada,
+      }
+    : formularioVacio);
+  const [partidaEnEdicion, setPartidaEnEdicion] = useState<string | null>(partidaInicialAEditar?.id ?? null);
   const [guardando, setGuardando] = useState(false);
 
   const partidaEnlaceId = new URLSearchParams(window.location.search).get("partida");

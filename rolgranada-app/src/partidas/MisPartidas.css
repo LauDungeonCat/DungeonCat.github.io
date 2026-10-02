@@ -169,6 +169,25 @@
 	line-height: 1.5;
 }
 
+.mis-partidas-acciones-campana {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}
+
+.mis-partidas-acciones-campana button {
+	min-height: 2.25rem;
+	padding: 0.35rem 0.7rem;
+	font-size: 0.82rem;
+	font-weight: 700;
+}
+
+.mis-partidas-acciones-campana .mis-partidas-eliminar {
+	border-color: #a8131a;
+	color: #8d171d;
+}
+
 .abandonar-partida {
 	margin-top: 1rem;
 	border-color: #a8131a;
