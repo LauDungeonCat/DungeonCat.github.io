@@ -23,6 +23,23 @@ function fechaClave(fecha: Date) {
     return `${fecha.getFullYear()}-${mes}-${dia}`;
 }
 
+function formatearSiguienteSesion(proximaSesion?: string): string {
+    if (!proximaSesion) return "Por decidir";
+
+    const fecha = new Date(proximaSesion);
+    // Detectamos la franja de mañana o tarde según el valor de la fecha u hora
+    const esManana = proximaSesion.includes("manana") || fecha.getHours() < 15;
+    const franjaTexto = esManana ? "Mañana" : "Tarde";
+
+    const fechaFormateada = new Intl.DateTimeFormat("es-ES", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+    }).format(fecha);
+
+    return `${fechaFormateada} (${franjaTexto})`;
+}
+
 export default function MisPartidas({ onCrearCampana, onEditarCampana }: { onCrearCampana: () => void; onEditarCampana: (partida: Partida) => void }) {
     const { usuario, partidas, sesiones: sesionesAgendadas, loading, error, desapuntarseDePartida, eliminarPartida } = useRolData();
     const { requestLogin } = useAuth();
@@ -102,7 +119,7 @@ export default function MisPartidas({ onCrearCampana, onEditarCampana }: { onCre
                                 <dl>
                                     <div><dt>Sistema:</dt><dd>{campana.sistema}</dd></div>
                                     <div><dt>DM:</dt><dd>{campana.dm}</dd></div>
-                                    <div><dt>Siguiente Sesión:</dt><dd>{campana.proximaSesion ? new Intl.DateTimeFormat("es-ES", { dateStyle: "medium", timeStyle: "short" }).format(new Date(campana.proximaSesion)) : "Por decidir"}</dd></div>
+                                    <div><dt>Siguiente Sesión:</dt><dd>{formatearSiguienteSesion(campana.proximaSesion)}</dd></div>
                                     <div><dt>Zona aproximada:</dt><dd>{campana.ubicacionAproximada}</dd></div>
                                     <div><dt>Sesiones al mes:</dt><dd>{campana.sesionesAlMes}</dd></div>
                                     {campana.duracionEstimada && <div><dt>Duración estimada:</dt><dd>{campana.duracionEstimada}</dd></div>}
