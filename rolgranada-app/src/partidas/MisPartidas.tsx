@@ -23,19 +23,32 @@ function fechaClave(fecha: Date) {
     return `${fecha.getFullYear()}-${mes}-${dia}`;
 }
 
-function formatearSiguienteSesion(proximaSesion?: string): string {
-    if (!proximaSesion) return "Por decidir";
+// Función para obtener el texto de la siguiente sesión a partir del listado de sesiones de la partida
+function obtenerTextoProximaSesion(tituloPartida: string, sesiones: Array<{ fecha: string; franja: string; titulo_partida: string }>): string {
+    const ahora = new Date();
+    ahora.setHours(0, 0, 0, 0);
 
-    const fecha = new Date(proximaSesion);
-    // Detectamos la franja de mañana o tarde según el valor de la fecha u hora
-    const esManana = proximaSesion.includes("manana") || fecha.getHours() < 15;
-    const franjaTexto = esManana ? "Mañana" : "Tarde";
+    // Filtramos las sesiones que pertenecen a esta partida
+    const sesionesPartida = sesiones
+        .filter((s) => s.titulo_partida === tituloPartida)
+        .map((s) => ({
+            ...s,
+            objetoFecha: new Date(`${s.fecha}T12:00:00`),
+        }))
+        // Ordenamos cronológicamente
+        .sort((a, b) => a.objetoFecha.getTime() - b.objetoFecha.getTime());
 
+    if (sesionesPartida.length === 0) return "Por decidir";
+
+    // Buscamos la primera sesión que sea igual o posterior a hoy
+    const proxima = sesionesPartida.find((s) => s.objetoFecha >= ahora) ?? sesionesPartida[0];
+
+    const franjaTexto = proxima.franja === "manana" ? "Mañana" : "Tarde";
     const fechaFormateada = new Intl.DateTimeFormat("es-ES", {
         day: "numeric",
         month: "short",
-        year: "numeric"
-    }).format(fecha);
+        year: "numeric",
+    }).format(proxima.objetoFecha);
 
     return `${fechaFormateada} (${franjaTexto})`;
 }
@@ -119,7 +132,7 @@ export default function MisPartidas({ onCrearCampana, onEditarCampana }: { onCre
                                 <dl>
                                     <div><dt>Sistema:</dt><dd>{campana.sistema}</dd></div>
                                     <div><dt>DM:</dt><dd>{campana.dm}</dd></div>
-                                    <div><dt>Siguiente Sesión:</dt><dd>{formatearSiguienteSesion(campana.proximaSesion)}</dd></div>
+                                    <div><dt>Siguiente Sesión:</dt><dd>{obtenerTextoProximaSesion(campana.titulo, sesionesAgendadas)}</dd></div>
                                     <div><dt>Zona aproximada:</dt><dd>{campana.ubicacionAproximada}</dd></div>
                                     <div><dt>Sesiones al mes:</dt><dd>{campana.sesionesAlMes}</dd></div>
                                     {campana.duracionEstimada && <div><dt>Duración estimada:</dt><dd>{campana.duracionEstimada}</dd></div>}
