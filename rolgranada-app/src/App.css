@@ -141,3 +141,12 @@
 		font-size: 2.5rem;
 	}
 }
+
+.seccion-etiqueta {
+	margin: 0 0 0.5rem;
+	color: #c71920;
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+}

@@ -1,0 +1,138 @@
+.inicio-container {
+    width: min(100% - 2rem, 1000px);
+    margin: 0 auto;
+    padding: 2rem 0 4rem;
+}
+
+/* Cabecera idéntica a Buscar Partidas / Mis Partidas */
+.inicio-cabecera {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.inicio-cabecera .page-title {
+    margin: 0;
+    color: #202020;
+    font-family: Georgia, serif;
+    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+}
+
+.inicio-subtitulo {
+    margin: 0.5rem 0 0;
+    color: #5e5e5e;
+    font-size: 0.95rem;
+}
+
+.inicio-cabecera-acciones {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Estilos de Botones alineados con el resto del sitio */
+.btn-rojo {
+    min-height: 2.5rem;
+    border: 0;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    background: #c71920;
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: background-color 0.15s ease;
+}
+
+.btn-rojo:hover {
+    background: #a8131a;
+}
+
+.btn-secundario {
+    min-height: 2.5rem;
+    border: 2px solid #202020;
+    border-radius: 4px;
+    padding: 0.45rem 1rem;
+    background: #fff;
+    color: #202020;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.btn-secundario:hover {
+    background: #f4f4f4;
+    transform: translateY(-1px);
+}
+
+.btn-block {
+    width: 100%;
+}
+
+/* Rejilla de tarjetas estilo neobrutalista */
+.inicio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.inicio-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 2px solid #202020;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 6px 0 #202020;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.inicio-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 9px 0 #202020;
+}
+
+.inicio-card-body {
+    padding: 1.25rem 1.25rem 0.5rem;
+}
+
+.inicio-card-body h3 {
+    margin: 0.3rem 0 0.6rem;
+    color: #202020;
+    font-family: Georgia, serif;
+    font-size: 1.35rem;
+}
+
+.inicio-card-body p {
+    margin: 0;
+    color: #4f4f4f;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.inicio-card-footer {
+    padding: 1.25rem;
+}
+
+/* Responsive */
+@media (max-width: 680px) {
+    .inicio-cabecera {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .inicio-cabecera-acciones {
+        width: 100%;
+    }
+
+    .inicio-cabecera-acciones button {
+        flex: 1;
+    }
+}

@@ -221,7 +221,7 @@ export default function Disponibilidad() {
 		<section className="disponibilidad-page" aria-labelledby="disponibilidad-title">
 			<header className="disponibilidad-heading">
 				<div>
-					<p className="seccion-etiqueta">Partidas · Vista de jugador</p>
+					<p className="seccion-etiqueta">Partidas</p>
 					<h1 className="page-title" id="disponibilidad-title">Disponibilidad</h1>
 					<p>Indica cuándo te viene bien jugar. Pulsa cada franja para cambiar su estado.</p>
 				</div>

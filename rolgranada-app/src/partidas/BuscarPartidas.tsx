@@ -203,13 +203,13 @@ export default function BuscarPartidas({
           <h1 className="page-title" id="buscar-partidas-titulo">
             Buscar Partidas
           </h1>
-          <p>Explora las campañas y únete a las que sigan abiertas.</p>
+          <p>Explora las campañas/aventuras y únete a las que sigan abiertas.</p>
           <button
             className="crear-campana-trigger"
             type="button"
             onClick={() => abrirFormulario()}
           >
-            Crear campaña
+            Crear Partida
           </button>
         </div>
         <label className="buscar-partidas-busqueda">

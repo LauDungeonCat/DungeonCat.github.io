@@ -4,7 +4,9 @@ import { lazy, Suspense, useState } from "react";
 import { AuthProvider } from "./auth/AuthContext";
 import Login from "./auth/Login";
 import { useAuth } from "./auth/useAuth";
+import {Inicio} from "./inicio/Inicio";
 import type { Partida } from "./types";
+
 import "./App.css";
 
 const GeneradorEncuentros = lazy(() => import("./herramientas/generador_encuentros/GeneradorEncuentros"));
@@ -12,13 +14,12 @@ const Disponibilidad = lazy(() => import("./partidas/Disponibilidad"));
 const MisPartidas = lazy(() => import("./partidas/MisPartidas"));
 const BuscarPartidas = lazy(() => import("./partidas/BuscarPartidas"));
 
-type Pagina =
+export type Pagina =
   | "generador-encuentros"
   | "disponibilidad"
   | "mis-partidas"
   | "buscar-partidas"
   | "inicio"
-  | "sample-text"
   | "contacto";
 
 function AplicacionAutenticada() {
@@ -59,8 +60,6 @@ function AplicacionAutenticada() {
         return <MisPartidas onCrearCampana={crearCampanaDesdeMisPartidas} onEditarCampana={editarCampanaDesdeMisPartidas} />;
       case "buscar-partidas":
         return <BuscarPartidas abrirCreacionInicial={abrirCreacionCampana} partidaInicialAEditar={partidaAEditar} />;
-      case "sample-text":
-        return <section className="pagina-placeholder"><h1 className="page-title">Sample Text</h1><p>Proyecto de ejemplo pendiente de desarrollar.</p></section>;
       case "contacto":
         return (
           <section className="contact-page" aria-labelledby="contact-title">
@@ -75,12 +74,13 @@ function AplicacionAutenticada() {
               <a href="https://dungeoncat.site" target="_blank" rel="noreferrer"><span>Web</span><strong>dungeoncat.site</strong></a>
               <a href="mailto:lau.ra.dungeoncat@gmail.com"><span>Correo</span><strong>lau.ra.dungeoncat@gmail.com</strong></a>
               <a href="https://www.instagram.com/dungeon_cat_" target="_blank" rel="noreferrer"><span>Instagram</span><strong>@dungeon_cat_</strong></a>
+              <a href="https://dungeon-cat.itch.io" target="_blank" rel="noreferrer"><span>Itch.io</span><strong>dungeon-cat.itch.io</strong></a>
             </address>
           </section>
         );
       case "inicio":
       default:
-        return <section className="pagina-placeholder"><h1 className="page-title">Inicio</h1><p>Bienvenido a Rol Granada. Explora campañas, organiza tus partidas y encuentra cuándo jugar.</p></section>;
+        return <Inicio onNavigate={(nuevaPagina) => setPagina(nuevaPagina)} />;
     }
   }
 
