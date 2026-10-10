@@ -2,7 +2,7 @@
 .datos-error {
 	width: min(100% - 2rem, 1100px);
 	margin: 1.5rem auto;
-	border-left: 4px solid #b4232a;
+	border-left: 4px solid #c02642;
 	padding: 0.9rem 1rem;
 	background: #fff;
 	color: #8d171d;
@@ -46,7 +46,7 @@
 }
 
 .contact-identity {
-	border-left: 5px solid #c71920;
+	border-left: 5px solid #c02642;
 	padding-left: 1.5rem;
 }
 

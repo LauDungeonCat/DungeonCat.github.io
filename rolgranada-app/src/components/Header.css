@@ -4,7 +4,7 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  background-color: #e51e25;
+  background-color: #c02642;
   padding: 0.8rem 2rem;
   color: white;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
@@ -67,10 +67,9 @@
 
 .tools-trigger:hover,
 .tools-trigger:focus-visible {
-  background-color: #c71920;
+  background-color: #9b182e;
   transform: translateY(-1px) scale(1.02);
 }
-
 .header-logo span {
   font-family: 'Montserrat Alternates', sans-serif;
   font-weight: 800;
@@ -123,7 +122,7 @@
 .header-nav a:hover,
 .header-nav a:active,
 .header-nav a.active {
-  background-color: #c71920;
+  background-color: #9b182e; /* Ajustado para oscurecer armónicamente sobre #c02642 */
   transform: translateY(-1px) scale(1.02);
 }
 
@@ -219,9 +218,6 @@
   font-size: 0.85rem;
 }
 
-.header-sign-out:hover {
-  background: #a8131a;
-}
 
 .header-action {
   min-height: 2.25rem;
@@ -232,8 +228,9 @@
   font-size: 0.82rem;
 }
 
+.header-sign-out:hover,
 .header-action:hover {
-  background: #a8131a;
+  background: #9b182e;
 }
 
 .header-notifications-trigger {

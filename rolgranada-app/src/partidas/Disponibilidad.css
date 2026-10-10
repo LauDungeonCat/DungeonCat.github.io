@@ -26,7 +26,7 @@
 .disponibilidad-heading .seccion-etiqueta,
 .quick-fill-dialog .seccion-etiqueta {
 	margin: 0 0 0.4rem;
-	color: #c71920;
+	color: #c02642;
 	font-size: 0.78rem;
 	font-weight: 700;
 	letter-spacing: 0.1em;
@@ -41,7 +41,7 @@
 
 .relleno-rapido-trigger {
 	border-color: #a8131a;
-	background: #c71920;
+	background: #c02642;
 	color: #fff;
 	font-weight: 700;
 }
@@ -67,7 +67,7 @@
 	justify-content: space-between;
 	gap: 1rem;
 	margin-bottom: 1rem;
-	border-left: 4px solid #c71920;
+	border-left: 4px solid #c02642;
 	padding: 0.9rem 1rem;
 	background: #fff;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -81,7 +81,7 @@
 }
 
 .plantilla-banner button {
-	border-color: #c71920;
+	border-color: #c02642;
 	color: #a8131a;
 	font-weight: 700;
 }

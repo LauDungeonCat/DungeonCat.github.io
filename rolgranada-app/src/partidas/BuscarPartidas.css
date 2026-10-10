@@ -21,7 +21,7 @@
 .crear-campana-enviar {
 	margin-top: 0.85rem;
 	border-color: #a8131a;
-	background: #c71920;
+	background: #c02642;
 	color: #fff;
 	font-weight: 700;
 }
@@ -52,7 +52,7 @@
 }
 
 .buscar-partidas-busqueda input:focus-visible {
-	outline: 2px solid #c71920;
+	outline: 2px solid #c02642;
 	outline-offset: 2px;
 }
 
@@ -88,7 +88,7 @@
 	position: relative;
 	flex: 0 0 34%;
 	min-height: 220px;
-	background: repeating-linear-gradient(135deg, #e51e25 0 12px, #c71920 12px 24px);
+	background: repeating-linear-gradient(135deg, #e51e25 0 12px, #c02642 12px 24px);
 }
 
 .partida-catalogo-imagen img {
@@ -243,7 +243,7 @@
 .partida-catalogo-pie button {
 	flex: 0 0 auto;
 	border-color: #a8131a;
-	background: #c71920;
+	background: #c02642;
 	color: #fff;
 	font-size: 0.82rem;
 	font-weight: 700;
@@ -304,7 +304,7 @@
 
 .crear-campana-header .seccion-etiqueta {
 	margin: 0 0 0.4rem;
-	color: #c71920;
+	color: #c02642;
 	font-size: 0.78rem;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -368,7 +368,7 @@
 	border: 0;
 	border-radius: 3px;
 	background: transparent;
-	accent-color: #c71920;
+	accent-color: #c02642;
 }
 
 .crear-campana-grid input,
@@ -390,7 +390,7 @@
 
 .crear-campana-grid input:focus-visible,
 .crear-campana-grid textarea:focus-visible {
-	outline: 2px solid #c71920;
+	outline: 2px solid #c02642;
 	outline-offset: 2px;
 }
 

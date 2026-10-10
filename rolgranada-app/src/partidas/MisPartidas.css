@@ -24,7 +24,7 @@
 	min-height: 2.5rem;
 	border-color: #a8131a;
 	padding: 0.45rem 0.8rem;
-	background: #c71920;
+	background: #c02642;
 	color: #fff;
 	font-size: 0.85rem;
 	font-weight: 700;
@@ -45,7 +45,7 @@
 }
 
 .campana-count {
-	border-left: 3px solid #c71920;
+	border-left: 3px solid #c02642;
 	padding: 0.45rem 0.75rem;
 	color: #444;
 	font-size: 0.9rem;
@@ -56,7 +56,7 @@
 	border: 0;
 	border-radius: 4px;
 	padding: 0.8rem 1rem;
-	background: #c71920;
+	background: #c02642;
 	color: #fff;
 	cursor: pointer;
 	font-weight: 700;
@@ -85,7 +85,7 @@
 	display: grid;
 	place-items: center;
 	min-height: 230px;
-	background: repeating-linear-gradient(135deg, #e51e25 0 12px, #c71920 12px 24px);
+	background: repeating-linear-gradient(135deg, #e51e25 0 12px, #c02642 12px 24px);
 	color: #fff;
 	font-weight: 700;
 	text-align: center;
@@ -358,7 +358,7 @@
 }
 
 .calendario-celda.con-sesion time {
-	background: #c71920;
+	background: #c02642;
 	color: #fff;
 	font-weight: 700;
 }
@@ -367,7 +367,7 @@
 	display: grid;
 	gap: 0.15rem;
 	margin-top: 0.4rem;
-	border-left: 3px solid #c71920;
+	border-left: 3px solid #c02642;
 	padding: 0.35rem 0.45rem;
 	background: #fbeaec;
 	color: #492024;
