@@ -1,109 +1,168 @@
-
 .contact-page {
-	width: min(100% - 2rem, 1000px);
-	min-height: 55vh;
-	margin: 0 auto;
-	padding: clamp(2rem, 8vh, 5rem) 0;
-	display: grid;
-	grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
-	align-content: center;
-	align-items: end;
-	gap: 3rem;
+    width: min(100% - 2rem, 1000px);
+    min-height: 55vh;
+    margin: 0 auto;
+    padding: clamp(2rem, 8vh, 5rem) 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+    align-content: start;
+    align-items: start;
+    gap: 3rem;
+}
+
+/* Columna izquierda que agrupa tu info y la caja de WhatsApp debajo */
+.contact-left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 }
 
 .contact-identity {
-	border-left: 5px solid #c02642;
-	padding-left: 1.5rem;
+    border-left: 5px solid #c02642;
+    padding-left: 1.5rem;
 }
 
 .contact-eyebrow {
-	margin: 0 0 0.65rem;
-	color: #a8131a;
-	font-size: 0.82rem;
-	font-weight: 800;
+    margin: 0 0 0.65rem;
+    color: #a8131a;
+    font-size: 0.82rem;
+    font-weight: 800;
 }
 
 .contact-identity h1 {
-	margin: 0;
-	color: #202020;
-	font-family: Georgia, 'Times New Roman', serif;
-	font-size: 3.5rem;
-	line-height: 1.05;
+    margin: 0;
+    color: #202020;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 3.5rem;
+    line-height: 1.05;
 }
 
 .contact-name {
-	margin: 0.85rem 0 0;
-	color: #555;
-	font-size: 1.1rem;
+    margin: 0.85rem 0 0;
+    color: #555;
+    font-size: 1.1rem;
 }
 
 .contact-role {
-	margin: 0.5rem 0 1.1rem;
-	color: #202020;
-	font-size: 1.25rem;
-	font-weight: 800;
-	text-transform: uppercase;
+    margin: 0.5rem 0 1.1rem;
+    color: #202020;
+    font-size: 1.25rem;
+    font-weight: 800;
+    text-transform: uppercase;
 }
 
 .contact-role span {
-	display: block;
-	color: #a8131a;
+    display: block;
+    color: #a8131a;
 }
 
-.contact-social {
-	color: #a8131a;
-	font-weight: 700;
-	text-decoration-thickness: 1px;
-	text-underline-offset: 0.2em;
+/* Caja de WhatsApp estilizada para la columna izquierda */
+.contact-whatsapp-box {
+    background: #fdfdfd;
+    border: 1px solid #e2e2e2;
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.whatsapp-box-header h3 {
+    margin: 0 0 0.5rem 0;
+    color: #202020;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.whatsapp-box-header p {
+    margin: 0;
+    color: #555;
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
+.whatsapp-box-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: transform 0.2s ease;
+}
+
+.whatsapp-box-link:hover .whatsapp-link-text {
+    color: #a8131a;
+    text-decoration: underline;
+}
+
+.whatsapp-link-text {
+    color: #202020;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.whatsapp-qr-img {
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    background: #fff;
+    padding: 4px;
 }
 
 .contact-details {
-	display: grid;
-	margin: 0;
-	border-top: 1px solid #ccc;
-	font-style: normal;
+    display: grid;
+    margin: 0;
+    border-top: 1px solid #ccc;
+    font-style: normal;
 }
 
 .contact-details a {
-	display: grid;
-	gap: 0.25rem;
-	border-bottom: 1px solid #ccc;
-	padding: 1rem 0;
-	color: inherit;
-	text-decoration: none;
+    display: grid;
+    gap: 0.25rem;
+    border-bottom: 1px solid #ccc;
+    padding: 1rem 0;
+    color: inherit;
+    text-decoration: none;
 }
 
 .contact-details a:hover strong,
 .contact-details a:focus-visible strong {
-	color: #a8131a;
+    color: #a8131a;
 }
 
 .contact-details span {
-	color: #666;
-	font-size: 0.78rem;
-	font-weight: 700;
-	text-transform: uppercase;
+    color: #666;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
 .contact-details strong {
-	color: #202020;
-	font-size: 1rem;
-	font-weight: 600;
-	overflow-wrap: anywhere;
+    color: #202020;
+    font-size: 1rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
 }
 
 @media (max-width: 650px) {
-	.contact-page {
-		grid-template-columns: 1fr;
-		gap: 2rem;
-		padding: 2rem 0 3rem;
-	}
+    .contact-page {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 2rem 0 3rem;
+    }
 
-	.contact-identity {
-		padding-left: 1rem;
-	}
+    .contact-identity {
+        padding-left: 1rem;
+    }
 
-	.contact-identity h1 {
-		font-size: 2.5rem;
-	}
+    .contact-identity h1 {
+        font-size: 2.5rem;
+    }
 }
