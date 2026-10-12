@@ -27,9 +27,9 @@ export default function Contacto() {
             
             {/* Columna Derecha: Los enlaces de contacto */}
             <address className="contact-details">
-                <a href="tel:+34652585634">
-                    <span>Teléfono y WhatsApp</span>
-                    <strong>652 58 56 34</strong>
+                <a href="https://www.instagram.com/rol_granada" target="_blank" rel="noreferrer">
+                    <span>Instagram</span>
+                    <strong>@rol_granada</strong>
                 </a>
                 <a href="https://dungeoncat.site" target="_blank" rel="noreferrer">
                     <span>Web</span>
@@ -38,10 +38,6 @@ export default function Contacto() {
                 <a href="mailto:lau.ra.dungeoncat@gmail.com">
                     <span>Correo</span>
                     <strong>lau.ra.dungeoncat@gmail.com</strong>
-                </a>
-                <a href="https://www.instagram.com/rol_granada" target="_blank" rel="noreferrer">
-                    <span>Instagram</span>
-                    <strong>@rol_granada</strong>
                 </a>
                 <a href="https://dungeon-cat.itch.io" target="_blank" rel="noreferrer">
                     <span>Itch.io</span>

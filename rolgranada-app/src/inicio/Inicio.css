@@ -136,3 +136,63 @@
         flex: 1;
     }
 }
+
+/* Caja de WhatsApp estilizada para la columna izquierda */
+.contact-whatsapp-box {
+    background: #fdfdfd;
+    border: 1px solid #e2e2e2;
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.whatsapp-box-header h3 {
+    margin: 0 0 0.5rem 0;
+    color: #202020;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.whatsapp-box-header p {
+    margin: 0;
+    color: #555;
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
+.whatsapp-box-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: transform 0.2s ease;
+}
+
+.whatsapp-box-link:hover .whatsapp-link-text {
+    color: #a8131a;
+    text-decoration: underline;
+}
+
+.whatsapp-link-text {
+    color: #202020;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.whatsapp-qr-img {
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    background: #fff;
+    padding: 4px;
+}

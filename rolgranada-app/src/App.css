@@ -1,43 +1,300 @@
-.auth-state,
-.datos-error {
-	width: min(100% - 2rem, 1100px);
-	margin: 1.5rem auto;
-	border-left: 4px solid #c02642;
-	padding: 0.9rem 1rem;
-	background: #fff;
-	color: #8d171d;
-	line-height: 1.5;
+/* Contenedor raíz de toda la aplicación */
+#root, .app-layout, .app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 200vh;
 }
 
-.auth-state {
-	color: #333;
+/* Si tienes un contenedor central que envuelve tus páginas, haz que crezca para empujar el footer */
+.main-content, main {
+  flex: 1;
 }
 
-.auth-state p + p,
-.auth-state button {
-	margin-top: 0.8rem;
+.inicio-container {
+    width: min(100% - 2rem, 1000px);
+    margin: 0 auto;
+    padding: 2rem 0 4rem;
 }
 
-.pagina-placeholder {
-	width: min(100% - 2rem, 900px);
-	min-height: 55vh;
-	margin: 0 auto;
-	padding: 3rem 0;
+/* Cabecera idéntica a Buscar Partidas / Mis Partidas */
+.inicio-cabecera {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 2rem;
 }
 
-.pagina-placeholder p {
-	max-width: 42rem;
-	margin-top: 0.8rem;
-	color: #555;
-	font-size: 1rem;
-	line-height: 1.6;
+.inicio-cabecera .page-title {
+    margin: 0;
+    color: #202020;
+    font-family: Georgia, serif;
+    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+}
+
+.inicio-subtitulo {
+    margin: 0.5rem 0 0;
+    color: #5e5e5e;
+    font-size: 0.95rem;
+}
+
+.inicio-cabecera-acciones {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Estilos de Botones alineados con el resto del sitio */
+.btn-rojo {
+    min-height: 2.5rem;
+    border: 0;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    background: #c71920;
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: background-color 0.15s ease;
+}
+
+.btn-rojo:hover {
+    background: #a8131a;
+}
+
+.btn-secundario {
+    min-height: 2.5rem;
+    border: 2px solid #202020;
+    border-radius: 4px;
+    padding: 0.45rem 1rem;
+    background: #fff;
+    color: #202020;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.btn-secundario:hover {
+    background: #f4f4f4;
+    transform: translateY(-1px);
+}
+
+.btn-block {
+    width: 100%;
+}
+
+/* Rejilla de tarjetas estilo neobrutalista (¡exactamente como la tenías!) */
+.inicio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.inicio-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 2px solid #202020;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 6px 0 #202020;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.inicio-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 9px 0 #202020;
+}
+
+.inicio-card-body {
+    padding: 1.25rem 1.25rem 0.5rem;
+}
+
+.inicio-card-body h3 {
+    margin: 0.3rem 0 0.6rem;
+    color: #202020;
+    font-family: Georgia, serif;
+    font-size: 1.35rem;
+}
+
+.inicio-card-body p {
+    margin: 0;
+    color: #4f4f4f;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.inicio-card-footer {
+    padding: 1.25rem;
+}
+
+/* Responsive */
+@media (max-width: 680px) {
+    .inicio-cabecera {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .inicio-cabecera-acciones {
+        width: 100%;
+    }
+
+    .inicio-cabecera-acciones button {
+        flex: 1;
+    }
+}
+
+/* Caja de WhatsApp estilizada para Inicio */
+.inicio-whatsapp-section,
+.contact-whatsapp-box {
+    margin-top: 3rem;
+    background: #fdfdfd;
+    border: 1px solid #e2e2e2;
+    border-radius: 8px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.whatsapp-box-header h3 {
+    margin: 0 0 0.5rem 0;
+    color: #202020;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.whatsapp-box-header p {
+    margin: 0;
+    color: #555;
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
+.whatsapp-box-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: transform 0.2s ease;
+}
+
+.whatsapp-box-link:hover .whatsapp-link-text {
+    color: #a8131a;
+    text-decoration: underline;
+}
+
+.whatsapp-link-text {
+    color: #202020;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.whatsapp-qr-img {
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    background: #fff;
+    padding: 4px;
+}
+
+/* Sección de Estadísticas de la Comunidad */
+.inicio-stats-section {
+    margin-top: 3rem;
+}
+
+.inicio-seccion-titulo {
+    margin: 0.5rem 0 1.25rem 0;
+    color: #202020;
+    font-family: Georgia, serif;
+    font-size: 1.5rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+}
+
+.stat-card {
+    background: #fdfdfd;
+    border: 1px solid #e2e2e2;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.stat-value {
+    display: block;
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #a8131a;
+    font-family: Georgia, serif;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Sección Próximamente / Roadmap */
+.inicio-roadmap-section {
+    margin-top: 3rem;
+    margin-bottom: 2rem;
+}
+
+.roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.roadmap-card {
+    background: #fdfdfd;
+    border: 1px solid #e2e2e2;
+    border-radius: 8px;
+    padding: 1.25rem;
+}
+
+.roadmap-card h4 {
+    margin: 0 0 0.5rem 0;
+    color: #a8131a;
+    font-size: 1.05rem;
+}
+
+.roadmap-card p {
+    margin: 0;
+    color: #555;
+    font-size: 0.92rem;
+    line-height: 1.45;
 }
 
 .seccion-etiqueta {
-	margin: 0 0 0.5rem;
-	color: #c71920;
-	font-size: 0.8rem;
-	font-weight: 700;
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
+    margin: 0 0 0.5rem;
+    color: #c71920;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.seccion-separador {
+    margin-top: 2rem;
 }

@@ -1,0 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@700;800&display=swap');
+
+/* ==========================================================================
+   Pie de página (Footer)
+   ========================================================================== */
+
+.main-footer {
+    background-color: #c02642;
+    color: white;
+    margin-top: 4rem;
+    border-top: 2px solid #202020;
+    box-shadow: 0 -6px 0 #202020;
+    padding: 3rem 2rem 1.5rem 2rem;
+}
+
+.footer-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.footer-logo-img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
+
+.footer-brand-text {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.02em;
+}
+
+.footer-links {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.footer-heading {
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.85;
+    margin-bottom: 0.25rem;
+}
+
+.footer-column a {
+    color: white;
+    text-decoration: none;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    transition: opacity 0.15s ease;
+}
+
+.footer-column a:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.footer-text {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    line-height: 1.4;
+}
+
+.footer-bottom {
+    max-width: 1000px;
+    margin: 1.5rem auto 0 auto;
+    text-align: center;
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 768px) {
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .footer-links {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Control de transición para evitar el flashazo inicial */
+.footer-oculto {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.footer-visible {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.25s ease-in-out;
+}
