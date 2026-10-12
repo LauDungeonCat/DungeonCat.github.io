@@ -27,6 +27,15 @@ export default function BuscarPartidas({
 
   const partidasFiltradas = partidas.filter((p) => `${p.titulo} ${p.sistema}`.toLocaleLowerCase("es").includes(termino));
 
+function etiquetaProximaSesion(fecha?: string, franja?: "manana" | "tarde") {
+  if (!fecha) return "Fecha por decidir";
+  const formato = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" });
+  const fechaFormateada = formato.format(new Date(fecha));
+  const etiquetaFranja = franja === "manana" ? ", por la mañana" : franja === "tarde" ? ", por la tarde" : "";
+  
+  return `Próxima sesión: ${fechaFormateada}${etiquetaFranja}`;
+}
+
   useEffect(() => {
     if (!loading && partidaEnlaceId) {
       document.getElementById(`partida-${partidaEnlaceId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -134,10 +143,4 @@ function etiquetaEstado(estado: "abierta" | "en_curso" | "finalizada") {
   if (estado === "en_curso") return "En curso";
   if (estado === "finalizada") return "Finalizada";
   return "Abierta";
-}
-
-function etiquetaProximaSesion(fecha?: string, franja?: "manana" | "tarde") {
-  if (!fecha) return "Fecha por decidir";
-  const formato = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" });
-  return `Próxima sesión: ${formato.format(new Date(fecha))}${franja ? `, \${franja === "manana" ? "por la mañana" : "por la tarde"}` : ""}`;
 }
