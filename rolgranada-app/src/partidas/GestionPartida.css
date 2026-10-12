@@ -1,190 +1,180 @@
 .gestion-partida {
-	margin-top: 1.25rem;
-	border-top: 1px solid #d7d7d7;
-	padding-top: 1rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
 }
 
-.gestion-partida-header,
-.gestion-partida-campos,
-.gestion-partida-invitar > div,
 .gestion-partida-roster li {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 0.65rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.gestion-partida-header {
-	justify-content: space-between;
-	margin-bottom: 0.75rem;
-}
-
-.gestion-partida-header h3,
 .gestion-partida-roster h4 {
-	color: #252525;
-	font-size: 0.95rem;
+    color: #252525;
+    font-size: 0.95rem;
+    margin: 0;
 }
 
 .gestion-partida-roster-header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 0.6rem;
-}
-
-.gestion-partida-roster-header button {
-	min-height: 2.1rem;
-	padding: 0.3rem 0.6rem;
-	font-size: 0.78rem;
-}
-
-.gestion-partida-capacidad {
-	display: flex;
-	align-items: end;
-	flex-wrap: wrap;
-	gap: 0.6rem;
-	margin-top: 0.6rem;
-}
-
-.gestion-partida-capacidad label {
-	display: grid;
-	gap: 0.25rem;
-	color: #444;
-	font-size: 0.8rem;
-	font-weight: 700;
-}
-
-.gestion-partida-capacidad input {
-	width: 6rem;
-	min-height: 2.35rem;
-	border: 1px solid #888;
-	border-radius: 4px;
-	padding: 0.4rem;
-	font: inherit;
-}
-
-.fechar-sesiones-trigger {
-	border-color: #3524d1;
-	background: #4937ed;
-	color: #fff;
-	font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
 }
 
 .gestion-partida-campos {
-	margin-bottom: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.gestion-partida-campos label {
-	display: grid;
-	gap: 0.25rem;
-	color: #444;
-	font-size: 0.8rem;
-	font-weight: 700;
+.gestion-partida-capacidad {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.6rem;
 }
 
-.gestion-partida-campos input,
-.gestion-partida-invitar input {
-	min-height: 2.5rem;
-	border: 1px solid #888;
-	border-radius: 4px;
-	padding: 0.45rem 0.6rem;
-	font: inherit;
+.gestion-partida-capacidad label {
+    display: grid;
+    gap: 0.25rem;
+    color: #444;
+    font-size: 0.8rem;
+    font-weight: 700;
 }
 
-.gestion-partida-campos button,
-.gestion-partida-invitar button,
-.gestion-partida-roster button {
-	min-height: 2.35rem;
-	padding: 0.35rem 0.65rem;
-	font-size: 0.8rem;
-	font-weight: 700;
+.gestion-partida-capacidad input {
+    min-height: 2.35rem;
+    border: 1px solid #888;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font: inherit;
+    width: 6rem;
 }
 
+/* Botón Copiar Enlace (Blanco con texto oscuro) */
 .copiar-invitacion {
-	border-color: #666;
-	background: #fff;
+    min-height: 2.25rem !important;
+    padding: 0.35rem 0.7rem !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    border-radius: 4px !important;
+    border: 1px solid #d1d5db !important;
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+    cursor: pointer !important;
+}
+
+.copiar-invitacion:hover {
+    background-color: #f3f4f6 !important;
+    border-color: #323333 !important;
+}
+
+/* Botón Fechar Sesiones (Con su color morado original) */
+.fechar-sesiones-trigger {
+    background-color: #4f39f6 !important;
+    border-color: #4f39f6 !important;
+    color: #ffffff !important;
 }
 
 .gestion-enlace-mensaje {
-	color: #125b30;
-	font-size: 0.8rem;
-}
-
-.gestion-partida-invitar {
-	display: grid;
-	gap: 0.35rem;
-	max-width: 32rem;
-	margin-bottom: 1rem;
-	color: #444;
-	font-size: 0.82rem;
-	font-weight: 700;
-}
-
-.gestion-partida-invitar > div input {
-	flex: 1 1 12rem;
-}
-
-.gestion-partida-invitar button {
-	border-color: #a8131a;
-	background: #c71920;
-	color: #fff;
+    color: #125b30;
+    font-size: 0.8rem;
 }
 
 .gestion-partida-roster ul {
-	display: grid;
-	gap: 0.35rem;
-	margin-top: 0.5rem;
-	list-style: none;
+    display: grid;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+    list-style: none;
+    padding: 0;
 }
 
 .gestion-partida-roster li {
-	justify-content: space-between;
-	border-bottom: 1px solid #e1e1e1;
-	padding: 0.3rem 0;
-	color: #444;
-	font-size: 0.85rem;
+    justify-content: space-between;
+    border-bottom: 1px solid #e1e1e1;
+    padding: 0.3rem 0;
+    color: #444;
+    font-size: 0.85rem;
 }
 
 .gestion-jugador-identidad {
-	display: grid;
-	gap: 0.15rem;
-	min-width: 0;
+    display: grid;
+    gap: 0.15rem;
+    min-width: 0;
 }
 
 .jugador-disponibilidad {
-	font-size: 0.74rem;
-	line-height: 1.35;
+    font-size: 0.74rem;
+    line-height: 1.35;
 }
 
 .jugador-disponibilidad.sin-disponibilidad {
-	color: #8d171d;
+    color: #8d171d;
 }
 
 .jugador-disponibilidad.con-disponibilidad {
-	color: #555;
+    color: #555;
 }
 
-.gestion-partida-roster button {
-	min-height: 2rem;
-	border-color: #a8131a;
-	color: #8d171d;
-}
-
-.gestion-partida-roster > p {
-	margin-top: 0.4rem;
-	color: #666;
-	font-size: 0.85rem;
+/* Estilo exclusivo para los botones "Quitar" de cada jugador */
+.btn-quitar-jugador {
+    min-height: 2rem !important;
+    padding: 0.3rem 0.65rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    border: 1px solid #a8131a !important;
+    color: #8d171d !important;
+    background: transparent !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
 }
 
 .gestion-roster-error {
-	margin-top: 0.45rem;
-	color: #8d171d;
-	font-size: 0.82rem;
+    margin-top: 0.45rem;
+    color: #8d171d;
+    font-size: 0.82rem;
 }
 
-.gestion-partida-roster > p button {
-	margin-left: 0.5rem;
-	min-height: 2rem;
-	padding: 0.25rem 0.55rem;
-	font-size: 0.76rem;
+/* Estilos para el desplegable de jugadores (tipo acordeón) */
+.gestion-roster-details {
+    border: 1px solid #e1e1e1;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    background-color: #fafafa;
+}
+
+.gestion-roster-details summary.gestion-partida-roster-header {
+    cursor: pointer;
+    list-style: none; /* Oculta la flecha por defecto en algunos navegadores */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+}
+
+/* Creamos una flechita hacia abajo elegante a la izquierda del título */
+.gestion-roster-details summary.gestion-partida-roster-header::-webkit-details-marker {
+    display: none;
+}
+
+.gestion-roster-details summary.gestion-partida-roster-header h4::before {
+    content: "▼";
+    font-size: 0.7rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+/* Al abrirse, la flechita rota hacia arriba */
+.gestion-roster-details[open] summary.gestion-partida-roster-header h4::before {
+    transform: rotate(180deg);
+}
+
+/* Espaciado interno cuando está abierto */
+.gestion-roster-details[open] ul {
+    margin-top: 0.75rem;
+    border-top: 1px solid #e1e1e1;
+    padding-top: 0.5rem;
 }

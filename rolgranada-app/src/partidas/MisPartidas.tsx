@@ -4,6 +4,7 @@ import { useAuth } from "../auth/useAuth";
 import type { Partida } from "../types";
 import GestionPartida from "./GestionPartida";
 import AvisoDisponibilidad from "./AvisoDisponibilidad";
+import FormularioPartida from "./FormularioPartida";
 import "./MisPartidas.css";
 
 type Sesion = {
@@ -14,7 +15,6 @@ type Sesion = {
 };
 
 const hoy = new Date();
-
 const diasSemana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 function fechaClave(fecha: Date) {
@@ -23,26 +23,21 @@ function fechaClave(fecha: Date) {
     return `${fecha.getFullYear()}-${mes}-${dia}`;
 }
 
-// Función para obtener el texto de la siguiente sesión a partir del listado de sesiones de la partida
 function obtenerTextoProximaSesion(tituloPartida: string, sesiones: Array<{ fecha: string; franja: string; titulo_partida: string }>): string {
     const ahora = new Date();
     ahora.setHours(0, 0, 0, 0);
 
-    // Filtramos las sesiones que pertenecen a esta partida
     const sesionesPartida = sesiones
         .filter((s) => s.titulo_partida === tituloPartida)
         .map((s) => ({
             ...s,
             objetoFecha: new Date(`${s.fecha}T12:00:00`),
         }))
-        // Ordenamos cronológicamente
         .sort((a, b) => a.objetoFecha.getTime() - b.objetoFecha.getTime());
 
     if (sesionesPartida.length === 0) return "Por decidir";
 
-    // Buscamos la primera sesión que sea igual o posterior a hoy
     const proxima = sesionesPartida.find((s) => s.objetoFecha >= ahora) ?? sesionesPartida[0];
-
     const franjaTexto = proxima.franja === "manana" ? "Mañana" : "Tarde";
     const fechaFormateada = new Intl.DateTimeFormat("es-ES", {
         day: "numeric",
@@ -53,19 +48,26 @@ function obtenerTextoProximaSesion(tituloPartida: string, sesiones: Array<{ fech
     return `${fechaFormateada} (${franjaTexto})`;
 }
 
-export default function MisPartidas({ onCrearCampana, onEditarCampana }: { onCrearCampana: () => void; onEditarCampana: (partida: Partida) => void }) {
-    const { usuario, partidas, sesiones: sesionesAgendadas, loading, error, desapuntarseDePartida, eliminarPartida } = useRolData();
+export default function MisPartidas() {
+    const { usuario, partidas, sesiones: sesionesAgendadas, loading, error, desapuntarseDePartida } = useRolData();
     const { requestLogin } = useAuth();
     const [campanaActiva, setCampanaActiva] = useState(0);
     const [mesVisible, setMesVisible] = useState(() => new Date(hoy.getFullYear(), hoy.getMonth(), 1));
+    
+    const [mostrarCrear, setMostrarCrear] = useState(false);
+    const [partidaEditando, setPartidaEditando] = useState<Partida | null>(null);
+    const [partidaAEliminar, setPartidaAEliminar] = useState<Partida | null>(null);
+    
     const misPartidas = partidas.filter((partida) => usuario?.partidasInscritasIds.includes(partida.id) || partida.dmId === usuario?.id);
     const indiceCampanaActiva = misPartidas.length ? campanaActiva % misPartidas.length : 0;
+    
     const sesiones: Sesion[] = sesionesAgendadas.map((sesion) => ({
         fecha: new Date(`${sesion.fecha}T12:00:00`),
         titulo: `Sesión · ${sesion.franja === "manana" ? "Mañana" : "Tarde"}`,
         campana: sesion.titulo_partida,
         hora: sesion.franja === "manana" ? "Mañana" : "Tarde",
     }));
+    
     const campana = misPartidas[indiceCampanaActiva];
 
     function moverCarrusel(direccion: number) {
@@ -73,26 +75,21 @@ export default function MisPartidas({ onCrearCampana, onEditarCampana }: { onCre
         setCampanaActiva((actual) => (actual + direccion + misPartidas.length) % misPartidas.length);
     }
 
-    async function borrarCampana(partida: Partida) {
-        if (!window.confirm(`¿Quieres borrar la campaña "${partida.titulo}"? Esta acción no se puede deshacer.`)) return;
-        try {
-            await eliminarPartida(partida.id);
-        } catch {
-            return;
-        }
-    }
     const inicioMes = new Date(mesVisible.getFullYear(), mesVisible.getMonth(), 1);
     const desplazamientoInicio = (inicioMes.getDay() + 6) % 7;
     const diasEnMes = new Date(mesVisible.getFullYear(), mesVisible.getMonth() + 1, 0).getDate();
     const totalCeldas = Math.ceil((desplazamientoInicio + diasEnMes) / 7) * 7;
+    
     const calendarioDias = Array.from({ length: totalCeldas }, (_, indice) =>
         new Date(mesVisible.getFullYear(), mesVisible.getMonth(), indice - desplazamientoInicio + 1),
     );
+    
     const sesionesPorFecha = new Map<string, Sesion[]>();
     for (const sesion of sesiones) {
         const clave = fechaClave(sesion.fecha);
         sesionesPorFecha.set(clave, [...(sesionesPorFecha.get(clave) ?? []), sesion]);
     }
+    
     const formatoMes = new Intl.DateTimeFormat("es-ES", { month: "long", year: "numeric" });
 
     if (loading) return <section className="mis-partidas" role="status">Cargando tus partidas…</section>;
@@ -106,7 +103,7 @@ export default function MisPartidas({ onCrearCampana, onEditarCampana }: { onCre
                     <p>Campañas que estás preparando o siguiendo.</p>
                 </div>
                 <div className="mis-partidas-cabecera-acciones">
-                    {usuario && <button className="mis-partidas-crear" type="button" onClick={onCrearCampana}>Crear campaña</button>}
+                    {usuario && <button className="mis-partidas-crear" type="button" onClick={() => setMostrarCrear(true)}>Crear campaña</button>}
                     <p className="campana-count">{misPartidas.length} {misPartidas.length === 1 ? "partida inscrita" : "partidas inscritas"}</p>
                 </div>
             </div>
@@ -133,23 +130,39 @@ export default function MisPartidas({ onCrearCampana, onEditarCampana }: { onCre
                                     <div><dt>Sistema:</dt><dd>{campana.sistema}</dd></div>
                                     <div><dt>DM:</dt><dd>{campana.dm}</dd></div>
                                     <div><dt>Siguiente Sesión:</dt><dd>{obtenerTextoProximaSesion(campana.titulo, sesionesAgendadas)}</dd></div>
-                                    <div><dt>Zona aproximada:</dt><dd>{campana.ubicacionAproximada}</dd></div>
                                     <div><dt>Sesiones al mes:</dt><dd>{campana.sesionesAlMes}</dd></div>
                                     {campana.duracionEstimada && <div><dt>Duración estimada:</dt><dd>{campana.duracionEstimada}</dd></div>}
-                                    {campana.ubicacionExacta && <div><dt>Ubicación exacta:</dt><dd>{campana.ubicacionExacta}</dd></div>}
-                                    <div><dt>Estado:</dt><dd>{etiquetaEstado(campana)}</dd></div>
+                                    {campana.ubicacionExacta && <div><dt>Ubicación:</dt><dd>{campana.ubicacionExacta}</dd></div>}
                                 </dl>
                                 <div className="campana-descripcion">
                                     <h3>Descripción:</h3>
                                     <p>{campana.descripcion}</p>
                                 </div>
+                                
                                 {campana.dmId === usuario?.id && (
                                     <div className="mis-partidas-acciones-campana">
-                                        <button type="button" onClick={() => onEditarCampana(campana)}>Editar campaña</button>
-                                        <button type="button" className="mis-partidas-eliminar" onClick={() => { void borrarCampana(campana); }}>Eliminar campaña</button>
+                                        <button type="button" onClick={() => setPartidaEditando(campana)}>
+                                            Editar campaña
+                                        </button>
+                                        <button type="button" className="mis-partidas-eliminar" onClick={() => setPartidaAEliminar(campana)}>
+                                            Eliminar campaña
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            className="fechar-sesiones-trigger" 
+                                            onClick={() => window.dispatchEvent(new CustomEvent(`abrir-agendamiento-${campana.id}`))}
+                                        >
+                                            Fechar sesiones
+                                        </button>
                                     </div>
                                 )}
-                                {campana.viewerIsParticipant && campana.dmId !== usuario?.id && <button className="abandonar-partida" type="button" onClick={() => { void desapuntarseDePartida(campana.id).catch(() => undefined); }}>Salir de la partida</button>}
+
+                                {campana.viewerIsParticipant && campana.dmId !== usuario?.id && (
+                                    <button className="abandonar-partida" type="button" onClick={() => { void desapuntarseDePartida(campana.id).catch(() => undefined); }}>
+                                        Salir de la partida
+                                    </button>
+                                )}
+                                
                                 {campana.dmId === usuario?.id && <GestionPartida key={campana.id} partida={campana} />}
                             </div>
                         </article>
@@ -175,8 +188,20 @@ export default function MisPartidas({ onCrearCampana, onEditarCampana }: { onCre
                         ))}
                     </div>
                 </div>
-            ) : <div className="mis-partidas-vacio"><h2>{usuario ? "Aún no estás en ninguna partida" : "Inicia sesión para ver tus partidas"}</h2><p>{usuario ? "Busca una campaña abierta y únete para verla aquí." : "La navegación es pública; tus campañas personales requieren una cuenta."}</p>{!usuario && <button type="button" onClick={requestLogin}>Acceder</button>}</div>}
+            ) : (
+                <div className="mis-partidas-vacio">
+                    <h2>{usuario ? "Aún no estás en ninguna partida" : "Inicia sesión para ver tus partidas"}</h2>
+                    <p>{usuario ? "Busca una campaña abierta y únete para verla aquí." : "La navegación es pública; tus campañas personales requieren una cuenta."}</p>
+                    {!usuario && <button type="button" onClick={requestLogin}>Acceder</button>}
+                </div>
+            )}
 
+            {/* Modales para crear, editar y eliminar desde Mis Partidas */}
+            {mostrarCrear && <FormularioPartida onClose={() => setMostrarCrear(false)} />}
+            {partidaEditando && <FormularioPartida partidaAEditar={partidaEditando} onClose={() => setPartidaEditando(null)} />}
+            {partidaAEliminar && <FormularioPartida partidaAEliminar={partidaAEliminar} onClose={() => setPartidaAEliminar(null)} />}
+
+            {/* Calendario de Próximas Sesiones */}
             <section className="calendario-sesiones" aria-labelledby="calendario-titulo">
                 <div className="calendario-cabecera">
                     <div>
@@ -213,10 +238,4 @@ export default function MisPartidas({ onCrearCampana, onEditarCampana }: { onCre
             </section>
         </section>
     );
-}
-
-function etiquetaEstado(partida: Partida) {
-    if (partida.estado === "en_curso") return "En curso";
-    if (partida.estado === "finalizada") return "Finalizada";
-    return "Abierta";
 }
