@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Pagina } from '../App';
 import whatsappQr from '../assets/whatsapp-qr.png';
+import instagramQr from '../assets/instagram-qr.png';
 import { useRolData } from '../useRolData';
 import './Inicio.css';
 
@@ -66,17 +67,32 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
         </article>
       </div>
 
-      {/* Comunidad de WhatsApp */}
-      <section className="inicio-whatsapp-section">
-        <div className="whatsapp-box-header">
-          <h3>Comunidad de WhatsApp</h3>
-          <p>Este es el grupo de la comunidad donde hablamos y organizamos cosas, creamos grupos para partidas y demás.</p>
+{/* Sección de Comunidad / Redes con Doble QR */}
+      <section className="inicio-comunidad-section">
+        <div className="comunidad-box-header">
+          <h3>Nuestra Comunidad</h3>
         </div>
-        <a href="https://chat.whatsapp.com/ED0bfq8fHqi2NyuscYE62v" target="_blank" rel="noreferrer" className="whatsapp-box-link">
-          <img src={whatsappQr} alt="Código QR de la comunidad de WhatsApp" className="whatsapp-qr-img" />
-          <span className="whatsapp-link-text">Unirse a la comunidad</span>
-        </a>
+
+        <div className="comunidad-qrs-grid">
+          <div className="comunidad-qr-card">
+            <a href="https://chat.whatsapp.com/ED0bfq8fHqi2NyuscYE62v" target="_blank" rel="noreferrer" className="whatsapp-box-link">
+              <img src={whatsappQr} alt="Código QR de la comunidad de WhatsApp" className="whatsapp-qr-img" />
+              <span className="whatsapp-link-text">Comunidad de WhatsApp</span>
+            </a>
+            <p className="comunidad-qr-desc">Este es el grupo de la comunidad donde hablamos, organizamos cosas y creamos grupos para partidas</p>
+          </div>
+
+          {/* Tarjeta Instagram */}
+          <div className="comunidad-qr-card">
+            <a href="https://instagram.com/rol_granada" target="_blank" rel="noreferrer" className="whatsapp-box-link">
+              <img src={instagramQr} alt="Código QR de Instagram" className="whatsapp-qr-img" />
+              <span className="whatsapp-link-text">Instagram @rol_granada</span>
+            </a>
+            <p className="comunidad-qr-desc">Aquí anunciamos cosas, como quedadas mensuales, eventos y mucho más.</p>
+          </div>
+        </div>
       </section>
+      
 
       {/* Estadísticas de la Comunidad */}
       <section className="inicio-stats-section">
@@ -118,7 +134,7 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
           </div>
 
           <div className="roadmap-card">
-            <h4> Calendario y Horarios</h4>
+            <h4> Calendario y Horarios (HECHO!) </h4>
             <p>Horas específicas para sesiones, días anteriores oscurecidos, enlaces directos a las partidas y exportación a Google Calendar.</p>
           </div>
 

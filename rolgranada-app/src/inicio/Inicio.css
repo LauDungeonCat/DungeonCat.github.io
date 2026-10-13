@@ -1,198 +1,222 @@
 .inicio-container {
-    width: min(100% - 2rem, 1000px);
-    margin: 0 auto;
-    padding: 2rem 0 4rem;
+  width: min(100% - 2rem, 1000px);
+  margin: 0 auto;
+  padding: 2rem 0 4rem;
 }
 
-/* Cabecera idéntica a Buscar Partidas / Mis Partidas */
+/* Cabecera y Títulos */
 .inicio-cabecera {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 2rem;
-    margin-bottom: 2rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.inicio-cabecera .page-title, .inicio-seccion-titulo {
+  margin: 0;
+  color: #202020;
+  font-family: Georgia, serif;
 }
 
 .inicio-cabecera .page-title {
-    margin: 0;
-    color: #202020;
-    font-family: Georgia, serif;
-    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+  font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+}
+
+.inicio-seccion-titulo {
+  font-size: 1.5rem;
+  margin: 0.5rem 0 1.25rem;
 }
 
 .inicio-subtitulo {
-    margin: 0.5rem 0 0;
-    color: #5e5e5e;
-    font-size: 0.95rem;
+  margin: 0.5rem 0 0;
+  color: #5e5e5e;
+  font-size: 0.95rem;
 }
 
-.inicio-cabecera-acciones {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+.seccion-etiqueta {
+  margin: 0 0 0.5rem;
+  color: #c71920;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-/* Estilos de Botones alineados con el resto del sitio */
+.seccion-separador {
+  margin-top: 2rem;
+}
+
+/* Botones */
+.btn-rojo, .btn-secundario {
+  min-height: 2.5rem;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
 .btn-rojo {
-    min-height: 2.5rem;
-    border: 0;
-    border-radius: 4px;
-    padding: 0.5rem 1rem;
-    background: #c71920;
-    color: #fff;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 700;
-    transition: background-color 0.15s ease;
+  border: 0;
+  background: #c71920;
+  color: #fff;
 }
-
-.btn-rojo:hover {
-    background: #a8131a;
-}
+.btn-rojo:hover { background: #a8131a; }
 
 .btn-secundario {
-    min-height: 2.5rem;
-    border: 2px solid #202020;
-    border-radius: 4px;
-    padding: 0.45rem 1rem;
-    background: #fff;
-    color: #202020;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 700;
-    transition: background-color 0.15s ease, transform 0.15s ease;
+  border: 2px solid #202020;
+  background: #fff;
+  color: #202020;
 }
-
 .btn-secundario:hover {
-    background: #f4f4f4;
-    transform: translateY(-1px);
+  background: #f4f4f4;
+  transform: translateY(-1px);
 }
 
-.btn-block {
-    width: 100%;
+.btn-block { width: 100%; }
+
+/* Contenedores de Tarjetas Compartidos (Accesos, Stats, Roadmap, Comunidad) */
+.inicio-card, .stat-card, .roadmap-card, .inicio-comunidad-section, .comunidad-qr-card {
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+  background: #fdfdfd;
 }
 
-/* Rejilla de tarjetas estilo neobrutalista */
-.inicio-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1rem;
+/* Rejillas generales */
+.inicio-grid, .comunidad-qrs-grid, .stats-grid, .roadmap-grid {
+  display: grid;
+  gap: 1.5rem;
 }
 
+.inicio-grid, .roadmap-grid, .comunidad-qrs-grid {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+/* Tarjetas de Accesos Rápidos (Neobrutalismo exacto) */
 .inicio-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    border: 2px solid #202020;
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 0 6px 0 #202020;
-    overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid #202020;
+  background: #fff;
+  box-shadow: 0 6px 0 #202020;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .inicio-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 9px 0 #202020;
+  transform: translateY(-3px);
+  box-shadow: 0 9px 0 #202020;
 }
 
-.inicio-card-body {
-    padding: 1.25rem 1.25rem 0.5rem;
-}
-
+.inicio-card-body { padding: 1.25rem 1.25rem 0.5rem; }
 .inicio-card-body h3 {
-    margin: 0.3rem 0 0.6rem;
-    color: #202020;
-    font-family: Georgia, serif;
-    font-size: 1.35rem;
+  margin: 0.3rem 0 0.6rem;
+  color: #202020;
+  font-family: Georgia, serif;
+  font-size: 1.35rem;
+}
+.inicio-card-body p, .roadmap-card p, .comunidad-qr-desc, .comunidad-box-header p {
+  color: #555;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  margin: 0;
+}
+.inicio-card-footer { padding: 1.25rem; }
+
+/* Sección Comunidad y Doble QR */
+.inicio-comunidad-section {
+  margin-top: 3rem;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
-.inicio-card-body p {
-    margin: 0;
-    color: #4f4f4f;
-    font-size: 0.88rem;
-    line-height: 1.5;
+.comunidad-box-header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.comunidad-box-header h3 {
+  margin: 0 0 0.5rem;
+  color: #202020;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.comunidad-box-header p { max-width: 600px; margin: 0 auto; }
+
+.comunidad-qr-card {
+  background: #fff;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-content: space-between;
 }
 
-.inicio-card-footer {
-    padding: 1.25rem;
+.whatsapp-box-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+}
+.whatsapp-box-link:hover .whatsapp-link-text {
+  color: #a8131a;
+  text-decoration: underline;
+}
+
+.whatsapp-link-text {
+  color: #202020;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.whatsapp-qr-img {
+  width: 130px;
+  height: 130px;
+  object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 4px;
+}
+
+.comunidad-qr-desc { margin-top: 1rem; }
+
+/* Estadísticas y Roadmap */
+.inicio-stats-section, .inicio-roadmap-section { margin-top: 3rem; }
+.inicio-roadmap-section { margin-bottom: 2rem; }
+
+.stats-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; }
+.stat-card { padding: 1.5rem; text-align: center; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02); }
+
+.stat-value {
+  display: block;
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #a8131a;
+  font-family: Georgia, serif;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.roadmap-card { padding: 1.25rem; }
+.roadmap-card h4 {
+  margin: 0 0 0.5rem;
+  color: #a8131a;
+  font-size: 1.05rem;
 }
 
 /* Responsive */
 @media (max-width: 680px) {
-    .inicio-cabecera {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-
-    .inicio-cabecera-acciones {
-        width: 100%;
-    }
-
-    .inicio-cabecera-acciones button {
-        flex: 1;
-    }
-}
-
-/* Caja de WhatsApp estilizada para la columna izquierda */
-.contact-whatsapp-box {
-    background: #fdfdfd;
-    border: 1px solid #e2e2e2;
-    border-radius: 8px;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 1.25rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-}
-
-.whatsapp-box-header h3 {
-    margin: 0 0 0.5rem 0;
-    color: #202020;
-    font-size: 1.15rem;
-    font-weight: 700;
-}
-
-.whatsapp-box-header p {
-    margin: 0;
-    color: #555;
-    font-size: 0.92rem;
-    line-height: 1.45;
-}
-
-.whatsapp-box-link {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    text-decoration: none;
-    padding: 0.5rem;
-    border-radius: 6px;
-    transition: transform 0.2s ease;
-}
-
-.whatsapp-box-link:hover .whatsapp-link-text {
-    color: #a8131a;
-    text-decoration: underline;
-}
-
-.whatsapp-link-text {
-    color: #202020;
-    font-weight: 700;
-    font-size: 0.95rem;
-}
-
-.whatsapp-qr-img {
-    width: 130px;
-    height: 130px;
-    object-fit: contain;
-    border-radius: 6px;
-    border: 1px solid #ddd;
-    background: #fff;
-    padding: 4px;
+  .inicio-cabecera { flex-direction: column; align-items: flex-start; gap: 1rem; }
 }

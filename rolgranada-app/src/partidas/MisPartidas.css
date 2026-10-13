@@ -213,7 +213,6 @@
     transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
-/* Dibujamos la flecha con un cuadrado rotado */
 .carrusel-control::after {
     content: "";
     display: block;
@@ -223,18 +222,16 @@
     border-right: 2.5px solid currentColor;
 }
 
-/* Orientación para la flecha izquierda (Anterior) */
 .carrusel-control[aria-label="Anterior campaña"]::after,
 .carrusel-control.anterior::after {
     transform: rotate(-135deg);
-    margin-left: 0.15rem; /* Ajuste óptico de centrado */
+    margin-left: 0.15rem;
 }
 
-/* Orientación para la flecha derecha (Siguiente) */
 .carrusel-control[aria-label="Siguiente campaña"]::after,
 .carrusel-control.siguiente::after {
     transform: rotate(45deg);
-    margin-right: 0.15rem; /* Ajuste óptico de centrado */
+    margin-right: 0.15rem;
 }
 
 .carrusel-control:hover,
@@ -243,7 +240,6 @@
     background-color: #f4f4f4;
 }
 
-/* Contenedor de los indicadores: alineación centrada y margen adecuado */
 .carrusel-indicadores {
     display: flex;
     justify-content: center;
@@ -253,135 +249,25 @@
     width: 100%;
 }
 
-/* Estilo individual del indicador: dimensiones iguales para garantizar un círculo perfecto */
 .indicador {
     width: 0.75rem;
     height: 0.75rem;
     padding: 0;
     border: none;
-    border-radius: 50%; /* Asegura la forma circular */
-    background-color: #d1d5db; /* Color inactivo */
+    border-radius: 50%;
+    background-color: #d1d5db;
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.2s ease;
-    flex-shrink: 0; /* Impide que flexbox deforme los círculos */
+    flex-shrink: 0;
 }
 
-/* Indicador activo */
 .indicador.activo {
-    background-color: #991b1b; /* Tono rojo coordinado con el diseño */
+    background-color: #991b1b;
     transform: scale(1.2);
 }
 
 .indicador:hover {
     background-color: #ef4444;
-}
-
-.calendario-sesiones {
-	margin-top: 4rem;
-	border: 2px solid #202020;
-	border-radius: 8px;
-	background: #fff;
-	box-shadow: 0 6px 0 #202020;
-	overflow: hidden;
-}
-
-.calendario-cabecera {
-	display: flex;
-	align-items: end;
-	justify-content: space-between;
-	gap: 1rem;
-	padding: 1.25rem 1.5rem;
-	border-bottom: 1px solid #d8d8d8;
-}
-
-.calendario-cabecera .seccion-etiqueta {
-	margin-bottom: 0.35rem;
-}
-
-.calendario-cabecera .section-title {
-	margin: 0;
-}
-
-.calendario-navegacion {
-	display: flex;
-	align-items: center;
-	gap: 0.75rem;
-	text-transform: capitalize;
-}
-
-.calendario-navegacion button {
-	width: 2.5rem;
-	min-height: 2.5rem;
-	padding: 0;
-	font-size: 1.7rem;
-}
-
-.calendario-grid {
-	display: grid;
-	grid-template-columns: repeat(7, minmax(0, 1fr));
-}
-
-.calendario-dia-semana {
-	padding: 0.7rem 0.4rem;
-	border-bottom: 1px solid #d8d8d8;
-	color: #555;
-	font-size: 0.85rem;
-	font-weight: 700;
-	text-align: center;
-}
-
-.calendario-celda {
-	min-width: 0;
-	min-height: 100px;
-	padding: 0.5rem;
-	border-right: 1px solid #e2e2e2;
-	border-bottom: 1px solid #e2e2e2;
-	background: #fff;
-}
-
-.calendario-celda:nth-child(7n) {
-	border-right: 0;
-}
-
-.calendario-celda time {
-	display: grid;
-	place-items: center;
-	width: 1.8rem;
-	height: 1.8rem;
-	border-radius: 50%;
-	font-size: 0.9rem;
-}
-
-.calendario-celda.fuera-de-mes {
-	background: #f6f6f6;
-	color: #999;
-}
-
-.calendario-celda.con-sesion time {
-	background: #c02642;
-	color: #fff;
-	font-weight: 700;
-}
-
-.evento-sesion {
-	display: grid;
-	gap: 0.15rem;
-	margin-top: 0.4rem;
-	border-left: 3px solid #c02642;
-	padding: 0.35rem 0.45rem;
-	background: #fbeaec;
-	color: #492024;
-	font-size: 0.72rem;
-}
-
-.evento-sesion span {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.evento-sesion small {
-	font-size: 0.68rem;
 }
 
 @media (max-width: 680px) {
@@ -422,41 +308,5 @@
 	.campana-contenido dt {
 		display: inline;
 		margin-right: 0.35rem;
-	}
-
-	.calendario-sesiones {
-		margin-top: 3rem;
-	}
-
-	.calendario-cabecera {
-		align-items: flex-start;
-		flex-direction: column;
-		padding: 1rem;
-	}
-
-	.calendario-navegacion {
-		width: 100%;
-		justify-content: space-between;
-	}
-
-	.calendario-celda {
-		min-height: 72px;
-		padding: 0.25rem;
-	}
-
-	.calendario-celda time {
-		width: 1.5rem;
-		height: 1.5rem;
-		font-size: 0.8rem;
-	}
-
-	.evento-sesion {
-		margin-top: 0.2rem;
-		padding: 0.2rem;
-		font-size: 0.62rem;
-	}
-
-	.evento-sesion span {
-		display: none;
 	}
 }

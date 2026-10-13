@@ -5,23 +5,8 @@ import type { Partida } from "../types";
 import GestionPartida from "./GestionPartida";
 import AvisoDisponibilidad from "./AvisoDisponibilidad";
 import FormularioPartida from "./FormularioPartida";
+import CalendarioSesiones, { type Sesion } from "./CalendarioSesiones";
 import "./MisPartidas.css";
-
-type Sesion = {
-    fecha: Date;
-    titulo: string;
-    campana: string;
-    hora: string;
-};
-
-const hoy = new Date();
-const diasSemana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-
-function fechaClave(fecha: Date) {
-    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-    const dia = String(fecha.getDate()).padStart(2, "0");
-    return `${fecha.getFullYear()}-${mes}-${dia}`;
-}
 
 function obtenerTextoProximaSesion(tituloPartida: string, sesiones: Array<{ fecha: string; franja: string; titulo_partida: string }>): string {
     const ahora = new Date();
@@ -52,7 +37,6 @@ export default function MisPartidas() {
     const { usuario, partidas, sesiones: sesionesAgendadas, loading, error, desapuntarseDePartida } = useRolData();
     const { requestLogin } = useAuth();
     const [campanaActiva, setCampanaActiva] = useState(0);
-    const [mesVisible, setMesVisible] = useState(() => new Date(hoy.getFullYear(), hoy.getMonth(), 1));
     
     const [mostrarCrear, setMostrarCrear] = useState(false);
     const [partidaEditando, setPartidaEditando] = useState<Partida | null>(null);
@@ -61,12 +45,17 @@ export default function MisPartidas() {
     const misPartidas = partidas.filter((partida) => usuario?.partidasInscritasIds.includes(partida.id) || partida.dmId === usuario?.id);
     const indiceCampanaActiva = misPartidas.length ? campanaActiva % misPartidas.length : 0;
     
-    const sesiones: Sesion[] = sesionesAgendadas.map((sesion) => ({
-        fecha: new Date(`${sesion.fecha}T12:00:00`),
-        titulo: `Sesión · ${sesion.franja === "manana" ? "Mañana" : "Tarde"}`,
-        campana: sesion.titulo_partida,
-        hora: sesion.franja === "manana" ? "Mañana" : "Tarde",
-    }));
+    const sesiones: Sesion[] = sesionesAgendadas.map((sesion) => {
+        const partidaAsociada = partidas.find((p) => p.titulo === sesion.titulo_partida);
+        return {
+            fecha: new Date(`${sesion.fecha}T12:00:00`),
+            titulo: `Sesión · ${sesion.franja === "manana" ? "Mañana" : "Tarde"}`,
+            campana: sesion.titulo_partida,
+            hora: sesion.franja === "manana" ? "Mañana" : "Tarde",
+            sistema: partidaAsociada?.sistema,
+            ubicacion: partidaAsociada?.ubicacionExacta ?? undefined, // <-- Coerción limpia de null a undefined
+        };
+    });
     
     const campana = misPartidas[indiceCampanaActiva];
 
@@ -74,23 +63,6 @@ export default function MisPartidas() {
         if (misPartidas.length === 0) return;
         setCampanaActiva((actual) => (actual + direccion + misPartidas.length) % misPartidas.length);
     }
-
-    const inicioMes = new Date(mesVisible.getFullYear(), mesVisible.getMonth(), 1);
-    const desplazamientoInicio = (inicioMes.getDay() + 6) % 7;
-    const diasEnMes = new Date(mesVisible.getFullYear(), mesVisible.getMonth() + 1, 0).getDate();
-    const totalCeldas = Math.ceil((desplazamientoInicio + diasEnMes) / 7) * 7;
-    
-    const calendarioDias = Array.from({ length: totalCeldas }, (_, indice) =>
-        new Date(mesVisible.getFullYear(), mesVisible.getMonth(), indice - desplazamientoInicio + 1),
-    );
-    
-    const sesionesPorFecha = new Map<string, Sesion[]>();
-    for (const sesion of sesiones) {
-        const clave = fechaClave(sesion.fecha);
-        sesionesPorFecha.set(clave, [...(sesionesPorFecha.get(clave) ?? []), sesion]);
-    }
-    
-    const formatoMes = new Intl.DateTimeFormat("es-ES", { month: "long", year: "numeric" });
 
     if (loading) return <section className="mis-partidas" role="status">Cargando tus partidas…</section>;
 
@@ -201,41 +173,8 @@ export default function MisPartidas() {
             {partidaEditando && <FormularioPartida partidaAEditar={partidaEditando} onClose={() => setPartidaEditando(null)} />}
             {partidaAEliminar && <FormularioPartida partidaAEliminar={partidaAEliminar} onClose={() => setPartidaAEliminar(null)} />}
 
-            {/* Calendario de Próximas Sesiones */}
-            <section className="calendario-sesiones" aria-labelledby="calendario-titulo">
-                <div className="calendario-cabecera">
-                    <div>
-                        <p className="seccion-etiqueta">Agenda</p>
-                        <h2 className="section-title" id="calendario-titulo">Próximas sesiones</h2>
-                    </div>
-                    <div className="calendario-navegacion">
-                        <button type="button" onClick={() => setMesVisible(new Date(mesVisible.getFullYear(), mesVisible.getMonth() - 1, 1))} aria-label="Mes anterior">‹</button>
-                        <strong>{formatoMes.format(mesVisible)}</strong>
-                        <button type="button" onClick={() => setMesVisible(new Date(mesVisible.getFullYear(), mesVisible.getMonth() + 1, 1))} aria-label="Mes siguiente">›</button>
-                    </div>
-                </div>
-
-                <div className="calendario-grid" role="grid" aria-label={`Calendario de ${formatoMes.format(mesVisible)}`}>
-                    {diasSemana.map((dia) => <div className="calendario-dia-semana" role="columnheader" key={dia}>{dia}</div>)}
-                    {calendarioDias.map((fecha) => {
-                        const sesionesDia = sesionesPorFecha.get(fechaClave(fecha)) ?? [];
-                        const perteneceAlMes = fecha.getMonth() === mesVisible.getMonth();
-                        return (
-                            <div
-                                className={`calendario-celda${perteneceAlMes ? "" : " fuera-de-mes"}${sesionesDia.length ? " con-sesion" : ""}`}
-                                role="gridcell"
-                                key={fechaClave(fecha)}
-                            >
-                                <time dateTime={fechaClave(fecha)}>{fecha.getDate()}</time>
-                                {sesionesDia.map((sesion) => <div className="evento-sesion" key={`${sesion.campana}-${sesion.hora}`}>
-                                    <strong>{sesion.titulo}</strong>
-                                    <span>{sesion.campana}</span>
-                                </div>)}
-                            </div>
-                        );
-                    })}
-                </div>
-            </section>
+            {/* Componente Calendario de Próximas Sesiones */}
+            <CalendarioSesiones sesiones={sesiones} />
         </section>
     );
 }
