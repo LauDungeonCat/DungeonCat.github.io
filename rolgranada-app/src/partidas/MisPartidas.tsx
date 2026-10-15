@@ -53,7 +53,7 @@ export default function MisPartidas() {
             campana: sesion.titulo_partida,
             hora: sesion.franja === "manana" ? "Mañana" : "Tarde",
             sistema: partidaAsociada?.sistema,
-            ubicacion: partidaAsociada?.ubicacionExacta ?? undefined, // <-- Coerción limpia de null a undefined
+            ubicacion: partidaAsociada?.ubicacionExacta ?? undefined,
         };
     });
     
@@ -100,7 +100,6 @@ export default function MisPartidas() {
                                 <h2>{campana.titulo}</h2>
                                 <dl>
                                     <div><dt>Sistema:</dt><dd>{campana.sistema}</dd></div>
-                                    <div><dt>DM:</dt><dd>{campana.dm}</dd></div>
                                     <div><dt>Siguiente Sesión:</dt><dd>{obtenerTextoProximaSesion(campana.titulo, sesionesAgendadas)}</dd></div>
                                     <div><dt>Sesiones al mes:</dt><dd>{campana.sesionesAlMes}</dd></div>
                                     {campana.duracionEstimada && <div><dt>Duración estimada:</dt><dd>{campana.duracionEstimada}</dd></div>}
@@ -135,7 +134,7 @@ export default function MisPartidas() {
                                     </button>
                                 )}
                                 
-                                {campana.dmId === usuario?.id && <GestionPartida key={campana.id} partida={campana} />}
+                                <GestionPartida key={campana.id} partida={campana} />
                             </div>
                         </article>
 
@@ -168,12 +167,10 @@ export default function MisPartidas() {
                 </div>
             )}
 
-            {/* Modales para crear, editar y eliminar desde Mis Partidas */}
             {mostrarCrear && <FormularioPartida onClose={() => setMostrarCrear(false)} />}
             {partidaEditando && <FormularioPartida partidaAEditar={partidaEditando} onClose={() => setPartidaEditando(null)} />}
             {partidaAEliminar && <FormularioPartida partidaAEliminar={partidaAEliminar} onClose={() => setPartidaAEliminar(null)} />}
 
-            {/* Componente Calendario de Próximas Sesiones */}
             <CalendarioSesiones sesiones={sesiones} />
         </section>
     );

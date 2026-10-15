@@ -178,3 +178,189 @@
     border-top: 1px solid #e1e1e1;
     padding-top: 0.5rem;
 }
+
+.gestion-partida {
+    margin-top: 1.5rem;
+    border-top: 2px solid #202020;
+    padding-top: 1.25rem;
+}
+
+.gestion-dm-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    background: #fff;
+    border: 2px solid #202020;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 0 #202020;
+}
+
+.gestion-dm-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.gestion-avatar-redondo {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid #202020;
+    overflow: hidden;
+    background: #202020;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.gestion-avatar-placeholder {
+    display: grid;
+    place-items: center;
+    font-size: 0.6rem;
+    color: #fff;
+    font-weight: 700;
+}
+
+.gestion-rol-titulo {
+    display: block;
+    font-size: 0.72rem;
+    color: #666;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.gestion-roster-details {
+    background: #fff;
+    border: 2px solid #202020;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 4px 0 #202020;
+}
+
+.gestion-roster-details summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.gestion-partida-roster-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.gestion-partida-roster-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: #202020;
+}
+
+.gestion-jugadores-ul {
+    list-style: none;
+    margin: 1rem 0 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.gestion-jugador-li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-top: 1px solid #eaeaea;
+    padding-top: 0.75rem;
+}
+
+.gestion-jugador-li:first-child {
+    border-top: none;
+    padding-top: 0;
+}
+
+.gestion-jugador-identidad {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.gestion-jugador-datos-texto {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.jugador-disponibilidad {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.jugador-disponibilidad.con-disponibilidad {
+    color: #0d5c2e;
+    font-weight: 600;
+}
+
+.jugador-disponibilidad.sin-disponibilidad {
+    color: #a8131a;
+    font-weight: 600;
+}
+
+.gestion-jugador-acciones-item {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.btn-ver-preferencias {
+    background: #fff;
+    border: 2px solid #202020;
+    border-radius: 4px;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 0 #202020;
+    transition: transform 0.1s ease, background-color 0.1s ease;
+}
+
+.btn-ver-preferencias:hover {
+    background: #f4f4f4;
+    transform: translateY(-1px);
+}
+
+.btn-quitar-jugador {
+    background: #fff;
+    border: 2px solid #a8131a;
+    border-radius: 4px;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #a8131a;
+    cursor: pointer;
+    box-shadow: 0 2px 0 #a8131a;
+    transition: transform 0.1s ease, background-color 0.1s ease;
+}
+
+.btn-quitar-jugador:hover {
+    background: #fdf2f2;
+    transform: translateY(-1px);
+}
+
+.copiar-invitacion {
+    background: #c02642;
+    border: 2px solid #202020;
+    border-radius: 4px;
+    color: #fff;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 0 #202020;
+}
+
+.copiar-invitacion:hover {
+    background: #a8131a;
+}

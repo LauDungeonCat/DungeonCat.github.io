@@ -129,13 +129,13 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
           </div>
 
           <div className="roadmap-card">
-            <h4> Perfil de Jugador Enriquecido</h4>
+            <h4> Perfil de Jugador (HECHO!)</h4>
             <p>Define tus preferencias (roleplay, combate, exploración), gustos y líneas o temas que prefieres evitar en tus partidas.</p>
           </div>
 
           <div className="roadmap-card">
             <h4> Calendario y Horarios (HECHO!) </h4>
-            <p>Horas específicas para sesiones, días anteriores oscurecidos, enlaces directos a las partidas y exportación a Google Calendar.</p>
+            <p>Días anteriores oscurecidos, enlaces directos a las partidas y exportación a Google Calendar.</p>
           </div>
 
           <div className="roadmap-card">

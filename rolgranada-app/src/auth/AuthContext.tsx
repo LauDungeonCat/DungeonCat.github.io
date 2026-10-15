@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		const userId = session.user.id;
 		void supabase
 			.from("profiles")
-			.select("id, username, avatar_url, role, created_at")
+			.select("id, username, avatar_url, role, created_at, rol_preferencias, lineas_evitar, estilo_master, pronombres, avatar_position")
 			.eq("id", userId)
 			.single()
 			.then(({ data, error: profileError }) => {
@@ -134,15 +134,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		setLoginRequested(false);
 	}
 
-	async function updateProfile(username: string, avatarUrl: string | null) {
+	async function updateProfile(
+		username: string, 
+		avatarUrl: string | null, 
+		rolPreferencias?: { roleplay: number; combate: number; exploracion: number }, 
+		lineasEvitar?: string, 
+		estiloMaster?: string,
+		pronombres?: string,
+		avatarPosition?: string
+	) {
 		if (!profile) throw new Error("Debes iniciar sesión para editar el perfil.");
 		setError(null);
+
+		const payload: any = {
+			username: username.trim(),
+			avatar_url: avatarUrl,
+		};
+
+		if (rolPreferencias !== undefined) payload.rol_preferencias = rolPreferencias;
+		if (lineasEvitar !== undefined) payload.lineas_evitar = lineasEvitar;
+		if (estiloMaster !== undefined) payload.estilo_master = estiloMaster;
+		if (pronombres !== undefined) payload.pronombres = pronombres;
+		if (avatarPosition !== undefined) payload.avatar_position = avatarPosition;
+
 		const { data, error: updateError } = await supabase
 			.from("profiles")
-			.update({ username: username.trim(), avatar_url: avatarUrl })
+			.update(payload)
 			.eq("id", profile.id)
-			.select("id, username, avatar_url, role, created_at")
+			.select("id, username, avatar_url, role, created_at, rol_preferencias, lineas_evitar, estilo_master, pronombres, avatar_position")
 			.single();
+
 		if (updateError) {
 			setError(mensajeError(updateError));
 			throw updateError;

@@ -1,6 +1,7 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState } from 'react';
 import './Header.css';
 import logo from '../assets/logo.svg';
+import crownIcon from '../assets/crown.svg';
 import bellIcon from '../assets/Bell-Notification.svg';
 import bellAlertIcon from '../assets/Bell-Notification-There-Is-A-Notification.svg';
 import type { ProfileRow, SolicitudPendienteRow } from '../lib/database.types';
@@ -11,10 +12,10 @@ type HeaderProps = {
   profile: ProfileRow | null;
   onSignOut: () => Promise<void>;
   requestLogin: () => void;
-  updateProfile: (username: string, avatarUrl: string | null) => Promise<void>;
+  updateProfile: (username: string, avatarUrl: string | null, rolPreferencias?: any, lineasEvitar?: string, estiloMaster?: string) => Promise<void>;
 };
 
-export default function Header({ onNavigate, profile, onSignOut, requestLogin, updateProfile }: HeaderProps) {
+export default function Header({ onNavigate, profile, requestLogin }: HeaderProps) {
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [partidasAbierto, setPartidasAbierto] = useState(false);
   const [notificacionesAbiertas, setNotificacionesAbiertas] = useState(false);
@@ -23,11 +24,6 @@ export default function Header({ onNavigate, profile, onSignOut, requestLogin, u
   const [cargandoSolicitudes, setCargandoSolicitudes] = useState(false);
   const [errorNotificaciones, setErrorNotificaciones] = useState<string | null>(null);
   const [solicitudEnResolucion, setSolicitudEnResolucion] = useState<string | null>(null);
-  const [perfilAbierto, setPerfilAbierto] = useState(false);
-  const [username, setUsername] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
-  const [guardandoPerfil, setGuardandoPerfil] = useState(false);
-  const [errorPerfil, setErrorPerfil] = useState<string | null>(null);
 
   const usuarioId = profile?.id;
   useEffect(() => {
@@ -85,29 +81,6 @@ export default function Header({ onNavigate, profile, onSignOut, requestLogin, u
       ...actual,
       items: actual.items.filter((item) => item.partida_id !== solicitud.partida_id || item.user_id !== solicitud.user_id),
     } : actual);
-  }
-
-  function abrirPerfil() {
-    if (!profile) return;
-    setUsername(profile.username);
-    setAvatarUrl(profile.avatar_url ?? '');
-    setErrorPerfil(null);
-    setPerfilAbierto(true);
-    setNotificacionesAbiertas(false);
-  }
-
-  async function guardarPerfil(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setGuardandoPerfil(true);
-    setErrorPerfil(null);
-    try {
-      await updateProfile(username, avatarUrl.trim() || null);
-      setPerfilAbierto(false);
-    } catch (error) {
-      setErrorPerfil(error instanceof Error ? error.message : 'No se pudo actualizar el perfil.');
-    } finally {
-      setGuardandoPerfil(false);
-    }
   }
 
   return (
@@ -174,17 +147,42 @@ export default function Header({ onNavigate, profile, onSignOut, requestLogin, u
 
       <div className="header-actions">
         {profile ? <>
-          <span className="header-user-name">{profile.username}</span>
-          {profile.role === 'admin' && <span className="header-user-role">Admin</span>}
-          <button className="header-action" type="button" onClick={abrirPerfil}>Editar perfil</button>
+          <div className="header-user-info" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', position: 'relative' }}>
+            {profile.role === 'admin' && (
+              <img 
+                src={crownIcon} 
+                alt="Admin Crown" 
+                title="Administrador"
+                style={{ position: 'absolute', top: '-14px', left: '6px', width: '20px', height: '20px', zIndex: 2 }} 
+              />
+            )}
+            {profile.avatar_url ? (
+  <div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', border: '1px solid #202020', flexShrink: 0, position: 'relative', background: '#202020' }}>
+    <img 
+      src={profile.avatar_url} 
+      alt="" 
+      style={{ 
+        width: '100%', 
+        height: '100%', 
+        objectFit: 'cover', 
+        display: 'block',
+        objectPosition: profile.avatar_position ? `${profile.avatar_position.split(' ')[0]}% ${profile.avatar_position.split(' ')[1]}%` : '50% 50%',
+        transform: profile.avatar_position && profile.avatar_position.split(' ')[2] ? `scale(${parseInt(profile.avatar_position.split(' ')[2], 10) / 100})` : 'none',
+        transformOrigin: profile.avatar_position ? `${profile.avatar_position.split(' ')[0]}% ${profile.avatar_position.split(' ')[1]}%` : '50% 50%'
+      }} 
+    />
+  </div>
+) : null}
+            <span className="header-user-name">{profile.username}</span>
+          </div>
+          
+          <button className="header-action" type="button" onClick={() => onNavigate('perfil')}>Perfil</button>
+
           <button
             className="header-action header-notifications-trigger"
             type="button"
             aria-expanded={notificacionesAbiertas}
-            onClick={() => {
-              setNotificacionesAbiertas((abierto) => !abierto);
-              setPerfilAbierto(false);
-            }}
+            onClick={() => setNotificacionesAbiertas((abierto) => !abierto)}
           >
             <img
               className="header-notification-icon"
@@ -195,7 +193,6 @@ export default function Header({ onNavigate, profile, onSignOut, requestLogin, u
             <span>Notificaciones</span>
             {solicitudes.length > 0 && <span className="header-notification-count">{solicitudes.length}</span>}
           </button>
-          <button className="header-sign-out" type="button" onClick={() => { void onSignOut().catch(() => undefined); }}>Salir</button>
         </> : <button className="header-sign-out" type="button" onClick={requestLogin}>Acceder</button>}
       </div>
 
@@ -231,32 +228,6 @@ export default function Header({ onNavigate, profile, onSignOut, requestLogin, u
                 })}
               </ul>
             )}
-          </section>
-        </div>
-      )}
-
-      {perfilAbierto && (
-        <div className="header-dialog-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget) setPerfilAbierto(false); }}>
-          <section className="header-dialog profile-dialog" role="dialog" aria-modal="true" aria-labelledby="profile-title">
-            <header className="header-dialog-heading">
-              <h2 id="profile-title">Editar perfil</h2>
-              <button type="button" className="header-dialog-close" aria-label="Cerrar edición de perfil" onClick={() => setPerfilAbierto(false)}>×</button>
-            </header>
-            <form className="profile-form" onSubmit={(event) => { void guardarPerfil(event); }}>
-              <label>
-                Nombre de usuario
-                <input required minLength={3} maxLength={48} value={username} onChange={(event) => setUsername(event.target.value)} />
-              </label>
-              <label>
-                URL del avatar <span>(opcional)</span>
-                <input type="url" maxLength={500} value={avatarUrl} onChange={(event) => setAvatarUrl(event.target.value)} placeholder="https://ejemplo.com/avatar.jpg" />
-              </label>
-              {errorPerfil && <p className="datos-error" role="alert">{errorPerfil}</p>}
-              <div className="profile-form-actions">
-                <button type="button" onClick={() => setPerfilAbierto(false)}>Cancelar</button>
-                <button type="submit" disabled={guardandoPerfil}>{guardandoPerfil ? 'Guardando…' : 'Guardar perfil'}</button>
-              </div>
-            </form>
           </section>
         </div>
       )}

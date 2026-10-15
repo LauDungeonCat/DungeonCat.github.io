@@ -180,10 +180,13 @@
 }
 
 .abandonar-partida {
+	min-height: 2.25rem;
+	padding: 0.35rem 0.7rem;
+	font-size: 0.82rem;
+	font-weight: 700;
 	margin-top: 1rem;
 	border-color: #a8131a;
 	color: #a8131a;
-	font-size: 0.85rem;
 }
 
 .mis-partidas-vacio {

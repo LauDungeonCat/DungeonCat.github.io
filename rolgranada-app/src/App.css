@@ -2,7 +2,7 @@
 #root, .app-layout, .app-container {
   display: flex;
   flex-direction: column;
-  min-height: 200vh;
+  min-height: 150vh;
 }
 
 /* Si tienes un contenedor central que envuelve tus páginas, haz que crezca para empujar el footer */

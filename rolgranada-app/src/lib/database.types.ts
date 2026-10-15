@@ -6,8 +6,17 @@ export type ProfileRow = {
   id: string;
   username: string;
   avatar_url: string | null;
-  role: RolUsuario;
-  created_at: string | null;
+  role: string;
+  created_at?: string;
+  pronombres?: string | null;           
+  avatar_position?: string | null;      
+  rol_preferencias?: {
+    roleplay?: number;
+    combate?: number;
+    exploracion?: number;
+  } | null;
+  lineas_evitar?: string | null;
+  estilo_master?: string | null;
 };
 
 export type PartidaRow = {
