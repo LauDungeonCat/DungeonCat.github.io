@@ -228,6 +228,7 @@ export default function Perfil() {
                           min="0" 
                           max="100" 
                           value={posX} 
+                          style={{ '--value-percent': `${posX}%` } as React.CSSProperties}
                           onChange={(e) => setPosX(Number(e.target.value))} 
                         />
                       </label>
@@ -238,6 +239,7 @@ export default function Perfil() {
                           min="0" 
                           max="100" 
                           value={posY} 
+                          style={{ '--value-percent': `${posY}%` } as React.CSSProperties}
                           onChange={(e) => setPosY(Number(e.target.value))} 
                         />
                       </label>
@@ -248,6 +250,7 @@ export default function Perfil() {
                           min="100" 
                           max="300" 
                           value={zoom} 
+                          style={{ '--value-percent': `${((zoom - 100) / (300 - 100)) * 100}%` } as React.CSSProperties}
                           onChange={(e) => setZoom(Number(e.target.value))} 
                         />
                       </label>
@@ -272,6 +275,7 @@ export default function Perfil() {
                   min="1"
                   max="5"
                   value={roleplay}
+                  style={{ '--value-percent': `${((roleplay - 1) / (5 - 1)) * 100}%` } as React.CSSProperties}
                   onChange={(e) => setRoleplay(Number(e.target.value))}
                 />
               </label>
@@ -283,6 +287,7 @@ export default function Perfil() {
                   min="1"
                   max="5"
                   value={combate}
+                  style={{ '--value-percent': `${((combate - 1) / (5 - 1)) * 100}%` } as React.CSSProperties}
                   onChange={(e) => setCombate(Number(e.target.value))}
                 />
               </label>
@@ -294,6 +299,7 @@ export default function Perfil() {
                   min="1"
                   max="5"
                   value={exploracion}
+                  style={{ '--value-percent': `${((exploracion - 1) / (5 - 1)) * 100}%` } as React.CSSProperties}
                   onChange={(e) => setExploracion(Number(e.target.value))}
                 />
               </label>

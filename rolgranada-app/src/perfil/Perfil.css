@@ -104,7 +104,7 @@
 
 .perfil-slider-group {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
   background: #fdfdfd;
   border: 1px solid #eaeaea;
   padding: 1.25rem;
@@ -112,9 +112,46 @@
   margin-bottom: 1rem;
 }
 
-.perfil-slider-group input[type="range"] {
+/* ==========================================================
+   SLIDERS AJUSTADOS (Centrado vertical exacto y extremos totales)
+   ================================================---------- */
+.perfil-slider-group input[type="range"],
+.perfil-sliders-posicion input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
-  accent-color: #c71920;
+  height: 10px;
+  background: linear-gradient(to right, #c71920 0%, #c71920 var(--value-percent, 50%), #e5e5e5 var(--value-percent, 50%), #e5e5e5 100%);
+  border: 2px solid #202020;
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+  margin: 10px 0;
+}
+
+/* Webkit (Chrome, Opera GX, Edge, Safari) */
+.perfil-slider-group input[type="range"]::-webkit-slider-thumb,
+.perfil-sliders-posicion input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  background: #c71920;
+  border: 2px solid #202020;
+  border-radius: 50%;
+  cursor: pointer;
+  /* Al ser más grande y tener bordes, lo bajamos un poco más para que quede perfectamente centrado */
+  margin-top: 1px; 
+}
+
+/* Firefox */
+.perfil-slider-group input[type="range"]::-moz-range-thumb,
+.perfil-sliders-posicion input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  background: #c71920;
+  border: 2px solid #202020;
+  border-radius: 50%;
   cursor: pointer;
 }
 
@@ -243,12 +280,6 @@
   flex-direction: column;
   gap: 0.25rem;
   min-width: 0;
-}
-
-.perfil-sliders-posicion input[type="range"] {
-  width: 100%;
-  accent-color: #c71920;
-  cursor: pointer;
 }
 
 .label-header {
