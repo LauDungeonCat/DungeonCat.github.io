@@ -4,10 +4,9 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  background-color: #c02642;
+  background-color: var(--color-brand-header, #c02642);
   padding: 0.8rem 2rem;
-  color: white;
-  /* Cambiamos la sombra difuminada por el estilo neobrutalista sólido */
+  color: #ffffff;
   border-bottom: 2px solid #202020;
   box-shadow: 0 6px 0 #202020;
   margin-bottom: 2rem;
@@ -69,9 +68,10 @@
 
 .tools-trigger:hover,
 .tools-trigger:focus-visible {
-  background-color: #9b182e;
+  background-color: var(--color-brand-dark, #9b182e);
   transform: translateY(-1px) scale(1.02);
 }
+
 .header-logo span {
   font-family: 'Montserrat Alternates', sans-serif;
   font-weight: 800;
@@ -124,12 +124,12 @@
 .header-nav a:hover,
 .header-nav a:active,
 .header-nav a.active {
-  background-color: #9b182e; /* Ajustado para oscurecer armónicamente sobre #c02642 */
+  background-color: var(--color-brand-dark, #9b182e);
   transform: translateY(-1px) scale(1.02);
 }
 
 /* ==========================================================
-   MENÚ DROPDOWN (Adaptado con variables para modo oscuro/claro)
+   MENÚ DROPDOWN
    ========================================================== */
 .tools-dropdown {
   position: absolute;
@@ -140,9 +140,9 @@
   padding: 0.5rem 0 !important;
   margin: 0;
   background: var(--bg-card, #fff);
-  border: 1px solid var(--input-border, #d7d7d7);
+  border: 2px solid var(--border-neobrutal, #202020);
   border-radius: 6px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 8px 0 var(--shadow-neobrutal, #202020);
   opacity: 1;
   pointer-events: auto;
   transform: translate(-50%, 0);
@@ -186,8 +186,10 @@
   background: var(--bg-hover, #f2f2f2);
   transform: none;
 }
-/* ========================================================== */
 
+/* ==========================================================
+   ACCIONES DE USUARIO & NOTIFICACIONES
+   ========================================================== */
 .header-actions {
   display: flex;
   align-items: center;
@@ -215,7 +217,8 @@
   text-transform: uppercase;
 }
 
-.header-sign-out {
+.header-sign-out,
+.header-action {
   min-height: 2.25rem;
   border-color: rgba(255, 255, 255, 0.8);
   padding: 0.35rem 0.65rem;
@@ -224,19 +227,9 @@
   font-size: 0.85rem;
 }
 
-
-.header-action {
-  min-height: 2.25rem;
-  border-color: rgba(255, 255, 255, 0.8);
-  padding: 0.35rem 0.65rem;
-  background: transparent;
-  color: #fff;
-  font-size: 0.82rem;
-}
-
 .header-sign-out:hover,
 .header-action:hover {
-  background: #9b182e;
+  background: var(--color-brand-dark, #9b182e);
 }
 
 .header-notifications-trigger {
@@ -262,11 +255,14 @@
   border-radius: 50%;
   padding: 0 0.2rem;
   background: #fff;
-  color: #a8131a;
+  color: var(--color-brand-header, #a8131a);
   font-size: 0.7rem;
   font-weight: 800;
 }
 
+/* ==========================================================
+   DIÁLOGO DE NOTIFICACIONES Y EDICIÓN DE PERFIL (MODAL)
+   ========================================================== */
 .header-dialog-overlay {
   position: fixed;
   inset: 0;
@@ -281,11 +277,11 @@
   width: min(100%, 620px);
   max-height: calc(100vh - 2rem);
   overflow: auto;
-  border: 2px solid #222;
+  border: 2px solid var(--border-neobrutal);
   border-radius: 8px;
   padding: 1.25rem;
-  background: #fff;
-  color: #222;
+  background: var(--bg-card);
+  color: var(--text-primary);
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
 }
 
@@ -301,6 +297,7 @@
   margin: 0;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 1.35rem;
+  color: var(--text-primary);
 }
 
 .header-dialog-close {
@@ -308,6 +305,9 @@
   min-height: 2.25rem;
   padding: 0;
   font-size: 1.35rem;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 2px solid var(--border-neobrutal);
 }
 
 .notifications-list {
@@ -323,7 +323,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--input-border);
   padding: 0.75rem 0;
 }
 
@@ -332,10 +332,11 @@
   gap: 0.2rem;
   min-width: 0;
   font-size: 0.88rem;
+  color: var(--text-primary);
 }
 
 .notification-details time {
-  color: #666;
+  color: var(--text-muted);
   font-size: 0.75rem;
 }
 
@@ -351,27 +352,34 @@
   min-height: 2.25rem;
   padding: 0.35rem 0.6rem;
   font-size: 0.8rem;
+  font-weight: 700;
 }
 
 .notification-accept,
 .profile-form-actions button[type='submit'] {
-  border-color: #a8131a;
-  background: #c71920;
-  color: #fff;
+  border-color: var(--color-brand-dark);
+  background: var(--color-brand-header);
+  color: var(--text-inverted);
 }
 
 .notification-accept:hover:not(:disabled),
 .profile-form-actions button[type='submit']:hover:not(:disabled) {
-  background: #a8131a;
+  background: var(--color-brand-dark);
 }
 
 .notification-reject {
-  background: #fff;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--input-border);
+}
+
+.notification-reject:hover {
+  background: var(--bg-hover);
 }
 
 .notifications-empty {
   margin: 0;
-  color: #555;
+  color: var(--text-secondary);
 }
 
 .profile-form {
@@ -382,30 +390,30 @@
 .profile-form label {
   display: grid;
   gap: 0.4rem;
-  color: #333;
+  color: var(--text-primary);
   font-size: 0.88rem;
   font-weight: 700;
 }
 
 .profile-form label span {
-  color: #666;
+  color: var(--text-muted);
   font-weight: 400;
 }
 
 .profile-form input {
   width: 100%;
   min-height: 2.6rem;
-  border: 1px solid #888;
+  border: 1px solid var(--input-border);
   border-radius: 4px;
   padding: 0.55rem 0.65rem;
-  background: #fff;
-  color: #222;
+  background: var(--input-bg);
+  color: var(--input-text);
   font: inherit;
   font-weight: 400;
 }
 
 .profile-form input:focus-visible {
-  outline: 2px solid #c71920;
+  outline: 2px solid var(--color-brand-header);
   outline-offset: 2px;
 }
 
