@@ -12,11 +12,11 @@
   width: min(100%, 520px);
   max-height: calc(100vh - 3rem);
   overflow-y: auto;
-  border: 2px solid #222;
+  border: 2px solid var(--border-neobrutal);
   border-radius: 8px;
   padding: 1.5rem;
-  background: #fff;
-  color: #202020;
+  background: var(--bg-card);
+  color: var(--text-primary);
   box-shadow: 0 16px 50px rgba(0, 0, 0, 0.25);
 }
 
@@ -30,7 +30,7 @@
 
 .modal-badge-rol {
   margin: 0 0 0.4rem;
-  color: #c02642;
+  color: var(--color-brand-header);
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -42,19 +42,19 @@
   margin: 0;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 1.35rem;
-  color: #222;
+  color: var(--text-primary);
   line-height: 1.2;
 }
 
-/* Botón de cerrar con la X perfectamente centrada */
 .modal-close-btn {
-  background: #fff;
-  border: 2px solid #222;
+  background: var(--bg-card);
+  border: 2px solid var(--border-neobrutal);
   border-radius: 4px;
   width: 2.5rem;
   min-height: 2.5rem;
   cursor: pointer;
   font-size: 1.5rem;
+  color: var(--text-primary);
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -63,37 +63,45 @@
 }
 
 .modal-close-btn:hover {
-  background: #fdf2f2;
-  color: #c02642;
+  background: var(--state-error-bg);
+  color: var(--color-brand-header);
 }
 
 .modal-perfil-user-header {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: #fafafa;
-  border: 1px solid #8d8d8d;
+  background: var(--bg-alt);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
   padding: 1rem;
   margin-bottom: 1.25rem;
 }
 
 .modal-avatar-frame {
-  width: 56px;
-  height: 56px;
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px;
+  min-height: 56px;
   border-radius: 50%;
-  border: 2px solid #222;
+  border: 2px solid var(--border-neobrutal);
   overflow: hidden;
-  background: #222;
+  background: #202020 !important; /* Fondo oscuro fijo */
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-avatar-placeholder {
   display: grid;
   place-items: center;
-  font-size: 0.7rem;
-  color: #fff;
+  font-size: 0.75rem;
+  color: #ffffff !important; /* Texto blanco fijo */
   font-weight: 700;
+  width: 100%;
+  height: 100%;
+  background: #202020 !important;
 }
 
 .modal-user-identity {
@@ -106,14 +114,14 @@
   margin: 0;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #222;
+  color: var(--text-primary);
 }
 
 .modal-pronombres-pill {
   align-self: flex-start;
-  background: #eee;
-  border: 1px solid #8d8d8d;
-  color: #444;
+  background: var(--bg-subtle);
+  border: 1px solid var(--input-border);
+  color: var(--text-secondary);
   font-size: 0.72rem;
   font-weight: 600;
   padding: 0.1rem 0.4rem;
@@ -121,9 +129,9 @@
 }
 
 .modal-seccion-card {
-  border: 1px solid #8d8d8d;
+  border: 1px solid var(--input-border);
   border-radius: 6px;
-  background: #fff;
+  background: var(--bg-card);
   padding: 1rem;
   margin-bottom: 1rem;
 }
@@ -132,10 +140,10 @@
   margin: 0 0 0.75rem 0;
   font-size: 0.88rem;
   font-weight: 700;
-  color: #333;
+  color: var(--text-primary);
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--input-border);
   padding-bottom: 0.4rem;
 }
 
@@ -144,11 +152,11 @@
   font-size: 0.9rem;
   line-height: 1.5;
   white-space: pre-wrap;
-  color: #444;
+  color: var(--text-secondary);
 }
 
 .modal-texto-contenido.sin-respuesta {
-  color: #666;
+  color: var(--text-muted);
   font-style: italic;
 }
 
@@ -166,27 +174,27 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.85rem;
-  color: #333;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
 .stat-bar-bg {
   height: 8px;
-  background: #eee;
+  background: var(--bg-subtle);
   border-radius: 4px;
   overflow: hidden;
-  border: 1px solid #ccc;
+  border: 1px solid var(--input-border);
 }
 
 .stat-bar-fill {
   height: 100%;
-  background: #c02642;
+  background: var(--color-brand-header);
   border-radius: 2px;
 }
 
 .modal-loading {
   text-align: center;
-  color: #666;
+  color: var(--text-muted);
   font-weight: 600;
   margin: 2rem 0;
 }

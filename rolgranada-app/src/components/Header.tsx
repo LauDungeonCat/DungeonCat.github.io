@@ -4,6 +4,8 @@ import logo from '../assets/logo.svg';
 import crownIcon from '../assets/crown.svg';
 import bellIcon from '../assets/Bell-Notification.svg';
 import bellAlertIcon from '../assets/Bell-Notification-There-Is-A-Notification.svg';
+import sunIcon from '../assets/sun.svg';
+import moonIcon from '../assets/moon.svg';
 import type { ProfileRow, SolicitudPendienteRow } from '../lib/database.types';
 import { supabase } from '../lib/supabase';
 
@@ -24,6 +26,29 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
   const [cargandoSolicitudes, setCargandoSolicitudes] = useState(false);
   const [errorNotificaciones, setErrorNotificaciones] = useState<string | null>(null);
   const [solicitudEnResolucion, setSolicitudEnResolucion] = useState<string | null>(null);
+
+  // Estado para el modo oscuro
+  const [esModoOscuro, setEsModoOscuro] = useState(false);
+
+  useEffect(() => {
+    const guardadoOscuro = localStorage.getItem('darkMode') === 'true';
+    if (guardadoOscuro) {
+      document.body.classList.add('dark-mode');
+      setEsModoOscuro(true);
+    }
+  }, []);
+
+  const toggleModoOscuro = () => {
+    const nuevoEstado = !esModoOscuro;
+    setEsModoOscuro(nuevoEstado);
+    if (nuevoEstado) {
+      document.body.classList.add('dark-mode');
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      document.body.classList.remove('dark-mode');
+      localStorage.setItem('darkMode', 'false');
+    }
+  };
 
   const usuarioId = profile?.id;
   useEffect(() => {
@@ -146,33 +171,58 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
       </nav>
 
       <div className="header-actions">
+        {/* Botón de Modo Oscuro con SVGs */}
+        <button 
+          className="header-action header-theme-toggle" 
+          type="button" 
+          onClick={toggleModoOscuro}
+          aria-label="Cambiar modo oscuro"
+          title={esModoOscuro ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+          style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.4rem' }}
+        >
+          <img 
+            src={esModoOscuro ? sunIcon : moonIcon} 
+            alt="" 
+            style={{ width: '1.2rem', height: '1.2rem', display: 'block' }} 
+            aria-hidden="true"
+          />
+        </button>
+
         {profile ? <>
           <div className="header-user-info" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', position: 'relative' }}>
             {profile.role === 'admin' && (
-              <img 
-                src={crownIcon} 
-                alt="Admin Crown" 
-                title="Administrador"
-                style={{ position: 'absolute', top: '-14px', left: '6px', width: '20px', height: '20px', zIndex: 2 }} 
-              />
-            )}
+  <img 
+    src={crownIcon} 
+    alt="Admin Crown" 
+    title="Administrador"
+    style={{ 
+      position: 'absolute', 
+      top: '-14px', 
+      left: '6px', 
+      width: '20px', 
+      height: '20px', 
+      zIndex: 2,
+      filter: 'brightness(0) invert(1)' /* Fuerza el SVG a blanco puro sobre el fondo rojo del header */
+    }} 
+  />
+)}
             {profile.avatar_url ? (
-  <div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', border: '1px solid #202020', flexShrink: 0, position: 'relative', background: '#202020' }}>
-    <img 
-      src={profile.avatar_url} 
-      alt="" 
-      style={{ 
-        width: '100%', 
-        height: '100%', 
-        objectFit: 'cover', 
-        display: 'block',
-        objectPosition: profile.avatar_position ? `${profile.avatar_position.split(' ')[0]}% ${profile.avatar_position.split(' ')[1]}%` : '50% 50%',
-        transform: profile.avatar_position && profile.avatar_position.split(' ')[2] ? `scale(${parseInt(profile.avatar_position.split(' ')[2], 10) / 100})` : 'none',
-        transformOrigin: profile.avatar_position ? `${profile.avatar_position.split(' ')[0]}% ${profile.avatar_position.split(' ')[1]}%` : '50% 50%'
-      }} 
-    />
-  </div>
-) : null}
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', border: '1px solid #202020', flexShrink: 0, position: 'relative', background: '#202020' }}>
+                <img 
+                  src={profile.avatar_url} 
+                  alt="" 
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'cover', 
+                    display: 'block',
+                    objectPosition: profile.avatar_position ? `${profile.avatar_position.split(' ')[0]}% ${profile.avatar_position.split(' ')[1]}%` : '50% 50%',
+                    transform: profile.avatar_position && profile.avatar_position.split(' ')[2] ? `scale(${parseInt(profile.avatar_position.split(' ')[2], 10) / 100})` : 'none',
+                    transformOrigin: profile.avatar_position ? `${profile.avatar_position.split(' ')[0]}% ${profile.avatar_position.split(' ')[1]}%` : '50% 50%'
+                  }} 
+                />
+              </div>
+            ) : null}
             <span className="header-user-name">{profile.username}</span>
           </div>
           

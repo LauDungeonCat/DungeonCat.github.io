@@ -71,7 +71,7 @@ export default function MisPartidas() {
             <div className="mis-partidas-cabecera">
                 <div>
                     <p className="seccion-etiqueta">Partidas</p>
-                    <h1 className="page-title" id="mis-partidas-titulo">Mis Partidas</h1>
+                    <h1 className="page-title">Mis Partidas</h1>
                     <p>Campañas que estás preparando o siguiendo.</p>
                 </div>
                 <div className="mis-partidas-cabecera-acciones">

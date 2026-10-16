@@ -15,7 +15,7 @@
 
 .inicio-cabecera .page-title, .inicio-seccion-titulo {
   margin: 0;
-  color: #202020;
+  color: var(--text-primary);
   font-family: Georgia, serif;
 }
 
@@ -30,13 +30,13 @@
 
 .inicio-subtitulo {
   margin: 0.5rem 0 0;
-  color: #5e5e5e;
+  color: var(--text-secondary);
   font-size: 0.95rem;
 }
 
 .seccion-etiqueta {
   margin: 0 0 0.5rem;
-  color: #c71920;
+  color: var(--color-brand);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -60,18 +60,18 @@
 
 .btn-rojo {
   border: 0;
-  background: #c71920;
-  color: #fff;
+  background: var(--color-brand);
+  color: var(--text-inverted);
 }
-.btn-rojo:hover { background: #a8131a; }
+.btn-rojo:hover { background: var(--color-brand-dark); }
 
 .btn-secundario {
-  border: 2px solid #202020;
-  background: #fff;
-  color: #202020;
+  border: 2px solid var(--border-neobrutal);
+  background: var(--bg-card);
+  color: var(--text-primary);
 }
 .btn-secundario:hover {
-  background: #f4f4f4;
+  background: var(--bg-hover);
   transform: translateY(-1px);
 }
 
@@ -79,9 +79,9 @@
 
 /* Contenedores de Tarjetas Compartidos (Accesos, Stats, Roadmap, Comunidad) */
 .inicio-card, .stat-card, .roadmap-card, .inicio-comunidad-section, .comunidad-qr-card {
-  border: 1px solid #e2e2e2;
+  border: 1px solid var(--input-border);
   border-radius: 8px;
-  background: #fdfdfd;
+  background: var(--bg-alt);
 }
 
 /* Rejillas generales */
@@ -96,9 +96,9 @@
 
 /* Tarjetas de Accesos Rápidos (Neobrutalismo exacto) */
 .inicio-card {
-  border: 2px solid #202020;
-  background: #fff;
-  box-shadow: 0 6px 0 #202020;
+  border: 2px solid var(--border-neobrutal);
+  background: var(--bg-card);
+  box-shadow: 0 6px 0 var(--shadow-neobrutal);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -109,18 +109,18 @@
 
 .inicio-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 9px 0 #202020;
+  box-shadow: 0 9px 0 var(--shadow-neobrutal);
 }
 
 .inicio-card-body { padding: 1.25rem 1.25rem 0.5rem; }
 .inicio-card-body h3 {
   margin: 0.3rem 0 0.6rem;
-  color: #202020;
+  color: var(--text-primary);
   font-family: Georgia, serif;
   font-size: 1.35rem;
 }
 .inicio-card-body p, .roadmap-card p, .comunidad-qr-desc, .comunidad-box-header p {
-  color: #555;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   line-height: 1.45;
   margin: 0;
@@ -131,7 +131,6 @@
 .inicio-comunidad-section {
   margin-top: 3rem;
   padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .comunidad-box-header {
@@ -140,14 +139,14 @@
 }
 .comunidad-box-header h3 {
   margin: 0 0 0.5rem;
-  color: #202020;
+  color: var(--text-primary);
   font-size: 1.3rem;
   font-weight: 700;
 }
 .comunidad-box-header p { max-width: 600px; margin: 0 auto; }
 
 .comunidad-qr-card {
-  background: #fff;
+  background: var(--bg-card);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
@@ -164,12 +163,12 @@
   text-decoration: none;
 }
 .whatsapp-box-link:hover .whatsapp-link-text {
-  color: #a8131a;
+  color: var(--color-brand-dark);
   text-decoration: underline;
 }
 
 .whatsapp-link-text {
-  color: #202020;
+  color: var(--text-primary);
   font-weight: 700;
   font-size: 0.95rem;
 }
@@ -179,31 +178,31 @@
   height: 130px;
   object-fit: contain;
   border-radius: 6px;
-  border: 1px solid #ddd;
-  background: #fff;
+  border: 1px solid var(--input-border);
+  background: #fff; /* Fondo blanco para el QR para que escanee bien en ambos modos */
   padding: 4px;
 }
 
-.comunidad-qr-desc { margin-top: 1rem; }
+.comunidad-qr-desc { margin-top: 1rem; color: var(--text-secondary); }
 
 /* Estadísticas y Roadmap */
 .inicio-stats-section, .inicio-roadmap-section { margin-top: 3rem; }
 .inicio-roadmap-section { margin-bottom: 2rem; }
 
 .stats-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; }
-.stat-card { padding: 1.5rem; text-align: center; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02); }
+.stat-card { padding: 1.5rem; text-align: center; }
 
 .stat-value {
   display: block;
   font-size: 2.4rem;
   font-weight: 800;
-  color: #a8131a;
+  color: var(--color-brand-dark);
   font-family: Georgia, serif;
 }
 
 .stat-label {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--text-secondary);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -212,7 +211,7 @@
 .roadmap-card { padding: 1.25rem; }
 .roadmap-card h4 {
   margin: 0 0 0.5rem;
-  color: #a8131a;
+  color: var(--color-brand-dark);
   font-size: 1.05rem;
 }
 

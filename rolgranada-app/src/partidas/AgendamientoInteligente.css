@@ -12,11 +12,12 @@
 	width: min(100%, 1080px);
 	max-height: calc(100vh - 2rem);
 	overflow: auto;
-	border: 2px solid #202020;
+	border: 2px solid var(--border-neobrutal);
 	border-radius: 8px;
 	padding: 1.25rem;
-	background: #f8f8f8;
-	box-shadow: 0 10px 0 #202020;
+	background: var(--bg-card);
+	color: var(--text-primary);
+	box-shadow: 0 10px 0 var(--shadow-neobrutal);
 }
 
 .agendamiento-header,
@@ -34,6 +35,7 @@
 .agendamiento-header h2 {
 	font-family: Georgia, "Times New Roman", serif;
 	font-size: 1.5rem;
+	color: var(--text-primary);
 }
 
 .agendamiento-cerrar {
@@ -47,14 +49,15 @@
 	margin: 0.5rem 0;
 	border-left: 4px solid #c87912;
 	padding: 0.65rem 0.8rem;
-	background: #fff0d5;
-	color: #633600;
+	background: var(--state-warning-bg);
+	color: var(--state-warning-text);
 	font-size: 0.9rem;
 }
 
 .agendamiento-mes {
 	justify-content: center;
 	margin: 1rem 0;
+	color: var(--text-primary);
 }
 
 .agendamiento-mes h3 {
@@ -73,21 +76,22 @@
 .agendamiento-grid {
 	display: grid;
 	grid-template-columns: repeat(7, minmax(0, 1fr));
-	border-top: 1px solid #cfcfcf;
-	border-left: 1px solid #cfcfcf;
+	border-top: 1px solid var(--input-border);
+	border-left: 1px solid var(--input-border);
 }
 
 .agendamiento-dia-semana,
 .agendamiento-dia,
 .agendamiento-vacio {
 	min-width: 0;
-	border-right: 1px solid #cfcfcf;
-	border-bottom: 1px solid #cfcfcf;
+	border-right: 1px solid var(--input-border);
+	border-bottom: 1px solid var(--input-border);
 }
 
 .agendamiento-dia-semana {
 	padding: 0.55rem 0.2rem;
-	background: #e9e9e9;
+	background: var(--bg-alt);
+	color: var(--text-secondary);
 	font-size: 0.78rem;
 	font-weight: 700;
 	text-align: center;
@@ -103,11 +107,12 @@
 	grid-template-rows: 1.4rem repeat(2, minmax(0, 1fr));
 	gap: 0.25rem;
 	padding: 0.3rem;
-	background: #fff;
+	background: var(--bg-card);
 }
 
 .agendamiento-dia > strong {
 	font-size: 0.8rem;
+	color: var(--text-primary);
 }
 
 .heatmap-slot {
@@ -119,36 +124,40 @@
 	align-items: start;
 	justify-content: center;
 	gap: 0.05rem;
-	border: 1px solid rgba(20, 20, 20, 0.2);
+	border: 1px solid var(--input-border);
 	border-radius: 3px;
 	padding: 0.2rem 0.3rem;
 	font-size: 0.72rem;
 	font-weight: 700;
 	text-align: left;
+	background: var(--bg-alt);
+	color: var(--text-primary);
 }
 
 .heatmap-slot small {
 	font-size: 0.62rem;
 	font-weight: 500;
+	color: var(--text-muted);
 }
 
 .heatmap-disponible {
-	background: #a9dfb9;
-	color: #124d2a;
+	background: var(--heatmap-disponible-bg);
+	color: var(--heatmap-disponible-text);
 }
 
 .heatmap-posible {
-	color: #4e3900;
+	background: var(--state-warning-bg);
+	color: var(--state-warning-text);
 }
 
 .heatmap-incompleta {
-	background: #e3e5e7;
-	color: #454b50;
+	background: var(--heatmap-incompleta-bg);
+	color: var(--heatmap-incompleta-text);
 }
 
 .heatmap-no-disponible {
-	background: #f0b5b5;
-	color: #741b1b;
+	background: var(--heatmap-nodisponible-bg);
+	color: var(--heatmap-nodisponible-text);
 }
 
 .heatmap-seleccionada {
@@ -164,7 +173,7 @@
 }
 
 .heatmap-slot:not(:disabled):hover {
-	outline: 2px solid #222;
+	outline: 2px solid var(--text-primary);
 	outline-offset: 1px;
 }
 
@@ -180,14 +189,14 @@
 	display: flex;
 	align-items: center;
 	gap: 0.4rem;
-	color: #444;
+	color: var(--text-secondary);
 	font-size: 0.8rem;
 }
 
 .leyenda-color {
 	width: 1rem;
 	height: 1rem;
-	border: 1px solid rgba(0, 0, 0, 0.25);
+	border: 1px solid var(--input-border);
 	border-radius: 2px;
 }
 
@@ -196,13 +205,14 @@
 	align-items: end;
 	flex-wrap: wrap;
 	gap: 0.8rem;
-	border-top: 1px solid #ccc;
+	border-top: 1px solid var(--input-border);
 	padding-top: 1rem;
 }
 
 .agendamiento-confirmacion p {
 	flex: 1 1 100%;
 	font-weight: 700;
+	color: var(--text-primary);
 }
 
 .agendamiento-confirmacion label {
@@ -211,14 +221,17 @@
 	gap: 0.3rem;
 	font-size: 0.85rem;
 	font-weight: 700;
+	color: var(--text-primary);
 }
 
 .agendamiento-confirmacion input {
 	min-height: 2.5rem;
-	border: 1px solid #888;
+	border: 1px solid var(--input-border);
 	border-radius: 4px;
 	padding: 0.5rem;
 	font: inherit;
+	background: var(--input-bg);
+	color: var(--input-text);
 }
 
 .agendamiento-confirmacion button {
@@ -229,25 +242,9 @@
 }
 
 @media (max-width: 620px) {
-	.agendamiento-dialog {
-		padding: 0.75rem;
-	}
-
-	.agendamiento-dia,
-	.agendamiento-vacio {
-		min-height: 102px;
-	}
-
-	.agendamiento-dia {
-		padding: 0.15rem;
-	}
-
-	.heatmap-slot {
-		padding: 0.12rem;
-		font-size: 0.63rem;
-	}
-
-	.heatmap-slot small {
-		font-size: 0.55rem;
-	}
+	.agendamiento-dialog { padding: 0.75rem; }
+	.agendamiento-dia, .agendamiento-vacio { min-height: 102px; }
+	.agendamiento-dia { padding: 0.15rem; }
+	.heatmap-slot { padding: 0.12rem; font-size: 0.63rem; }
+	.heatmap-slot small { font-size: 0.55rem; }
 }

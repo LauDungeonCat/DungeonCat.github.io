@@ -1,10 +1,9 @@
-css
 .calendario-sesiones {
 	margin-top: 4rem;
-	border: 2px solid #202020;
+	border: 2px solid var(--border-neobrutal);
 	border-radius: 8px;
-	background: #fff;
-	box-shadow: 0 6px 0 #202020;
+	background: var(--bg-card);
+	box-shadow: 0 6px 0 var(--shadow-neobrutal);
 	overflow: hidden;
 }
 
@@ -14,7 +13,7 @@ css
 	justify-content: space-between;
 	gap: 1rem;
 	padding: 1.25rem 1.5rem;
-	border-bottom: 1px solid #d8d8d8;
+	border-bottom: 1px solid var(--input-border);
 }
 
 .calendario-cabecera .seccion-etiqueta {
@@ -23,6 +22,7 @@ css
 
 .calendario-cabecera .section-title {
 	margin: 0;
+	color: var(--text-primary);
 }
 
 .calendario-navegacion {
@@ -30,6 +30,7 @@ css
 	align-items: center;
 	gap: 0.75rem;
 	text-transform: capitalize;
+	color: var(--text-primary);
 }
 
 .calendario-navegacion button {
@@ -46,20 +47,22 @@ css
 
 .calendario-dia-semana {
 	padding: 0.7rem 0.4rem;
-	border-bottom: 1px solid #d8d8d8;
-	color: #555;
+	border-bottom: 1px solid var(--input-border);
+	color: var(--text-secondary);
 	font-size: 0.85rem;
 	font-weight: 700;
 	text-align: center;
+	background: var(--bg-alt);
 }
 
 .calendario-celda {
 	min-width: 0;
 	min-height: 100px;
 	padding: 0.5rem;
-	border-right: 1px solid #e2e2e2;
-	border-bottom: 1px solid #e2e2e2;
-	background: #fff;
+	border-right: 1px solid var(--input-border);
+	border-bottom: 1px solid var(--input-border);
+	background: var(--bg-card);
+	color: var(--text-primary);
 }
 
 .calendario-celda:nth-child(7n) {
@@ -76,30 +79,30 @@ css
 }
 
 .calendario-celda.fuera-de-mes {
-	background: #f6f6f6;
-	color: #999;
+	background: var(--bg-subtle);
+	color: var(--text-muted);
 }
 
-/* Días anteriores oscurecidos */
 .calendario-celda.dia-pasado {
-	background: #fafafa;
+	background: var(--bg-alt);
 	opacity: 0.7;
 }
 
 .calendario-celda.dia-pasado time {
-	color: #777;
+	color: var(--text-muted);
 }
 
 /* Día actual indicado */
 .calendario-celda.dia-actual time {
-	background: #202020;
-	color: #fff;
+	background: var(--text-primary);
+	color: var(--bg-card);
 	font-weight: 800;
+	border: 2px solid var(--border-neobrutal);
 }
 
 .calendario-celda.con-sesion time {
-	background: #c02642;
-	color: #fff;
+	background: var(--color-brand-header);
+	color: var(--text-inverted);
 	font-weight: 700;
 }
 
@@ -107,17 +110,16 @@ css
 	display: grid;
 	gap: 0.15rem;
 	margin-top: 0.4rem;
-	border-left: 3px solid #c02642;
+	border-left: 3px solid var(--color-brand-header);
 	padding: 0.35rem 0.45rem;
-	background: #fbeaec;
-	color: #492024;
+	background: var(--state-warning-bg);
+	color: var(--text-primary);
 	font-size: 0.72rem;
 	cursor: pointer;
 	transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
 .evento-sesion:hover {
-	background: #f5d3d7;
 	transform: translateY(-1px);
 }
 
@@ -129,45 +131,17 @@ css
 
 .evento-gcal-hint {
 	font-size: 0.62rem;
-	color: #a8131a;
+	color: var(--color-brand-dark);
 	font-weight: 700;
 	margin-top: 0.1rem;
 }
 
 @media (max-width: 680px) {
-	.calendario-sesiones {
-		margin-top: 3rem;
-	}
-
-	.calendario-cabecera {
-		align-items: flex-start;
-		flex-direction: column;
-		padding: 1rem;
-	}
-
-	.calendario-navegacion {
-		width: 100%;
-		justify-content: space-between;
-	}
-
-	.calendario-celda {
-		min-height: 72px;
-		padding: 0.25rem;
-	}
-
-	.calendario-celda time {
-		width: 1.5rem;
-		height: 1.5rem;
-		font-size: 0.8rem;
-	}
-
-	.evento-sesion {
-		margin-top: 0.2rem;
-		padding: 0.2rem;
-		font-size: 0.62rem;
-	}
-
-	.evento-sesion span {
-		display: none;
-	}
+	.calendario-sesiones { margin-top: 3rem; }
+	.calendario-cabecera { align-items: flex-start; flex-direction: column; padding: 1rem; }
+	.calendario-navegacion { width: 100%; justify-content: space-between; }
+	.calendario-celda { min-height: 72px; padding: 0.25rem; }
+	.calendario-celda time { width: 1.5rem; height: 1.5rem; font-size: 0.8rem; }
+	.evento-sesion { margin-top: 0.2rem; padding: 0.2rem; font-size: 0.62rem; }
+	.evento-sesion span { display: none; }
 }

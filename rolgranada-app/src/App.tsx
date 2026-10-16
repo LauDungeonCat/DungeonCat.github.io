@@ -1,12 +1,12 @@
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import Contacto from "./contacto/Contacto"
-import { lazy, Suspense, useState } from "react";
+import Contacto from "./contacto/Contacto";
+import { lazy, Suspense, useState, useEffect } from "react";
 import { AuthProvider } from "./auth/AuthContext";
 import Login from "./auth/Login";
 import { useAuth } from "./auth/useAuth";
-import {Inicio} from "./inicio/Inicio";
-import Perfil from "./perfil/Perfil"; // <-- Añadido
+import { Inicio } from "./inicio/Inicio";
+import Perfil from "./perfil/Perfil";
 
 import "./App.css";
 
@@ -32,6 +32,39 @@ function AplicacionAutenticada() {
   );
 
   const { profile, signOut, requestLogin, updateProfile } = useAuth();
+
+  // Detección automática del tema del sistema y soporte para localStorage
+  useEffect(() => {
+    const guardadoOscuro = localStorage.getItem('darkMode');
+    
+    if (guardadoOscuro !== null) {
+      if (guardadoOscuro === 'true') {
+        document.body.classList.add('dark-mode');
+      } else {
+        document.body.classList.remove('dark-mode');
+      }
+    } else {
+      const prefiereOscuroSistema = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (prefiereOscuroSistema) {
+        document.body.classList.add('dark-mode');
+      }
+    }
+
+    // Listener ligero para cambios en tiempo real del sistema operativo
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      if (localStorage.getItem('darkMode') === null) {
+        if (e.matches) {
+          document.body.classList.add('dark-mode');
+        } else {
+          document.body.classList.remove('dark-mode');
+        }
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   function cambiarPagina(nombre: string) {
     setPagina(nombre as Pagina);

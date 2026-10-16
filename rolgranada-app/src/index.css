@@ -1,4 +1,5 @@
-/* Reset básico para que todas las cajas midan lo esperado */
+@import './colors.css';
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -7,16 +8,17 @@
 
 body {
   font-family: 'Verdana', sans-serif;
-  background-color: #f5f5f5;
-  color: #1a1a1a;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
   min-height: 100vh;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 button { 
   cursor: pointer;
-  background-color: #fff;
-  color: #000;
-  border: 2px solid #000;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border: 2px solid var(--border-neobrutal);
   border-radius: 4px;
   min-height: 2.5rem;
   width: auto;
@@ -28,17 +30,16 @@ button {
 }
 
 button:hover {
-  background-color: #d9d9d9;
+  background-color: var(--bg-hover);
 }
 
 button:active {
-  background-color: #b8b8b8;
   transform: translateY(2px);
 }
 
 .page-title,
 .section-title {
-  color: #202020;
+  color: var(--text-primary);
   font-family: Georgia, "Times New Roman", serif;
   font-weight: 700;
   line-height: 1.1;
@@ -53,11 +54,6 @@ button:active {
 }
 
 @media (max-width: 650px) {
-  .page-title {
-    font-size: 2rem;
-  }
-
-  .section-title {
-    font-size: 1.5rem;
-  }
+  .page-title { font-size: 2rem; }
+  .section-title { font-size: 1.5rem; }
 }

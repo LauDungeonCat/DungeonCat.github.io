@@ -144,7 +144,7 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
           </div>
 
           <div className="roadmap-card">
-            <h4> Modo Oscuro</h4>
+            <h4> Modo Oscuro (HECHO!)</h4>
             <p>Diseño alternativo con temática oscura para facilitar la lectura nocturna y dar una atmósfera más inmersiva.</p>
           </div>
 

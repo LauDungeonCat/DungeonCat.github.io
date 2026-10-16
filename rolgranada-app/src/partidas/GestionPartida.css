@@ -1,31 +1,7 @@
 .gestion-partida {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-}
-
-.gestion-partida-roster li {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.gestion-partida-roster h4 {
-    color: #252525;
-    font-size: 0.95rem;
-    margin: 0;
-}
-
-.gestion-partida-roster-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.gestion-partida-campos {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    margin-top: 1.5rem;
+    border-top: 2px solid var(--border-neobrutal);
+    padding-top: 1.25rem;
 }
 
 .gestion-partida-capacidad {
@@ -39,122 +15,97 @@
 .gestion-partida-capacidad label {
     display: grid;
     gap: 0.25rem;
-    color: #444;
+    color: var(--text-primary);
     font-size: 0.8rem;
     font-weight: 700;
 }
 
 .gestion-partida-capacidad input {
     min-height: 2.35rem;
-    border: 1px solid #888;
+    border: 1px solid var(--input-border);
     border-radius: 4px;
     padding: 0.4rem 0.6rem;
     font: inherit;
     width: 6rem;
+    background: var(--input-bg);
+    color: var(--input-text);
 }
 
-/* Botón Copiar Enlace (Blanco con texto oscuro) */
-.copiar-invitacion {
-    min-height: 2.25rem !important;
-    padding: 0.35rem 0.7rem !important;
-    font-size: 0.82rem !important;
-    font-weight: 700 !important;
-    border-radius: 4px !important;
-    border: 1px solid #d1d5db !important;
-    background-color: #ffffff !important;
-    color: #1f2937 !important;
-    cursor: pointer !important;
-}
-
-.copiar-invitacion:hover {
-    background-color: #f3f4f6 !important;
-    border-color: #323333 !important;
-}
-
-/* Botón Fechar Sesiones (Con su color morado original) */
-.fechar-sesiones-trigger {
-    background-color: #4f39f6 !important;
-    border-color: #4f39f6 !important;
-    color: #ffffff !important;
-}
-
-.gestion-enlace-mensaje {
-    color: #125b30;
-    font-size: 0.8rem;
-}
-
-.gestion-partida-roster ul {
-    display: grid;
-    gap: 0.35rem;
-    margin-top: 0.5rem;
-    list-style: none;
-    padding: 0;
-}
-
-.gestion-partida-roster li {
+/* Tarjeta del DM */
+.gestion-dm-card {
+    display: flex;
+    align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid #e1e1e1;
-    padding: 0.3rem 0;
-    color: #444;
-    font-size: 0.85rem;
+    gap: 1rem;
+    background: var(--bg-card);
+    border: 2px solid var(--border-neobrutal);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 0 var(--shadow-neobrutal);
 }
 
-.gestion-jugador-identidad {
-    display: grid;
-    gap: 0.15rem;
+.gestion-dm-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
     min-width: 0;
 }
 
-.jugador-disponibilidad {
-    font-size: 0.74rem;
-    line-height: 1.35;
+.gestion-avatar-redondo {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px;
+    min-height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--border-neobrutal);
+    overflow: hidden;
+    background: #202020 !important; /* Fondo oscuro fijo */
+    flex-shrink: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.jugador-disponibilidad.sin-disponibilidad {
-    color: #8d171d;
+.gestion-avatar-placeholder {
+    display: grid;
+    place-items: center;
+    font-size: 0.65rem;
+    color: #ffffff !important; /* Texto blanco fijo */
+    font-weight: 700;
+    width: 100%;
+    height: 100%;
+    background: #202020 !important;
 }
 
-.jugador-disponibilidad.con-disponibilidad {
-    color: #555;
+.gestion-rol-titulo {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
-/* Estilo exclusivo para los botones "Quitar" de cada jugador */
-.btn-quitar-jugador {
-    min-height: 2rem !important;
-    padding: 0.3rem 0.65rem !important;
-    font-size: 0.8rem !important;
-    font-weight: 700 !important;
-    border: 1px solid #a8131a !important;
-    color: #8d171d !important;
-    background: transparent !important;
-    border-radius: 4px !important;
-    cursor: pointer !important;
-}
-
-.gestion-roster-error {
-    margin-top: 0.45rem;
-    color: #8d171d;
-    font-size: 0.82rem;
-}
-
-/* Estilos para el desplegable de jugadores (tipo acordeón) */
+/* Acordeón de Jugadores (Roster) */
 .gestion-roster-details {
-    border: 1px solid #e1e1e1;
+    background: var(--bg-card);
+    border: 2px solid var(--border-neobrutal);
     border-radius: 6px;
     padding: 0.75rem 1rem;
-    background-color: #fafafa;
+    box-shadow: 0 4px 0 var(--shadow-neobrutal);
 }
 
 .gestion-roster-details summary.gestion-partida-roster-header {
     cursor: pointer;
-    list-style: none; /* Oculta la flecha por defecto en algunos navegadores */
+    list-style: none;
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin: 0;
+    font-weight: 700;
 }
 
-/* Creamos una flechita hacia abajo elegante a la izquierda del título */
 .gestion-roster-details summary.gestion-partida-roster-header::-webkit-details-marker {
     display: none;
 }
@@ -167,101 +118,21 @@
     transition: transform 0.2s ease;
 }
 
-/* Al abrirse, la flechita rota hacia arriba */
 .gestion-roster-details[open] summary.gestion-partida-roster-header h4::before {
     transform: rotate(180deg);
-}
-
-/* Espaciado interno cuando está abierto */
-.gestion-roster-details[open] ul {
-    margin-top: 0.75rem;
-    border-top: 1px solid #e1e1e1;
-    padding-top: 0.5rem;
-}
-
-.gestion-partida {
-    margin-top: 1.5rem;
-    border-top: 2px solid #202020;
-    padding-top: 1.25rem;
-}
-
-.gestion-dm-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    background: #fff;
-    border: 2px solid #202020;
-    border-radius: 6px;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 4px 0 #202020;
-}
-
-.gestion-dm-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    min-width: 0;
-}
-
-.gestion-avatar-redondo {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 2px solid #202020;
-    overflow: hidden;
-    background: #202020;
-    flex-shrink: 0;
-    position: relative;
-}
-
-.gestion-avatar-placeholder {
-    display: grid;
-    place-items: center;
-    font-size: 0.6rem;
-    color: #fff;
-    font-weight: 700;
-}
-
-.gestion-rol-titulo {
-    display: block;
-    font-size: 0.72rem;
-    color: #666;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.gestion-roster-details {
-    background: #fff;
-    border: 2px solid #202020;
-    border-radius: 6px;
-    padding: 0.75rem 1rem;
-    box-shadow: 0 4px 0 #202020;
-}
-
-.gestion-roster-details summary {
-    cursor: pointer;
-    font-weight: 700;
-}
-
-.gestion-partida-roster-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
 }
 
 .gestion-partida-roster-header h4 {
     margin: 0;
     font-size: 1rem;
-    color: #202020;
+    color: var(--text-primary);
 }
 
 .gestion-jugadores-ul {
     list-style: none;
     margin: 1rem 0 0 0;
-    padding: 0;
+    padding: 0.5rem 0 0 0;
+    border-top: 1px solid var(--input-border);
     display: grid;
     gap: 0.75rem;
 }
@@ -271,7 +142,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    border-top: 1px solid #eaeaea;
+    border-top: 1px solid var(--input-border);
     padding-top: 0.75rem;
 }
 
@@ -295,16 +166,16 @@
 
 .jugador-disponibilidad {
     font-size: 0.75rem;
-    color: #666;
+    color: var(--text-muted);
 }
 
 .jugador-disponibilidad.con-disponibilidad {
-    color: #0d5c2e;
+    color: var(--state-success-text);
     font-weight: 600;
 }
 
 .jugador-disponibilidad.sin-disponibilidad {
-    color: #a8131a;
+    color: var(--state-error-text);
     font-weight: 600;
 }
 
@@ -315,52 +186,72 @@
 }
 
 .btn-ver-preferencias {
-    background: #fff;
-    border: 2px solid #202020;
+    background: var(--bg-card);
+    border: 2px solid var(--border-neobrutal);
     border-radius: 4px;
     padding: 0.3rem 0.65rem;
     font-size: 0.78rem;
     font-weight: 700;
+    color: var(--text-primary);
     cursor: pointer;
-    box-shadow: 0 2px 0 #202020;
+    box-shadow: 0 2px 0 var(--shadow-neobrutal);
     transition: transform 0.1s ease, background-color 0.1s ease;
 }
 
 .btn-ver-preferencias:hover {
-    background: #f4f4f4;
+    background: var(--bg-hover);
     transform: translateY(-1px);
 }
 
 .btn-quitar-jugador {
-    background: #fff;
-    border: 2px solid #a8131a;
+    background: var(--bg-card);
+    border: 2px solid var(--color-brand-dark);
     border-radius: 4px;
     padding: 0.3rem 0.65rem;
     font-size: 0.78rem;
     font-weight: 700;
-    color: #a8131a;
+    color: var(--color-brand-dark);
     cursor: pointer;
-    box-shadow: 0 2px 0 #a8131a;
+    box-shadow: 0 2px 0 var(--color-brand-dark);
     transition: transform 0.1s ease, background-color 0.1s ease;
 }
 
 .btn-quitar-jugador:hover {
-    background: #fdf2f2;
+    background: var(--state-error-bg);
     transform: translateY(-1px);
 }
 
 .copiar-invitacion {
-    background: #c02642;
-    border: 2px solid #202020;
+    background: var(--color-brand-header);
+    border: 2px solid var(--border-neobrutal);
     border-radius: 4px;
-    color: #fff;
+    color: var(--text-inverted);
     padding: 0.35rem 0.7rem;
     font-size: 0.78rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 2px 0 #202020;
+    box-shadow: 0 2px 0 var(--shadow-neobrutal);
+    transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
 .copiar-invitacion:hover {
-    background: #a8131a;
+    background: var(--color-brand-dark);
+    transform: translateY(-1px);
+}
+
+.fechar-sesiones-trigger {
+    background-color: #4f39f6 !important;
+    border-color: #4f39f6 !important;
+    color: #ffffff !important;
+}
+
+.gestion-enlace-mensaje {
+    color: var(--state-success-text);
+    font-size: 0.8rem;
+}
+
+.gestion-roster-error {
+    margin-top: 0.45rem;
+    color: var(--state-error-text);
+    font-size: 0.82rem;
 }

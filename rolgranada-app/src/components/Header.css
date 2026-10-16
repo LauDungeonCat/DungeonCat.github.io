@@ -128,6 +128,9 @@
   transform: translateY(-1px) scale(1.02);
 }
 
+/* ==========================================================
+   MENÚ DROPDOWN (Adaptado con variables para modo oscuro/claro)
+   ========================================================== */
 .tools-dropdown {
   position: absolute;
   top: calc(100% + 0.75rem);
@@ -136,8 +139,8 @@
   min-width: 230px;
   padding: 0.5rem 0 !important;
   margin: 0;
-  background: #fff;
-  border: 1px solid #d7d7d7;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--input-border, #d7d7d7);
   border-radius: 6px;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
   opacity: 1;
@@ -174,15 +177,16 @@
 .tools-dropdown a {
   display: block;
   padding: 0.7rem 1rem;
-  color: #222;
+  color: var(--text-primary, #222);
   white-space: nowrap;
 }
 
 .tools-dropdown a:hover,
 .tools-dropdown a:focus {
-  background: #f2f2f2;
+  background: var(--bg-hover, #f2f2f2);
   transform: none;
 }
+/* ========================================================== */
 
 .header-actions {
   display: flex;
@@ -497,6 +501,3 @@
     transform: translate(0, 0);
   }
 }
-
-
-

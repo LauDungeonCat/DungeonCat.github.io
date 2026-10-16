@@ -12,10 +12,11 @@
 	width: min(100%, 680px);
 	max-height: calc(100vh - 2rem);
 	overflow-y: auto;
-	border: 2px solid #222;
+	border: 2px solid var(--border-neobrutal);
 	border-radius: 8px;
 	padding: 1.5rem;
-	background: #fff;
+	background: var(--bg-card);
+	color: var(--text-primary);
 	box-shadow: 0 16px 50px rgba(0, 0, 0, 0.25);
 }
 
@@ -29,7 +30,7 @@
 
 .crear-campana-header .seccion-etiqueta {
 	margin: 0 0 0.4rem;
-	color: #c02642;
+	color: var(--color-brand-header);
 	font-size: 0.78rem;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -38,6 +39,7 @@
 .crear-campana-header h2 {
 	margin: 0;
 	font-family: Georgia, "Times New Roman", serif;
+	color: var(--text-primary);
 }
 
 .crear-campana-cerrar {
@@ -45,6 +47,9 @@
 	min-height: 2.5rem;
 	padding: 0;
 	font-size: 1.5rem;
+	background: var(--bg-card);
+	color: var(--text-primary);
+	border: 2px solid var(--border-neobrutal);
 }
 
 .crear-campana-form {
@@ -63,19 +68,19 @@
 	align-content: start;
 	gap: 0.4rem;
 	min-width: 0;
-	color: #333;
+	color: var(--text-primary);
 	font-size: 0.88rem;
 	font-weight: 700;
 }
 
 .crear-campana-dm {
 	align-self: center;
-	color: #444;
+	color: var(--text-secondary);
 	font-size: 0.9rem;
 }
 
 .crear-campana-grid label span {
-	color: #666;
+	color: var(--text-muted);
 	font-weight: 400;
 }
 
@@ -93,18 +98,18 @@
 	border: 0;
 	border-radius: 3px;
 	background: transparent;
-	accent-color: #c02642;
+	accent-color: var(--color-brand-header);
 }
 
 .crear-campana-grid input,
 .crear-campana-grid textarea {
 	width: 100%;
 	min-height: 2.65rem;
-	border: 1px solid #8d8d8d;
+	border: 1px solid var(--input-border);
 	border-radius: 4px;
 	padding: 0.6rem 0.7rem;
-	background: #fff;
-	color: #222;
+	background: var(--input-bg);
+	color: var(--input-text);
 	font: inherit;
 	font-weight: 400;
 }
@@ -115,7 +120,7 @@
 
 .crear-campana-grid input:focus-visible,
 .crear-campana-grid textarea:focus-visible {
-	outline: 2px solid #c02642;
+	outline: 2px solid var(--color-brand-header);
 	outline-offset: 2px;
 }
 
@@ -130,18 +135,19 @@
 }
 
 .crear-campana-enviar {
-	border-color: #a8131a;
-	background: #c02642;
-	color: #fff;
+	border-color: var(--color-brand-dark);
+	background: var(--color-brand-header);
+	color: var(--text-inverted);
 	font-weight: 700;
 }
 
 .crear-campana-enviar:hover {
-	background: #a8131a;
+	background: var(--color-brand-dark);
 }
 
 .crear-campana-cancelar {
-	background: #fff;
+	background: var(--bg-card);
+	color: var(--text-primary);
 }
 
 @media (max-width: 560px) {

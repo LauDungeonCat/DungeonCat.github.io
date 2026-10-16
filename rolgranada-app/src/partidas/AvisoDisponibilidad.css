@@ -5,8 +5,8 @@
 	margin: 0 auto 1rem;
 	border-left: 4px solid #b7791f;
 	padding: 0.8rem 1rem;
-	background: #fff4d6;
-	color: #593b0c;
+	background: var(--state-warning-bg);
+	color: var(--state-warning-text);
 }
 
 .aviso-disponibilidad img {
