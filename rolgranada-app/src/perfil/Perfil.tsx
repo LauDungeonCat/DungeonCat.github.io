@@ -366,7 +366,7 @@ export default function Perfil() {
             </header>
 
             <div className="crear-campana-form">
-              <p style={{ margin: '0 0 1.25rem 0', color: '#333' }}>
+              <p>
                 ¿De verdad quieres cerrar sesión en este dispositivo?
               </p>
               <div className="crear-campana-acciones">

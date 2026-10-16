@@ -8,6 +8,7 @@ import sunIcon from '../assets/sun.svg';
 import moonIcon from '../assets/moon.svg';
 import type { ProfileRow, SolicitudPendienteRow } from '../lib/database.types';
 import { supabase } from '../lib/supabase';
+import Notificaciones from './Notificaciones';
 
 type HeaderProps = {
   onNavigate: (pagina: string) => void;
@@ -191,21 +192,21 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
         {profile ? <>
           <div className="header-user-info" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', position: 'relative' }}>
             {profile.role === 'admin' && (
-  <img 
-    src={crownIcon} 
-    alt="Admin Crown" 
-    title="Administrador"
-    style={{ 
-      position: 'absolute', 
-      top: '-14px', 
-      left: '6px', 
-      width: '20px', 
-      height: '20px', 
-      zIndex: 2,
-      filter: 'brightness(0) invert(1)' /* Fuerza el SVG a blanco puro sobre el fondo rojo del header */
-    }} 
-  />
-)}
+              <img 
+                src={crownIcon} 
+                alt="Admin Crown" 
+                title="Administrador"
+                style={{ 
+                  position: 'absolute', 
+                  top: '-14px', 
+                  left: '6px', 
+                  width: '20px', 
+                  height: '20px', 
+                  zIndex: 2,
+                  filter: 'brightness(0) invert(1)' 
+                }} 
+              />
+            )}
             {profile.avatar_url ? (
               <div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', border: '1px solid #202020', flexShrink: 0, position: 'relative', background: '#202020' }}>
                 <img 
@@ -246,41 +247,15 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
         </> : <button className="header-sign-out" type="button" onClick={requestLogin}>Acceder</button>}
       </div>
 
-      {notificacionesAbiertas && (
-        <div className="header-dialog-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget) setNotificacionesAbiertas(false); }}>
-          <section className="header-dialog notifications-dialog" role="dialog" aria-modal="true" aria-labelledby="notifications-title">
-            <header className="header-dialog-heading">
-              <h2 id="notifications-title">Notificaciones</h2>
-              <button type="button" className="header-dialog-close" aria-label="Cerrar notificaciones" onClick={() => setNotificacionesAbiertas(false)}>×</button>
-            </header>
-            {errorNotificaciones && <p className="datos-error" role="alert">{errorNotificaciones}</p>}
-            {cargandoSolicitudes && <p role="status">Actualizando solicitudes…</p>}
-            {!cargandoSolicitudes && !errorNotificaciones && solicitudes.length === 0 && (
-              <p className="notifications-empty">No tienes solicitudes pendientes.</p>
-            )}
-            {solicitudes.length > 0 && (
-              <ul className="notifications-list">
-                {solicitudes.map((solicitud) => {
-                  const clave = `${solicitud.partida_id}:${solicitud.user_id}`;
-                  return (
-                    <li key={clave}>
-                      <div className="notification-details">
-                        <strong>{solicitud.username}</strong>
-                        <span>Quiere entrar en <strong>{solicitud.partida_titulo}</strong></span>
-                        <time dateTime={solicitud.fecha_union}>{new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium' }).format(new Date(solicitud.fecha_union))}</time>
-                      </div>
-                      <div className="notification-actions">
-                        <button type="button" className="notification-accept" disabled={solicitudEnResolucion !== null} onClick={() => { void resolverSolicitud(solicitud, true); }}>Aceptar</button>
-                        <button type="button" className="notification-reject" disabled={solicitudEnResolucion !== null} onClick={() => { void resolverSolicitud(solicitud, false); }}>Rechazar</button>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
-        </div>
-      )}
+      <Notificaciones
+        abierto={notificacionesAbiertas}
+        onCerrar={() => setNotificacionesAbiertas(false)}
+        solicitudes={solicitudes}
+        cargando={cargandoSolicitudes}
+        error={errorNotificaciones}
+        solicitudEnResolucion={solicitudEnResolucion}
+        onResolver={resolverSolicitud}
+      />
     </header>
   );
 }

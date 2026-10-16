@@ -76,6 +76,7 @@ export default function Disponibilidad() {
 		() => leerAlmacen<string | null>(CLAVE_PLANTILLA_DESCARTADA, null),
 	);
 	const [modalAbierto, setModalAbierto] = useState(false);
+	const [modalVaciarAbierto, setModalVaciarAbierto] = useState(false); // <-- Estado para el popup de vaciar calendario
 	const [estadoFormulario, setEstadoFormulario] = useState<FranjaEstado>("puedo");
 	const [diasFormulario, setDiasFormulario] = useState<PlantillaRapida["dias"]>("diario");
 	const [franjaFormulario, setFranjaFormulario] = useState<PlantillaRapida["franja"]>("manana");
@@ -193,17 +194,20 @@ export default function Disponibilidad() {
 		}
 	}
 
-	async function vaciarCalendario() {
+	function manejarClickVaciar() {
 		if (!usuario) {
 			requestLogin();
 			return;
 		}
-		if (window.confirm("¿Quieres borrar toda la disponibilidad de todos los meses?")) {
-			try {
-				await limpiarDisponibilidad();
-			} catch {
-				return;
-			}
+		setModalVaciarAbierto(true);
+	}
+
+	async function confirmarVaciarCalendario() {
+		try {
+			await limpiarDisponibilidad();
+			setModalVaciarAbierto(false);
+		} catch {
+			return;
 		}
 	}
 
@@ -229,7 +233,7 @@ export default function Disponibilidad() {
 					<button className="relleno-rapido-trigger" type="button" onClick={() => setModalAbierto(true)}>
 						Relleno Rápido
 					</button>
-					<button className="vaciar-calendario-button" type="button" onClick={vaciarCalendario}>
+					<button className="vaciar-calendario-button" type="button" onClick={manejarClickVaciar}>
 						Vaciar calendario
 					</button>
 				</div>
@@ -283,7 +287,6 @@ export default function Disponibilidad() {
 									const sesionConfirmada = sesionesConfirmadas.has(`${clave}:${franja}`);
 									const nombreFranja = franja === "manana" ? "Mañana" : "Tarde";
 									
-									// Determinamos las clases CSS aplicables
 									let claseEstado = "";
 									if (sesionConfirmada) {
 										claseEstado = " estado-sesion";
@@ -358,6 +361,33 @@ export default function Disponibilidad() {
 								<button className="relleno-rapido-trigger" type="submit">Aplicar plantilla</button>
 							</div>
 						</form>
+					</section>
+				</div>
+			)}
+
+			{/* Modal de confirmación para Vaciar Calendario con las clases .crear-campana-* */}
+			{modalVaciarAbierto && (
+				<div className="crear-campana-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget) setModalVaciarAbierto(false); }}>
+					<section className="crear-campana-dialog" role="dialog" aria-modal="true" aria-labelledby="vaciar-calendar-title">
+						<header className="crear-campana-header">
+							<div>
+								<h2 id="vaciar-calendar-title">Vaciar Calendario</h2>
+							</div>
+							<button className="crear-campana-cerrar" type="button" onClick={() => setModalVaciarAbierto(false)} aria-label="Cerrar">×</button>
+						</header>
+						<div className="crear-campana-form">
+							<p style={{ color: "var(--text-secondary)", lineHeight: "1.5", margin: "0 0 1.5rem" }}>
+								¿Estás seguro de que quieres borrar toda la disponibilidad de todos los meses? Esta acción no se puede deshacer.
+							</p>
+							<div className="crear-campana-acciones">
+								<button className="crear-campana-cancelar" type="button" onClick={() => setModalVaciarAbierto(false)}>
+									Cancelar
+								</button>
+								<button className="crear-campana-enviar" type="button" onClick={confirmarVaciarCalendario}>
+									Sí, vaciar todo
+								</button>
+							</div>
+						</div>
 					</section>
 				</div>
 			)}

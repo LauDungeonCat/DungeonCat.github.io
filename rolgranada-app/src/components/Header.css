@@ -188,7 +188,7 @@
 }
 
 /* ==========================================================
-   ACCIONES DE USUARIO & NOTIFICACIONES
+   ACCIONES DE USUARIO & NOTIFICACIONES (TRIGGER)
    ========================================================== */
 .header-actions {
   display: flex;
@@ -261,177 +261,8 @@
 }
 
 /* ==========================================================
-   DIÁLOGO DE NOTIFICACIONES Y EDICIÓN DE PERFIL (MODAL)
+   RESPONSIVE HEADER
    ========================================================== */
-.header-dialog-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1200;
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-  background: rgba(20, 20, 20, 0.58);
-}
-
-.header-dialog {
-  width: min(100%, 620px);
-  max-height: calc(100vh - 2rem);
-  overflow: auto;
-  border: 2px solid var(--border-neobrutal);
-  border-radius: 8px;
-  padding: 1.25rem;
-  background: var(--bg-card);
-  color: var(--text-primary);
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
-}
-
-.header-dialog-heading {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.header-dialog-heading h2 {
-  margin: 0;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 1.35rem;
-  color: var(--text-primary);
-}
-
-.header-dialog-close {
-  width: 2.25rem;
-  min-height: 2.25rem;
-  padding: 0;
-  font-size: 1.35rem;
-  background: var(--bg-card);
-  color: var(--text-primary);
-  border: 2px solid var(--border-neobrutal);
-}
-
-.notifications-list {
-  display: grid;
-  gap: 0.65rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.notifications-list li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  border-top: 1px solid var(--input-border);
-  padding: 0.75rem 0;
-}
-
-.notification-details {
-  display: grid;
-  gap: 0.2rem;
-  min-width: 0;
-  font-size: 0.88rem;
-  color: var(--text-primary);
-}
-
-.notification-details time {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-}
-
-.notification-actions,
-.profile-form-actions {
-  display: flex;
-  flex: 0 0 auto;
-  gap: 0.5rem;
-}
-
-.notification-actions button,
-.profile-form-actions button {
-  min-height: 2.25rem;
-  padding: 0.35rem 0.6rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.notification-accept,
-.profile-form-actions button[type='submit'] {
-  border-color: var(--color-brand-dark);
-  background: var(--color-brand-header);
-  color: var(--text-inverted);
-}
-
-.notification-accept:hover:not(:disabled),
-.profile-form-actions button[type='submit']:hover:not(:disabled) {
-  background: var(--color-brand-dark);
-}
-
-.notification-reject {
-  background: var(--bg-card);
-  color: var(--text-primary);
-  border: 1px solid var(--input-border);
-}
-
-.notification-reject:hover {
-  background: var(--bg-hover);
-}
-
-.notifications-empty {
-  margin: 0;
-  color: var(--text-secondary);
-}
-
-.profile-form {
-  display: grid;
-  gap: 1rem;
-}
-
-.profile-form label {
-  display: grid;
-  gap: 0.4rem;
-  color: var(--text-primary);
-  font-size: 0.88rem;
-  font-weight: 700;
-}
-
-.profile-form label span {
-  color: var(--text-muted);
-  font-weight: 400;
-}
-
-.profile-form input {
-  width: 100%;
-  min-height: 2.6rem;
-  border: 1px solid var(--input-border);
-  border-radius: 4px;
-  padding: 0.55rem 0.65rem;
-  background: var(--input-bg);
-  color: var(--input-text);
-  font: inherit;
-  font-weight: 400;
-}
-
-.profile-form input:focus-visible {
-  outline: 2px solid var(--color-brand-header);
-  outline-offset: 2px;
-}
-
-.profile-form-actions {
-  justify-content: end;
-}
-
-@media (max-width: 560px) {
-  .notifications-list li {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .notification-actions button {
-    flex: 1;
-  }
-}
-
 @media (max-width: 800px) {
   .main-header {
     display: flex;
@@ -491,6 +322,7 @@
   .tools-dropdown {
     left: 0;
     transform: translate(0, -0.5rem);
+    animation-name: tools-dropdown-in-mobile;
   }
 
   @keyframes tools-dropdown-in-mobile {
@@ -502,10 +334,5 @@
       opacity: 1;
       transform: translate(0, 0);
     }
-  }
-
-  .tools-dropdown {
-    animation-name: tools-dropdown-in-mobile;
-    transform: translate(0, 0);
   }
 }
