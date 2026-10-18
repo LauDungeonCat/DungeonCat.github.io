@@ -50,6 +50,7 @@
     align-items: center;
     gap: 0.75rem;
     min-width: 0;
+    flex: 1;
 }
 
 .gestion-avatar-redondo {
@@ -60,7 +61,7 @@
     border-radius: 50%;
     border: 2px solid var(--border-neobrutal);
     overflow: hidden;
-    background: #202020 !important; /* Fondo oscuro fijo */
+    background: #202020 !important;
     flex-shrink: 0;
     position: relative;
     display: flex;
@@ -72,7 +73,7 @@
     display: grid;
     place-items: center;
     font-size: 0.65rem;
-    color: #ffffff !important; /* Texto blanco fijo */
+    color: #ffffff !important;
     font-weight: 700;
     width: 100%;
     height: 100%;
@@ -104,6 +105,8 @@
     align-items: center;
     margin: 0;
     font-weight: 700;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .gestion-roster-details summary.gestion-partida-roster-header::-webkit-details-marker {
@@ -156,6 +159,7 @@
     align-items: center;
     gap: 0.75rem;
     min-width: 0;
+    flex: 1;
 }
 
 .gestion-jugador-datos-texto {
@@ -254,4 +258,31 @@
     margin-top: 0.45rem;
     color: var(--state-error-text);
     font-size: 0.82rem;
+}
+
+/* ==========================================================
+   BREAKPOINT AMPLIADO: Los botones bajan antes de que el texto sufra
+   ========================================================== */
+@media (max-width: 768px) {
+    .gestion-jugador-li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .gestion-jugador-acciones-item {
+        width: 100%;
+        justify-content: flex-end;
+        gap: 0.4rem;
+    }
+
+    .gestion-dm-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .gestion-dm-card .btn-ver-preferencias {
+        align-self: flex-end;
+    }
 }

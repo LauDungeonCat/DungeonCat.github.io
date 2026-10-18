@@ -326,41 +326,15 @@ export function useRolData() {
     [ejecutar]
   );
 
-const cargarJugadoresPartida = useCallback(async (partidaId: string) => {
-    const { data: participaciones, error: partError } = await supabase
-      .from("partida_participantes")
-      .select("user_id, fecha_union")
-      .eq("partida_id", partidaId);
-    
-    if (partError) throw partError;
-    if (!participaciones || participaciones.length === 0) return [];
-
-    const userIds = participaciones.map((p) => p.user_id);
-
-    const { data: profilesData, error: profError } = await supabase
-      .from("profiles")
-      .select("id, username, avatar_url, avatar_position")
-      .in("id", userIds);
-
-    if (profError) throw profError;
-
-    const profileMap = new Map((profilesData ?? []).map((p) => [p.id, p]));
-
-    return participaciones.map((p) => {
-      const prof = profileMap.get(p.user_id);
-      return {
-        user_id: p.user_id,
-        username: prof?.username ?? "Usuario",
-        avatar_url: prof?.avatar_url ?? null,
-        fecha_union: p.fecha_union ?? new Date().toISOString(),
-        dias_indicados: 0,
-        franjas_indicadas: 0,
-        franjas_sin_indicar: 0,
-      } as JugadorPartidaRow;
+  // Llamada correcta a la función RPC nativa de Supabase para obtener el roster con su disponibilidad calculada
+  const cargarJugadoresPartida = useCallback(async (partidaId: string) => {
+    const { data, error: partError } = await supabase.rpc("listar_jugadores_partida", {
+      p_partida_id: partidaId,
     });
+    if (partError) throw partError;
+    return (data ?? []) as JugadorPartidaRow[];
   }, []);
 
-  
   const obtenerCodigoInvitacion = useCallback(async (partidaId: string) => {
     const { data, error: codeError } = await supabase.rpc("obtener_codigo_invitacion", { p_partida_id: partidaId });
     if (codeError) throw codeError;

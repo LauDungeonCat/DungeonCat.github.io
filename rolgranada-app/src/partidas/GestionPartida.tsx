@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 import type { JugadorPartidaRow } from "../lib/database.types";
 import type { Partida } from "../types";
 import ModalPreferenciasUsuario from "./ModalPreferenciasUsuario";
+import { FichaParticipanteGestion } from "./FichaParticipanteGestion";
 import "./GestionPartida.css";
 
 const AgendamientoInteligente = lazy(() => import("./AgendamientoInteligente"));
@@ -20,6 +21,10 @@ function mensajeError(value: unknown, fallback: string): string {
         return (value as { message: string }).message;
     }
     return fallback;
+}
+
+function fechaIso(fecha: Date) {
+    return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}-${String(fecha.getDate()).padStart(2, "0")}`;
 }
 
 export default function GestionPartida({ partida }: { partida: Partida }) {
@@ -40,8 +45,13 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
     const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<{ id: string; nombre: string; esMaster: boolean } | null>(null);
     const [perfilesJugadores, setPerfilesJugadores] = useState<Record<string, { avatar_url: string | null; avatar_position: string | null }>>({});
     
-    // Estados para el perfil del Master
-    const [datosMaster, setDatosMaster] = useState<{ avatar_url: string | null; avatar_position: string | null }>({ avatar_url: partida.dmAvatarUrl ?? null, avatar_position: null });
+    // Estados para el perfil y disponibilidad del Master
+    const [datosMaster, setDatosMaster] = useState<{ avatar_url: string | null; avatar_position: string | null; franjas_indicadas: number; franjas_sin_indicar: number }>({ 
+        avatar_url: partida.dmAvatarUrl ?? null, 
+        avatar_position: null,
+        franjas_indicadas: 0,
+        franjas_sin_indicar: 0
+    });
     const [masterCargado, setMasterCargado] = useState(false);
 
     const esDm = profile?.id === partida.dmId || profile?.role === "admin";
@@ -55,26 +65,57 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
         };
     }, [partida.id]);
 
-    // Cargar perfil del Master (avatar y posición) de forma síncrona/reactiva limpia
+    // Cargar perfil y disponibilidad exacta del Master (filtrando desde hoy en adelante)
     useEffect(() => {
         let activa = true;
         if (!partida.dmId) return;
         
         setMasterCargado(false);
-        setDatosMaster({ avatar_url: partida.dmAvatarUrl ?? null, avatar_position: null });
 
         async function cargarMaster() {
             try {
-                const { data } = await supabase
-                    .from('profiles')
-                    .select('avatar_url, avatar_position')
-                    .eq('id', partida.dmId)
-                    .single();
+                const [{ data: perfilData }, { data: dispData }] = await Promise.all([
+                    supabase.from('profiles').select('*').eq('id', partida.dmId).single(),
+                    supabase.from('disponibilidades').select('fecha, manana, tarde').eq('user_id', partida.dmId)
+                ]);
 
-                if (activa && data) {
+                if (activa) {
+                    const ahora = new Date();
+                    const hoyStr = fechaIso(ahora);
+                    const mesActual = hoyStr.slice(0, 7);
+                    const diasEnMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0).getDate();
+
+                    let franjasConDisponibilidad = 0;
+                    let franjasPendientes = 0;
+
+                    const dispMap = new Map<string, { manana?: string; tarde?: string }>();
+                    for (const d of (dispData ?? [])) {
+                        if (d.fecha.startsWith(`${mesActual}-`)) {
+                            dispMap.set(d.fecha, { manana: d.manana ?? "no_indicado", tarde: d.tarde ?? "no_indicado" });
+                        }
+                    }
+
+                    for (let dia = ahora.getDate(); dia <= diasEnMes; dia += 1) {
+                        const fecha = `${mesActual}-${String(dia).padStart(2, "0")}`;
+                        const disponibilidadDia = dispMap.get(fecha);
+                        
+                        for (const franja of ["manana", "tarde"] as const) {
+                            const estadoFranja = disponibilidadDia?.[franja];
+                            const marcada = estadoFranja && estadoFranja !== "no_indicado";
+                            if (marcada) {
+                                franjasConDisponibilidad += 1;
+                            } else {
+                                franjasPendientes += 1;
+                            }
+                        }
+                    }
+
+                    const perfilAny = perfilData as any;
                     setDatosMaster({
-                        avatar_url: data.avatar_url ?? partida.dmAvatarUrl ?? null,
-                        avatar_position: data.avatar_position ?? null
+                        avatar_url: perfilAny?.avatar_url ?? partida.dmAvatarUrl ?? null,
+                        avatar_position: perfilAny?.avatar_position ?? null,
+                        franjas_indicadas: franjasConDisponibilidad,
+                        franjas_sin_indicar: franjasPendientes
                     });
                 }
             } finally {
@@ -88,7 +129,7 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
         return () => { activa = false; };
     }, [partida.dmId, partida.dmAvatarUrl, partida.id]);
 
-    // Cargar roster de jugadores indicando estado de carga
+    // Cargar roster de jugadores
     useEffect(() => {
         let activa = true;
         if (!puedeVerRoster) return () => { activa = false; };
@@ -97,25 +138,15 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
         setErrorRoster(null);
 
         void cargarJugadoresPartida(partida.id)
-            .then(async (lista: any[]) => {
+            .then(async (lista) => {
                 if (!activa) return;
 
-                const listaTipada: JugadorPartidaRow[] = (lista ?? []).map((j) => ({
-                    user_id: j.user_id,
-                    username: j.username ?? "Usuario",
-                    avatar_url: j.avatar_url ?? null,
-                    fecha_union: j.fecha_union ?? new Date().toISOString(),
-                    dias_indicados: j.dias_indicados ?? 0,
-                    franjas_indicadas: j.franjas_indicadas ?? 0,
-                    franjas_sin_indicar: j.franjas_sin_indicar ?? 0,
-                }));
-
-                setJugadores(listaTipada);
+                setJugadores(lista ?? []);
                 setErrorRoster(null);
                 setJugadoresCargadosId(partida.id);
 
-                if (listaTipada.length > 0) {
-                    const ids = listaTipada.map((j) => j.user_id);
+                if (lista && lista.length > 0) {
+                    const ids = lista.map((j) => j.user_id);
                     const { data: profilesData } = await supabase
                         .from('profiles')
                         .select('id, avatar_url, avatar_position')
@@ -123,10 +154,10 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
 
                     if (activa && profilesData) {
                         const mapa: Record<string, { avatar_url: string | null; avatar_position: string | null }> = {};
-                        profilesData.forEach((p: any) => {
+                        (profilesData as any[]).forEach((p: any) => {
                             mapa[p.id] = { 
                                 avatar_url: p.avatar_url ?? null, 
-                                avatar_position: p.avatar_position ?? null 
+                                avatar_position: p.avatar_position ?? null
                             };
                         });
                         setPerfilesJugadores(mapa);
@@ -162,16 +193,7 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
         setCargandoRoster(true);
         try {
             const lista = await cargarJugadoresPartida(partida.id);
-            const listaTipada: JugadorPartidaRow[] = (lista ?? []).map((j: any) => ({
-                user_id: j.user_id,
-                username: j.username ?? "Usuario",
-                avatar_url: j.avatar_url ?? null,
-                fecha_union: j.fecha_union ?? new Date().toISOString(),
-                dias_indicados: j.dias_indicados ?? 0,
-                franjas_indicadas: j.franjas_indicadas ?? 0,
-                franjas_sin_indicar: j.franjas_sin_indicar ?? 0,
-            }));
-            setJugadores(listaTipada);
+            setJugadores(lista ?? []);
             setJugadoresCargadosId(partida.id);
         } catch (loadError) {
             setErrorRoster(mensajeError(loadError, "No se pudo cargar el roster."));
@@ -235,9 +257,6 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
         }
     }
 
-    const masterAvatarPosActualizado = datosMaster.avatar_position ? datosMaster.avatar_position.split(' ') : ['50', '50', '100'];
-    const masterTieneFotoActualizado = Boolean(datosMaster.avatar_url && datosMaster.avatar_url.trim() !== '');
-
     const esPartidaActual = jugadoresCargadosId === partida.id && !cargandoRoster;
 
     return (
@@ -248,46 +267,21 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
                 </p>
             )}
 
-            {/* Tarjeta del Master con transición suave para evitar saltos */}
+            {/* Tarjeta del Master unificada */}
             <div className="gestion-dm-card">
-                <div className="gestion-dm-info">
-                    {masterTieneFotoActualizado ? (
-                        <div className="gestion-avatar-redondo" style={{ opacity: masterCargado ? 1 : 0, transition: 'opacity 0.2s ease-in-out' }}>
-                            <img 
-                                src={datosMaster.avatar_url!} 
-                                alt="" 
-                                referrerPolicy="no-referrer"
-                                style={{ 
-                                    width: '100%', 
-                                    height: '100%', 
-                                    objectFit: 'cover',
-                                    objectPosition: `${masterAvatarPosActualizado[0]}% ${masterAvatarPosActualizado[1]}%`,
-                                    transform: `scale(${Number(masterAvatarPosActualizado[2]) / 100})`,
-                                    transformOrigin: `${masterAvatarPosActualizado[0]}% ${masterAvatarPosActualizado[1]}%`
-                                }} 
-                            />
-                        </div>
-                    ) : (
-                        <div className="gestion-avatar-redondo gestion-avatar-placeholder">DM</div>
-                    )}
-                    <div>
-                        <span className="gestion-rol-titulo">Master</span>
-                        <strong>{partida.dm}</strong>
-                    </div>
-                </div>
-                {partida.dmId && (
-                    <button
-                        type="button"
-                        className="btn-ver-preferencias"
-                        onClick={() => setUsuarioSeleccionado({ id: partida.dmId, nombre: partida.dm, esMaster: true })}
-                    >
-                        Ver preferencias
-                    </button>
-                )}
+                <FichaParticipanteGestion
+                    nombre={partida.dm}
+                    rol="Master"
+                    avatarUrl={datosMaster.avatar_url}
+                    avatarPosition={datosMaster.avatar_position}
+                    franjasIndicadas={datosMaster.franjas_indicadas}
+                    franjasSinIndicar={datosMaster.franjas_sin_indicar}
+                    cargado={masterCargado}
+                    onVerPreferencias={() => partida.dmId && setUsuarioSeleccionado({ id: partida.dmId, nombre: partida.dm, esMaster: true })}
+                />
             </div>
 
             <div className="gestion-partida-roster">
-                {/* Desplegable cerrado por defecto */}
                 <details className="gestion-roster-details">
                     <summary className="gestion-partida-roster-header">
                         <h4>
@@ -356,58 +350,24 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
                         <ul className="gestion-jugadores-ul">
                             {jugadores.map((jugador) => {
                                 const perfilJ = perfilesJugadores[jugador.user_id];
-                                const avatarPos = perfilJ?.avatar_position ? perfilJ.avatar_position.split(' ') : ['50', '50', '100'];
-                                const avatarUrl = perfilJ?.avatar_url;
-                                const tieneAvatarValido = Boolean(avatarUrl && avatarUrl.trim() !== '');
+                                const avatarUrl = perfilJ?.avatar_url || jugador.avatar_url;
+                                const avatarPos = perfilJ?.avatar_position || null;
 
-                                return <li key={jugador.user_id} className="gestion-jugador-li">
-                                    <div className="gestion-jugador-identidad">
-                                        {tieneAvatarValido ? (
-                                            <div className="gestion-avatar-redondo">
-                                                <img
-                                                    src={avatarUrl!}
-                                                    alt=""
-                                                    referrerPolicy="no-referrer"
-                                                    style={{
-                                                        width: '100%',
-                                                        height: '100%',
-                                                        objectFit: 'cover',
-                                                        display: 'block',
-                                                        objectPosition: `${avatarPos[0]}% ${avatarPos[1]}%`,
-                                                        transform: `scale(${Number(avatarPos[2]) / 100})`,
-                                                        transformOrigin: `${avatarPos[0]}% ${avatarPos[1]}%`
-                                                    }}
-                                                />
-                                            </div>
-                                        ) : (
-                                            <div className="gestion-avatar-redondo gestion-avatar-placeholder">User</div>
-                                        )}
-                                        <div className="gestion-jugador-datos-texto">
-                                            <strong>{jugador.username}</strong>
-                                        </div>
-                                    </div>
-
-                                    <div className="gestion-jugador-acciones-item">
-                                        <button
-                                            type="button"
-                                            className="btn-ver-preferencias"
-                                            onClick={() => setUsuarioSeleccionado({ id: jugador.user_id, nombre: jugador.username, esMaster: false })}
-                                        >
-                                            Preferencias
-                                        </button>
-                                        {esDm && (
-                                            <button
-                                                type="button"
-                                                className="btn-quitar-jugador"
-                                                onClick={() => void quitarJugador(jugador)}
-                                                aria-label={`Quitar a ${jugador.username}`}
-                                                disabled={guardando}
-                                            >
-                                                Quitar
-                                            </button>
-                                        )}
-                                    </div>
-                                </li>;
+                                return (
+                                    <li key={jugador.user_id}>
+                                        <FichaParticipanteGestion
+                                            nombre={jugador.username}
+                                            rol="Jugador"
+                                            avatarUrl={avatarUrl}
+                                            avatarPosition={avatarPos}
+                                            franjasIndicadas={jugador.franjas_indicadas ?? 0}
+                                            franjasSinIndicar={jugador.franjas_sin_indicar ?? 0}
+                                            cargado={esPartidaActual}
+                                            onVerPreferencias={() => setUsuarioSeleccionado({ id: jugador.user_id, nombre: jugador.username, esMaster: false })}
+                                            onQuitar={esDm ? () => void quitarJugador(jugador) : undefined}
+                                        />
+                                    </li>
+                                );
                             })}
                         </ul>
                     ) : (
