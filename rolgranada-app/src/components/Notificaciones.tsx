@@ -4,7 +4,7 @@ import './Notificaciones.css';
 import type { Notificacion } from '../types';
 import { supabase } from '../lib/supabase';
 import { activarPush } from '../lib/push';
-// Tipo seguro adaptado a la estructura de solicitudes pendientes
+
 export type SolicitudPendienteRow = {
   partida_id: string;
   user_id: string;
@@ -40,7 +40,6 @@ export default function Notificaciones({
     typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
   );
 
-  // Cargar notificaciones In-App de la base de datos de forma segura
   useEffect(() => {
     if (!userId || !abierto) return;
     let activa = true;
@@ -77,7 +76,6 @@ export default function Notificaciones({
     setPermisoPush(typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default');
   }
 
-  // Marcar notificación In-App como leída
   async function marcarComoLeida(id: string) {
     const { error: updateError } = await supabase
       .from('notificaciones')
@@ -93,7 +91,14 @@ export default function Notificaciones({
 
   if (!abierto) return null;
 
-  const totalVacias = solicitudes.length === 0 && notificacionesInApp.length === 0;
+  // Filtramos las notificaciones In-App para excluir aquellas que son solicitudes de unión duplicadas
+  // (ya que las solicitudes se muestran de forma interactiva arriba con sus botones de Aceptar/Rechazar)
+  const notificacionesFiltradas = notificacionesInApp.filter((n) => {
+    const esSolicitudUnion = n.titulo?.toLowerCase().includes('solicitud') || n.mensaje?.toLowerCase().includes('quiere unirse');
+    return !esSolicitudUnion;
+  });
+
+  const totalVacias = solicitudes.length === 0 && notificacionesFiltradas.every(n => n.leida);
 
   return createPortal(
     <div 
@@ -106,7 +111,6 @@ export default function Notificaciones({
           <button type="button" className="notificaciones-cerrar" aria-label="Cerrar notificaciones" onClick={onCerrar}>×</button>
         </header>
 
-        {/* Sección para activar notificaciones nativas push si el navegador lo permite */}
         {('Notification' in window) && permisoPush !== 'granted' && (
           <div style={{ marginBottom: '1rem', padding: '0.75rem', background: 'var(--bg-hover)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.82rem' }}>Activa las notificaciones del navegador para recibir avisos nativos.</span>
@@ -169,21 +173,22 @@ export default function Notificaciones({
           </>
         )}
 
-        {/* 2. Historial de Notificaciones In-App */}
-        {notificacionesInApp.length > 0 && (
+        {/* 2. Historial de Notificaciones In-App (excluyendo duplicados de solicitudes) */}
+        {notificacionesFiltradas.some(n => !n.leida) && (
           <>
             <h3 style={{ fontSize: '0.95rem', margin: '1rem 0 0.5rem 0', color: 'var(--text-primary)' }}>Avisos Recientes</h3>
             <ul className="notificaciones-lista">
-              {notificacionesInApp.map((notif) => (
-                <li key={notif.id} style={{ opacity: notif.leida ? 0.7 : 1, background: notif.leida ? 'transparent' : 'var(--bg-hover)', padding: '0.5rem', borderRadius: '4px' }}>
-                  <div className="notificacion-detalles">
-                    <strong>{notif.titulo}</strong>
-                    <span>{notif.mensaje}</span>
-                    <time dateTime={notif.created_at}>
-                      {new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(notif.created_at))}
-                    </time>
-                  </div>
-                  {!notif.leida && (
+              {notificacionesFiltradas.map((notif) => {
+                if (notif.leida) return null; // Ocultamos las leídas para que el indicador de pendientes sea real
+                return (
+                  <li key={notif.id} style={{ opacity: 1, background: 'var(--bg-hover)', padding: '0.5rem', borderRadius: '4px' }}>
+                    <div className="notificacion-detalles">
+                      <strong>{notif.titulo}</strong>
+                      <span>{notif.mensaje}</span>
+                      <time dateTime={notif.created_at}>
+                        {new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(notif.created_at))}
+                      </time>
+                    </div>
                     <div className="notificacion-acciones">
                       <button 
                         type="button" 
@@ -194,9 +199,9 @@ export default function Notificaciones({
                         Marcar leída
                       </button>
                     </div>
-                  )}
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           </>
         )}

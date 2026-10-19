@@ -300,7 +300,7 @@ export function useRolData() {
     },
     [ejecutar]
   );
-
+  
   const unirsePorInvitacion = useCallback(
     async (partidaId: string, codigoInvitacion: string) => {
       await ejecutar(async () => {
