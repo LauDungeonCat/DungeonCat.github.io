@@ -81,7 +81,12 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
       setCargandoSolicitudes(true);
       const [resSolicitudes, resAvisos] = await Promise.all([
         supabase.rpc('listar_solicitudes_usuario'),
-        supabase.from('notificaciones').select('id', { count: 'exact' }).eq('user_id', usuarioId).eq('leida', false)
+        supabase
+          .from('notificaciones')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', usuarioId)
+          .eq('leida', false)
+          .neq('titulo', 'Solicitud de unión recibida')
       ]);
 
       if (!activa) return;
@@ -100,6 +105,10 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
     };
 
     void cargarSolicitudesYAvisos();
+
+    // Event listener personalizado para refrescar notificaciones
+    const refrescar = () => void cargarSolicitudesYAvisos();
+    window.addEventListener('notificaciones-actualizadas', refrescar);
 
     // Suscripción Realtime a nuevas notificaciones
     const canal = supabase
@@ -122,6 +131,7 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
 
     return () => {
       activa = false;
+      window.removeEventListener('notificaciones-actualizadas', refrescar);
       supabase.removeChannel(canal);
     };
   }, [usuarioId]);

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import './Notificaciones.css';
 import type { Notificacion } from '../types';
 import { supabase } from '../lib/supabase';
-import { activarPush } from '../lib/push';
+import { activarPush, detalleErrorPush } from '../lib/push';
 
 export type SolicitudPendienteRow = {
   partida_id: string;
@@ -12,6 +12,10 @@ export type SolicitudPendienteRow = {
   partida_titulo: string;
   fecha_union: string;
 };
+
+// Debe coincidir EXACTO con el título que crea el trigger de la base de datos.
+// Esa notificación se muestra como tarjeta interactiva (Aceptar/Rechazar), no como aviso.
+export const TITULO_SOLICITUD_RECIBIDA = 'Solicitud de unión recibida';
 
 type NotificacionesProps = {
   abierto: boolean;
@@ -36,6 +40,7 @@ export default function Notificaciones({
 }: NotificacionesProps) {
   const [notificacionesInApp, setNotificacionesInApp] = useState<Notificacion[]>([]);
   const [cargandoInApp, setCargandoInApp] = useState(false);
+  const [errorInApp, setErrorInApp] = useState<string | null>(null);
   const [permisoPush, setPermisoPush] = useState<NotificationPermission>(
     typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
   );
@@ -55,8 +60,11 @@ export default function Notificaciones({
 
       if (activa) {
         setCargandoInApp(false);
-        if (!err && data) {
-          setNotificacionesInApp(data as Notificacion[]);
+        if (err) {
+          setErrorInApp(`No se pudo cargar el historial: ${err.message}`);
+        } else {
+          setErrorInApp(null);
+          setNotificacionesInApp((data ?? []) as Notificacion[]);
         }
       }
     }
@@ -72,33 +80,58 @@ export default function Notificaciones({
     const r = await activarPush(userId, true);
     if (r === 'no_soportado') alert('Tu navegador no soporta push. En iPhone hay que añadir la web a la pantalla de inicio.');
     else if (r === 'denegado') alert('Notificaciones bloqueadas: actívalas en los ajustes del sitio.');
-    else if (r === 'error' || r === 'sin_clave') alert('No se pudo activar. Revisa la consola.');
+    else if (r === 'error' || r === 'sin_clave') alert(`No se pudo activar.\n${detalleErrorPush()}`);
     setPermisoPush(typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default');
   }
 
+  // Avisa al Header para que recalcule el contador de no leídas
+  function avisarCambioLeidas() {
+    window.dispatchEvent(new Event('notificaciones-actualizadas'));
+  }
+
   async function marcarComoLeida(id: string) {
-    const { error: updateError } = await supabase
+    const { data, error: updateError } = await supabase
       .from('notificaciones')
       .update({ leida: true })
-      .eq('id', id);
+      .eq('id', id)
+      .select('id');
 
-    if (!updateError) {
-      setNotificacionesInApp((actuales) =>
-        actuales.map((n) => (n.id === id ? { ...n, leida: true } : n))
-      );
+    // Con RLS mal configurada el UPDATE no da error pero afecta a 0 filas
+    if (updateError || !data || data.length === 0) {
+      setErrorInApp('No se pudo marcar como leída (¿falta la política UPDATE en notificaciones?).');
+      return;
     }
+    setErrorInApp(null);
+    setNotificacionesInApp((actuales) => actuales.map((n) => (n.id === id ? { ...n, leida: true } : n)));
+    avisarCambioLeidas();
+  }
+
+  async function marcarTodasComoLeidas() {
+    if (!userId) return;
+    const { data, error: updateError } = await supabase
+      .from('notificaciones')
+      .update({ leida: true })
+      .eq('user_id', userId)
+      .eq('leida', false)
+      .select('id');
+
+    if (updateError) {
+      setErrorInApp(updateError.message);
+      return;
+    }
+    if (data && data.length > 0) {
+      setNotificacionesInApp((actuales) => actuales.map((n) => ({ ...n, leida: true })));
+    }
+    avisarCambioLeidas();
   }
 
   if (!abierto) return null;
 
-  // Filtramos las notificaciones In-App para excluir aquellas que son solicitudes de unión duplicadas
-  // (ya que las solicitudes se muestran de forma interactiva arriba con sus botones de Aceptar/Rechazar)
-  const notificacionesFiltradas = notificacionesInApp.filter((n) => {
-    const esSolicitudUnion = n.titulo?.toLowerCase().includes('solicitud') || n.mensaje?.toLowerCase().includes('quiere unirse');
-    return !esSolicitudUnion;
-  });
-
-  const totalVacias = solicitudes.length === 0 && notificacionesFiltradas.every(n => n.leida);
+  // Solo se oculta la notificación de "solicitud recibida" (ya aparece arriba con botones).
+  // Antes se filtraba por texto ('solicitud'), lo que también escondía "Solicitud aceptada/rechazada".
+  const notificacionesFiltradas = notificacionesInApp.filter((n) => n.titulo !== TITULO_SOLICITUD_RECIBIDA);
+  const hayNoLeidas = notificacionesFiltradas.some((n) => !n.leida);
+  const totalVacias = solicitudes.length === 0 && notificacionesFiltradas.length === 0;
 
   return createPortal(
     <div 
@@ -126,9 +159,10 @@ export default function Notificaciones({
         )}
 
         {error && <p className="datos-error" role="alert">{error}</p>}
+        {errorInApp && <p className="datos-error" role="alert">{errorInApp}</p>}
         {(cargando || cargandoInApp) && <p role="status">Cargando notificaciones…</p>}
         
-        {!cargando && !cargandoInApp && !error && totalVacias && (
+        {!cargando && !cargandoInApp && !error && !errorInApp && totalVacias && (
           <p className="notificaciones-vacio">No tienes notificaciones ni solicitudes pendientes.</p>
         )}
 
@@ -173,35 +207,57 @@ export default function Notificaciones({
           </>
         )}
 
-        {/* 2. Historial de Notificaciones In-App (excluyendo duplicados de solicitudes) */}
-        {notificacionesFiltradas.some(n => !n.leida) && (
+        {/* 2. Historial de Notificaciones In-App */}
+        {notificacionesFiltradas.length > 0 && (
           <>
-            <h3 style={{ fontSize: '0.95rem', margin: '1rem 0 0.5rem 0', color: 'var(--text-primary)' }}>Avisos Recientes</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '1rem 0 0.5rem 0' }}>
+              <h3 style={{ fontSize: '0.95rem', margin: 0, color: 'var(--text-primary)' }}>Avisos Recientes</h3>
+              {hayNoLeidas && (
+                <button
+                  type="button"
+                  className="notificacion-rechazar"
+                  style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                  onClick={() => void marcarTodasComoLeidas()}
+                >
+                  Marcar todas como leídas
+                </button>
+              )}
+            </div>
             <ul className="notificaciones-lista">
-              {notificacionesFiltradas.map((notif) => {
-                if (notif.leida) return null; // Ocultamos las leídas para que el indicador de pendientes sea real
-                return (
-                  <li key={notif.id} style={{ opacity: 1, background: 'var(--bg-hover)', padding: '0.5rem', borderRadius: '4px' }}>
-                    <div className="notificacion-detalles">
-                      <strong>{notif.titulo}</strong>
-                      <span>{notif.mensaje}</span>
-                      <time dateTime={notif.created_at}>
-                        {new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(notif.created_at))}
-                      </time>
-                    </div>
-                    <div className="notificacion-acciones">
+              {notificacionesFiltradas.map((notif) => (
+                <li 
+                  key={notif.id} 
+                  style={{ 
+                    opacity: notif.leida ? 0.6 : 1, 
+                    background: notif.leida ? 'transparent' : 'var(--bg-hover)', 
+                    padding: '0.5rem', 
+                    borderRadius: '4px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}
+                >
+                  <div className="notificacion-detalles">
+                    <strong>{notif.titulo}</strong>
+                    <span>{notif.mensaje}</span>
+                    <time dateTime={notif.created_at} style={{ display: 'block', fontSize: '0.75rem', opacity: 0.8 }}>
+                      {new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(notif.created_at))}
+                    </time>
+                  </div>
+                  {!notif.leida && (
+                    <div className="notificacion-acciones" style={{ marginLeft: '1rem' }}>
                       <button 
                         type="button" 
                         className="notificacion-rechazar" 
-                        style={{ fontSize: '0.75rem' }}
+                        style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
                         onClick={() => void marcarComoLeida(notif.id)}
                       >
                         Marcar leída
                       </button>
                     </div>
-                  </li>
-                );
-              })}
+                  )}
+                </li>
+              ))}
             </ul>
           </>
         )}

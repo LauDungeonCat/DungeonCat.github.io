@@ -14,6 +14,7 @@ dist-ssr
 
 context
 supabase/context.sql
+supabase/schema_actualizado.sql
 
 # Editor directories and files
 .vscode/*
