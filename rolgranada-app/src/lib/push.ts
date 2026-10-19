@@ -45,7 +45,10 @@ export async function activarPush(userId: string, mostrarConfirmacion = false): 
     const permiso = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
     if (permiso !== 'granted') return 'denegado';
 
-    const registro = await navigator.serviceWorker.register('/sw.js');
+    // La web vive en un subdirectorio (/rolgranada/): el service worker y su scope
+    // deben colgar de la base de Vite, no de la raíz del dominio.
+    const base = new URL(import.meta.env.BASE_URL, document.baseURI);
+    const registro = await navigator.serviceWorker.register(new URL('sw.js', base).href, { scope: base.pathname });
     await navigator.serviceWorker.ready;
     ultimoError = '';
 
@@ -73,7 +76,7 @@ export async function activarPush(userId: string, mostrarConfirmacion = false): 
       // hay que usar siempre el service worker.
       await registro.showNotification('Rol Granada', {
         body: '¡Notificaciones activadas correctamente!',
-        icon: '/favicon.ico',
+        icon: `${base.pathname}favicon.ico`,
       });
     }
     return 'activado';

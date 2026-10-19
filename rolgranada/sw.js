@@ -1,5 +1,6 @@
 // Service worker de Rol Granada: recibe los push del servidor y los muestra,
-// incluso con la web cerrada. Debe servirse desde la raíz (/sw.js).
+// incluso con la web cerrada. Vive junto al index.html (p. ej. /rolgranada/sw.js)
+// y su scope es esa misma carpeta.
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
 
@@ -14,17 +15,17 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(datos.titulo || 'Rol Granada', {
       body: datos.mensaje || 'Tienes una nueva notificación.',
-      icon: '/favicon.ico',
-      badge: '/favicon.ico',
+      icon: self.registration.scope + 'favicon.ico',
+      badge: self.registration.scope + 'favicon.ico',
       tag: datos.id || undefined,
-      data: { url: datos.url || '/' },
+      data: { url: self.registration.scope },
     })
   );
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const destino = (event.notification.data && event.notification.data.url) || '/';
+  const destino = (event.notification.data && event.notification.data.url) || self.registration.scope;
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((ventanas) => {
