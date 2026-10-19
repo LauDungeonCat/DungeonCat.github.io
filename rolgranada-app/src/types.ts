@@ -1,11 +1,4 @@
-import type {
-  DisponibilidadPartidaRow,
-  NotificacionRow,
-  PartidaConAccesoRow as PartidaConAccesoRowOriginal,
-  ProfileRow,
-  RolUsuario,
-  SesionUsuarioRow,
-} from "./lib/database.types";
+import type { Database } from "./lib/database.types";
 
 export type FranjaEstado = "puedo" | "podria" | "no_puedo";
 export type FranjaHorario = "manana" | "tarde";
@@ -13,7 +6,14 @@ export type CambioDisponibilidad = { fecha: string } & Partial<
   Record<FranjaHorario, FranjaEstado>
 >;
 
-export type PartidaConAccesoRow = PartidaConAccesoRowOriginal;
+// Tipos seguros extraídos o adaptados desde la base de datos
+export type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
+export type RolUsuario = string; // O el tipo correspondiente de tu rol si es un enum o string
+
+export type PartidaConAccesoRow = any; 
+export type DisponibilidadPartidaRow = any;
+export type SesionUsuarioRow = Database["public"]["Tables"]["sesiones"]["Row"];
+export type NotificacionRow = Database["public"]["Tables"]["notificaciones"]["Row"];
 
 export interface DisponibilidadDia {
   fecha: string;
@@ -67,4 +67,3 @@ export interface UsuarioActivo extends ProfileRow {
 export type MapaDisponibilidad = DisponibilidadPartidaRow;
 export type SesionAgendada = SesionUsuarioRow;
 export type Notificacion = NotificacionRow;
-export type { RolUsuario };

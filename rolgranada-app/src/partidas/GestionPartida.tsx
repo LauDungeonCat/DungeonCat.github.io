@@ -55,7 +55,6 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
     const [masterCargado, setMasterCargado] = useState(false);
 
     const esDm = profile?.id === partida.dmId || profile?.role === "admin";
-    const puedeVerRoster = esDm || partida.viewerIsParticipant;
 
     useEffect(() => {
         const handleAbrir = () => setAgendamientoAbierto(true);
@@ -129,10 +128,9 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
         return () => { activa = false; };
     }, [partida.dmId, partida.dmAvatarUrl, partida.id]);
 
-    // Cargar roster de jugadores
+    // Cargar roster de jugadores para todos los usuarios (eliminada restricción restrictiva)
     useEffect(() => {
         let activa = true;
-        if (!puedeVerRoster) return () => { activa = false; };
 
         setCargandoRoster(true);
         setErrorRoster(null);
@@ -180,7 +178,7 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
         return () => {
             activa = false;
         };
-    }, [cargarJugadoresPartida, partida.id, puedeVerRoster]);
+    }, [cargarJugadoresPartida, partida.id]);
 
     useEffect(() => {
         if (!mensajeEnlace) return;

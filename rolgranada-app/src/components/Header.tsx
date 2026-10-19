@@ -6,9 +6,20 @@ import bellIcon from '../assets/Bell-Notification.svg';
 import bellAlertIcon from '../assets/Bell-Notification-There-Is-A-Notification.svg';
 import sunIcon from '../assets/sun.svg';
 import moonIcon from '../assets/moon.svg';
-import type { ProfileRow, SolicitudPendienteRow } from '../lib/database.types';
 import { supabase } from '../lib/supabase';
+import { activarPush } from '../lib/push';
 import Notificaciones from './Notificaciones';
+import type { Database } from '../lib/database.types';
+
+// Tipos seguros para el Header
+export type ProfileRow = Database['public']['Tables']['profiles']['Row'];
+export type SolicitudPendienteRow = {
+  partida_id: string;
+  user_id: string;
+  username: string;
+  partida_titulo: string;
+  fecha_union: string;
+};
 
 type HeaderProps = {
   onNavigate: (pagina: string) => void;
@@ -23,6 +34,8 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
   const [partidasAbierto, setPartidasAbierto] = useState(false);
   const [notificacionesAbiertas, setNotificacionesAbiertas] = useState(false);
   const [solicitudesCargadas, setSolicitudesCargadas] = useState<{ usuarioId: string; items: SolicitudPendienteRow[] } | null>(null);
+  const [noLeidasCount, setNoLeidasCount] = useState<number>(0);
+  
   const solicitudes = solicitudesCargadas && solicitudesCargadas.usuarioId === profile?.id ? solicitudesCargadas.items : [];
   const [cargandoSolicitudes, setCargandoSolicitudes] = useState(false);
   const [errorNotificaciones, setErrorNotificaciones] = useState<string | null>(null);
@@ -52,25 +65,64 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
   };
 
   const usuarioId = profile?.id;
+
+  // Renovar la suscripción Web Push en cada inicio de sesión si el permiso ya fue concedido
+  useEffect(() => {
+    if (usuarioId && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      void activarPush(usuarioId);
+    }
+  }, [usuarioId]);
+
   useEffect(() => {
     if (!usuarioId) return;
     let activa = true;
-    const cargarSolicitudes = async () => {
+
+    const cargarSolicitudesYAvisos = async () => {
       setCargandoSolicitudes(true);
-      const { data, error } = await supabase.rpc('listar_solicitudes_usuario');
+      const [resSolicitudes, resAvisos] = await Promise.all([
+        supabase.rpc('listar_solicitudes_usuario'),
+        supabase.from('notificaciones').select('id', { count: 'exact' }).eq('user_id', usuarioId).eq('leida', false)
+      ]);
+
       if (!activa) return;
       setCargandoSolicitudes(false);
-      if (error) setErrorNotificaciones(error.message);
-      else {
-        setSolicitudesCargadas({ usuarioId, items: data ?? [] });
+
+      if (resSolicitudes.error) {
+        setErrorNotificaciones(resSolicitudes.error.message);
+      } else {
+        setSolicitudesCargadas({ usuarioId, items: resSolicitudes.data ?? [] });
         setErrorNotificaciones(null);
       }
+
+      if (!resAvisos.error) {
+        setNoLeidasCount(resAvisos.count ?? 0);
+      }
     };
-    void cargarSolicitudes();
-    const intervalo = window.setInterval(() => { void cargarSolicitudes(); }, 30_000);
+
+    void cargarSolicitudesYAvisos();
+
+    // Suscripción Realtime a nuevas notificaciones
+    const canal = supabase
+      .channel(`notif_header_${usuarioId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notificaciones', filter: `user_id=eq.${usuarioId}` },
+        () => {
+          void cargarSolicitudesYAvisos();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'partida_participantes' },
+        () => {
+          void cargarSolicitudesYAvisos();
+        }
+      )
+      .subscribe();
+
     return () => {
       activa = false;
-      window.clearInterval(intervalo);
+      supabase.removeChannel(canal);
     };
   }, [usuarioId]);
 
@@ -108,6 +160,8 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
       items: actual.items.filter((item) => item.partida_id !== solicitud.partida_id || item.user_id !== solicitud.user_id),
     } : actual);
   }
+
+  const totalNotificaciones = solicitudes.length + noLeidasCount;
 
   return (
     <header className="main-header">
@@ -172,7 +226,6 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
       </nav>
 
       <div className="header-actions">
-        {/* Botón de Modo Oscuro con SVGs */}
         <button 
           className="header-action header-theme-toggle" 
           type="button" 
@@ -237,11 +290,11 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
           >
             <img
               className="header-notification-icon"
-              src={solicitudes.length > 0 ? bellAlertIcon : bellIcon}
+              src={totalNotificaciones > 0 ? bellAlertIcon : bellIcon}
               alt=""
               aria-hidden="true"
             />
-            {solicitudes.length > 0 && <span className="header-notification-count">{solicitudes.length}</span>}
+            {totalNotificaciones > 0 && <span className="header-notification-count">{totalNotificaciones}</span>}
           </button>
         </> : <button className="header-sign-out" type="button" onClick={requestLogin}>Acceder</button>}
       </div>

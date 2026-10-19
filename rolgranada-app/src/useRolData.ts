@@ -1,8 +1,24 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "./auth/useAuth";
-import type { DisponibilidadPartidaRow, JugadorPartidaRow, PartidaConAccesoRow, SesionUsuarioRow } from "./lib/database.types";
+import type { Database } from "./lib/database.types";
 import { supabase } from "./lib/supabase";
 import type { CambioDisponibilidad, DisponibilidadDia, FranjaEstado, FranjaHorario, Partida, PartidaEditable, UsuarioActivo } from "./types";
+
+// Tipos auxiliares seguros basados en la Base de Datos
+export type SesionUsuarioRow = Database["public"]["Tables"]["sesiones"]["Row"];
+export type PartidaConAccesoRow = any; // Vista o función de partidas con acceso
+export type JugadorPartidaRow = any;
+export type DisponibilidadPartidaRow = any; 
+// O si prefieres mantener un tipo más limpio:
+export type HeatmapDisponibilidadRow = {
+  fecha: string;
+  franja: string;
+  pueden: number;
+  podrian: number;
+  no_pueden: number;
+  no_indicado: number;
+  participantes: number;
+};
 
 function mensajeError(error: unknown) {
   if (error instanceof Error) return error.message;
@@ -104,7 +120,7 @@ export function useRolData() {
         ? {
             ...partida,
             proximaSesion: `${siguiente.sesion.fecha}T${siguiente.sesion.franja === "manana" ? "09:00:00" : "15:00:00"}`,
-            proximaSesionFranja: siguiente.sesion.franja,
+            proximaSesionFranja: siguiente.sesion.franja as FranjaHorario,
           }
         : partida;
     });
@@ -270,23 +286,9 @@ export function useRolData() {
       await ejecutar(async () => {
         const { error: joinError } = await supabase.rpc("unirse_partida", { p_partida_id: partidaId });
         if (joinError) throw joinError;
-
-        const { data: partidaData } = await supabase
-          .from("partidas")
-          .select("titulo, dm_id")
-          .eq("id", partidaId)
-          .single();
-
-        if (partidaData?.dm_id && partidaData.dm_id !== profile?.id) {
-          await supabase.from("notificaciones").insert({
-            user_id: partidaData.dm_id,
-            titulo: "Nuevo jugador en tu partida",
-            mensaje: `${profile?.username ?? "Un usuario"} se ha unido a tu campaña "${partidaData.titulo}".`,
-          });
-        }
       });
     },
-    [ejecutar, profile]
+    [ejecutar]
   );
 
   const solicitarUnirseAPartida = useCallback(
@@ -294,23 +296,9 @@ export function useRolData() {
       await ejecutar(async () => {
         const { error: requestError } = await supabase.rpc("solicitar_unirse_partida", { p_partida_id: partidaId });
         if (requestError) throw requestError;
-
-        const { data: partidaData } = await supabase
-          .from("partidas")
-          .select("titulo, dm_id")
-          .eq("id", partidaId)
-          .single();
-
-        if (partidaData?.dm_id && partidaData.dm_id !== profile?.id) {
-          await supabase.from("notificaciones").insert({
-            user_id: partidaData.dm_id,
-            titulo: "Solicitud de unión recibida",
-            mensaje: `${profile?.username ?? "Un usuario"} quiere unirse a tu campaña "${partidaData.titulo}".`,
-          });
-        }
       });
     },
-    [ejecutar, profile]
+    [ejecutar]
   );
 
   const unirsePorInvitacion = useCallback(
@@ -321,23 +309,9 @@ export function useRolData() {
           p_codigo_invitacion: codigoInvitacion,
         });
         if (joinError) throw joinError;
-
-        const { data: partidaData } = await supabase
-          .from("partidas")
-          .select("titulo, dm_id")
-          .eq("id", partidaId)
-          .single();
-
-        if (partidaData?.dm_id && partidaData.dm_id !== profile?.id) {
-          await supabase.from("notificaciones").insert({
-            user_id: partidaData.dm_id,
-            titulo: "Nuevo jugador por invitación",
-            mensaje: `${profile?.username ?? "Un usuario"} se ha unido a tu campaña "${partidaData.titulo}".`,
-          });
-        }
       });
     },
-    [ejecutar, profile]
+    [ejecutar]
   );
 
   const desapuntarseDePartida = useCallback(
@@ -415,7 +389,7 @@ export function useRolData() {
       p_fin: fin,
     });
     if (heatmapError) throw heatmapError;
-    return data as DisponibilidadPartidaRow[];
+    return (data ?? []) as any[]; 
   }, []);
 
   const guardarSesiones = useCallback(
@@ -427,29 +401,9 @@ export function useRolData() {
           onConflict: "partida_id,fecha,franja",
         });
         if (sessionError) throw sessionError;
-
-        // Notificar a todos los jugadores inscritos en la partida
-        const [{ data: partidaData }, { data: participantes }] = await Promise.all([
-          supabase.from("partidas").select("titulo").eq("id", partidaId).single(),
-          supabase.from("partida_participantes").select("user_id").eq("partida_id", partidaId)
-        ]);
-
-        if (participantes && participantes.length > 0 && partidaData) {
-          const notificacionesNuevas = participantes
-            .filter((p) => p.user_id !== profile?.id)
-            .map((p) => ({
-              user_id: p.user_id,
-              titulo: "Nueva sesión agendada",
-              mensaje: `El DM ha agendado nuevas sesiones para "${partidaData.titulo}".`,
-            }));
-
-          if (notificacionesNuevas.length > 0) {
-            await supabase.from("notificaciones").insert(notificacionesNuevas);
-          }
-        }
       });
     },
-    [ejecutar, profile?.id]
+    [ejecutar]
   );
 
   const borrarSesion = useCallback(

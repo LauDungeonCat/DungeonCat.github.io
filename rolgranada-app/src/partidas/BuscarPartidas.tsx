@@ -27,14 +27,20 @@ export default function BuscarPartidas({
 
   const partidasFiltradas = partidas.filter((p) => `${p.titulo} ${p.sistema}`.toLocaleLowerCase("es").includes(termino));
 
-function etiquetaProximaSesion(fecha?: string, franja?: "manana" | "tarde") {
-  if (!fecha) return "Fecha por decidir";
-  const formato = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" });
-  const fechaFormateada = formato.format(new Date(fecha));
-  const etiquetaFranja = franja === "manana" ? ", por la mañana" : franja === "tarde" ? ", por la tarde" : "";
-  
-  return `Próxima sesión: ${fechaFormateada}${etiquetaFranja}`;
-}
+  // Tipado seguro para las sesiones pasadas al componente AvisoDisponibilidad
+  const sesionesTipadas = sesiones.map((s) => ({
+    ...s,
+    franja: s.franja as "manana" | "tarde",
+  }));
+
+  function etiquetaProximaSesion(fecha?: string, franja?: "manana" | "tarde") {
+    if (!fecha) return "Fecha por decidir";
+    const formato = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" });
+    const fechaFormateada = formato.format(new Date(fecha));
+    const etiquetaFranja = franja === "manana" ? ", por la mañana" : franja === "tarde" ? ", por la tarde" : "";
+    
+    return `Próxima sesión: ${fechaFormateada}${etiquetaFranja}`;
+  }
 
   useEffect(() => {
     if (!loading && partidaEnlaceId) {
@@ -62,7 +68,7 @@ function etiquetaProximaSesion(fecha?: string, franja?: "manana" | "tarde") {
       </header>
 
       {error && <p className="datos-error" role="alert">{error}</p>}
-      <AvisoDisponibilidad disponibilidad={usuario?.disponibilidad} sesiones={sesiones} />
+      <AvisoDisponibilidad disponibilidad={usuario?.disponibilidad} sesiones={sesionesTipadas} />
 
       <p className="buscar-partidas-contador">{partidasFiltradas.length} {partidasFiltradas.length === 1 ? "partida" : "partidas"}</p>
 

@@ -1,9 +1,17 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import './Notificaciones.css';
-import type { SolicitudPendienteRow } from '../lib/database.types';
 import type { Notificacion } from '../types';
 import { supabase } from '../lib/supabase';
+import { activarPush } from '../lib/push';
+// Tipo seguro adaptado a la estructura de solicitudes pendientes
+export type SolicitudPendienteRow = {
+  partida_id: string;
+  user_id: string;
+  username: string;
+  partida_titulo: string;
+  fecha_union: string;
+};
 
 type NotificacionesProps = {
   abierto: boolean;
@@ -32,27 +40,27 @@ export default function Notificaciones({
     typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
   );
 
-  // Cargar notificaciones In-App de la base de datos
+  // Cargar notificaciones In-App de la base de datos de forma segura
   useEffect(() => {
     if (!userId || !abierto) return;
     let activa = true;
+    const currentUserId = userId;
 
     async function cargarInApp() {
-    if (!userId) return; 
-    setCargandoInApp(true);
-    const { data, error: err } = await supabase
-      .from('notificaciones')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      setCargandoInApp(true);
+      const { data, error: err } = await supabase
+        .from('notificaciones')
+        .select('*')
+        .eq('user_id', currentUserId)
+        .order('created_at', { ascending: false });
 
-    if (activa) {
-      setCargandoInApp(false);
-      if (!err && data) {
-        setNotificacionesInApp(data as Notificacion[]);
+      if (activa) {
+        setCargandoInApp(false);
+        if (!err && data) {
+          setNotificacionesInApp(data as Notificacion[]);
+        }
       }
     }
-  }
 
     void cargarInApp();
     return () => {
@@ -60,22 +68,13 @@ export default function Notificaciones({
     };
   }, [userId, abierto]);
 
-  // Solicitar permisos de Web Push nativas del navegador
   async function solicitarPermisoPush() {
-    if (!('Notification' in window)) {
-      alert('Este navegador no soporta notificaciones de escritorio.');
-      return;
-    }
-
-    const resultado = await Notification.requestPermission();
-    setPermisoPush(resultado);
-
-    if (resultado === 'granted') {
-      new Notification('Rol Granada', {
-        body: '¡Notificaciones activadas correctamente!',
-        icon: '/favicon.ico',
-      });
-    }
+    if (!userId) return;
+    const r = await activarPush(userId, true);
+    if (r === 'no_soportado') alert('Tu navegador no soporta push. En iPhone hay que añadir la web a la pantalla de inicio.');
+    else if (r === 'denegado') alert('Notificaciones bloqueadas: actívalas en los ajustes del sitio.');
+    else if (r === 'error' || r === 'sin_clave') alert('No se pudo activar. Revisa la consola.');
+    setPermisoPush(typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default');
   }
 
   // Marcar notificación In-App como leída

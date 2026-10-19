@@ -46,16 +46,17 @@ export default function MisPartidas() {
     const indiceCampanaActiva = misPartidas.length ? campanaActiva % misPartidas.length : 0;
     
     const sesiones: Sesion[] = sesionesAgendadas.map((sesion) => {
-        const partidaAsociada = partidas.find((p) => p.titulo === sesion.titulo_partida);
-        return {
-            fecha: new Date(`${sesion.fecha}T12:00:00`),
-            titulo: `Sesión · ${sesion.franja === "manana" ? "Mañana" : "Tarde"}`,
-            campana: sesion.titulo_partida,
-            hora: sesion.franja === "manana" ? "Mañana" : "Tarde",
-            sistema: partidaAsociada?.sistema,
-            ubicacion: partidaAsociada?.ubicacionExacta ?? undefined,
-        };
-    });
+    // Buscamos la partida asociada utilizando el partida_id de la sesión
+    const partidaAsociada = partidas.find((p) => p.id === sesion.partida_id);
+    return {
+      fecha: new Date(`${sesion.fecha}T12:00:00`),
+      titulo: `Sesión · ${sesion.franja === "manana" ? "Mañana" : "Tarde"}`,
+      campana: partidaAsociada?.titulo ?? "Campaña",
+      hora: sesion.franja === "manana" ? "Mañana" : "Tarde",
+      sistema: partidaAsociada?.sistema,
+      ubicacion: partidaAsociada?.ubicacionExacta ?? undefined,
+    };
+  });
     
     const campana = misPartidas[indiceCampanaActiva];
 
@@ -80,8 +81,10 @@ export default function MisPartidas() {
                 </div>
             </div>
             {error && <p className="datos-error" role="alert">{error}</p>}
-            <AvisoDisponibilidad disponibilidad={usuario?.disponibilidad} sesiones={sesionesAgendadas} />
-
+            <AvisoDisponibilidad 
+            disponibilidad={usuario?.disponibilidad} 
+            sesiones={sesionesAgendadas.map((s) => ({ ...s, franja: s.franja as "manana" | "tarde" }))} 
+            />
             {campana ? (
                 <div className="campanas-carrusel-wrapper">
                     <div className="campanas-carrusel" aria-live="polite">
@@ -100,7 +103,7 @@ export default function MisPartidas() {
                                 <h2>{campana.titulo}</h2>
                                 <dl>
                                     <div><dt>Sistema:</dt><dd>{campana.sistema}</dd></div>
-                                    <div><dt>Siguiente Sesión:</dt><dd>{obtenerTextoProximaSesion(campana.titulo, sesionesAgendadas)}</dd></div>
+                                    <div><dt>Siguiente Sesión:</dt><dd>{obtenerTextoProximaSesion(campana.titulo, sesionesAgendadas.map(s => ({ ...s, franja: s.franja as "manana" | "tarde", titulo_partida: campana.titulo })))}</dd></div>
                                     <div><dt>Sesiones al mes:</dt><dd>{campana.sesionesAlMes}</dd></div>
                                     {campana.duracionEstimada && <div><dt>Duración estimada:</dt><dd>{campana.duracionEstimada}</dd></div>}
                                     {campana.ubicacionExacta && <div><dt>Ubicación:</dt><dd>{campana.ubicacionExacta}</dd></div>}

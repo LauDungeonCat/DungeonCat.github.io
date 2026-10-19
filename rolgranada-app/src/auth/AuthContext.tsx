@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		const userId = session.user.id;
 		void supabase
 			.from("profiles")
-			.select("id, username, avatar_url, role, created_at, rol_preferencias, lineas_evitar, estilo_master, pronombres, avatar_position")
+			.select("id, username, avatar_url, role, created_at, rol_preferencias, lineas_evitar, estilo_master, pronombres, avatar_position, notif_email_activo, notif_inapp_activo, notif_push_activo")
 			.eq("id", userId)
 			.single()
 			.then(({ data, error: profileError }) => {
@@ -161,7 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			.from("profiles")
 			.update(payload)
 			.eq("id", profile.id)
-			.select("id, username, avatar_url, role, created_at, rol_preferencias, lineas_evitar, estilo_master, pronombres, avatar_position")
+			.select("id, username, avatar_url, role, created_at, rol_preferencias, lineas_evitar, estilo_master, pronombres, avatar_position, notif_email_activo, notif_inapp_activo, notif_push_activo")
 			.single();
 
 		if (updateError) {
