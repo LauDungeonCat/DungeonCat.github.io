@@ -77,8 +77,8 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
     if (!usuarioId) return;
     let activa = true;
 
-    const cargarSolicitudesYAvisos = async () => {
-      setCargandoSolicitudes(true);
+    const cargarSolicitudesYAvisos = async (silencioso = false) => {
+      if (!silencioso) setCargandoSolicitudes(true);
       const [resSolicitudes, resAvisos] = await Promise.all([
         supabase.rpc('listar_solicitudes_usuario'),
         supabase
@@ -90,7 +90,7 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
       ]);
 
       if (!activa) return;
-      setCargandoSolicitudes(false);
+      if (!silencioso) setCargandoSolicitudes(false);
 
       if (resSolicitudes.error) {
         setErrorNotificaciones(resSolicitudes.error.message);
@@ -107,7 +107,7 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
     void cargarSolicitudesYAvisos();
 
     // Event listener personalizado para refrescar notificaciones
-    const refrescar = () => void cargarSolicitudesYAvisos();
+    const refrescar = () => void cargarSolicitudesYAvisos(true);
     window.addEventListener('notificaciones-actualizadas', refrescar);
 
     // Suscripción Realtime a nuevas notificaciones
@@ -117,14 +117,16 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'notificaciones', filter: `user_id=eq.${usuarioId}` },
         () => {
-          void cargarSolicitudesYAvisos();
+          void cargarSolicitudesYAvisos(true);
+          // Refresca también partidas, aforos y sesiones sin recargar la página
+          window.dispatchEvent(new Event('rol-data-actualizado'));
         }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'partida_participantes' },
         () => {
-          void cargarSolicitudesYAvisos();
+          void cargarSolicitudesYAvisos(true);
         }
       )
       .subscribe();
@@ -169,6 +171,7 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
       ...actual,
       items: actual.items.filter((item) => item.partida_id !== solicitud.partida_id || item.user_id !== solicitud.user_id),
     } : actual);
+    window.dispatchEvent(new Event('rol-data-actualizado'));
   }
 
   const totalNotificaciones = solicitudes.length + noLeidasCount;

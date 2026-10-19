@@ -9,7 +9,7 @@ export function detalleErrorPush() {
   return ultimoError;
 }
 
-export type ResultadoPush = 'activado' | 'denegado' | 'no_soportado' | 'sin_clave' | 'error';
+export type ResultadoPush = 'activado' | 'denegado' | 'no_soportado' | 'servicio_push' | 'sin_clave' | 'error';
 
 function urlBase64ToUint8Array(base64: string) {
   const relleno = '='.repeat((4 - (base64.length % 4)) % 4);
@@ -81,9 +81,9 @@ export async function activarPush(userId: string, mostrarConfirmacion = false): 
     }
     return 'activado';
   } catch (error) {
-    console.error('Error activando push:', error);
     const e = error as { name?: string; message?: string };
-    ultimoError = `${e?.name ?? 'Error'}: ${e?.message ?? String(error)}`;
-    return 'error';
+ultimoError = `${e?.name ?? 'Error'}: ${e?.message ?? String(error)}`;
+if (e?.name === 'AbortError') return 'servicio_push';
+return 'error';
   }
 }

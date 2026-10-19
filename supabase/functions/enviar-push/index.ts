@@ -35,21 +35,27 @@ Deno.serve(async (req) => {
     url: '/',
   });
 
-  await Promise.all(
+  const resultados = await Promise.all(
     (suscripciones ?? []).map(async (s) => {
       try {
         await webpush.sendNotification(s.subscription, carga);
+        return 'enviada';
       } catch (e) {
         const codigo = (e as { statusCode?: number }).statusCode;
         if (codigo === 404 || codigo === 410) {
           // Suscripción caducada o desinstalada: se limpia
           await supabase.from('push_subscriptions').delete().eq('id', s.id);
-        } else {
-          console.error('Fallo enviando push', e);
+          return `caducada_${codigo}`;
         }
+        console.error('Fallo enviando push', e);
+        return `error_${codigo ?? 'desconocido'}`;
       }
     })
   );
 
-  return new Response('ok');
+  // El resumen queda visible en net._http_response.content para diagnosticar
+  return new Response(
+    JSON.stringify({ suscripciones: resultados.length, resultados }),
+    { headers: { 'Content-Type': 'application/json' } }
+  );
 });

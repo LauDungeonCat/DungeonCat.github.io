@@ -75,10 +75,34 @@ export default function Notificaciones({
     };
   }, [userId, abierto]);
 
+  // Tiempo real: si llega un aviso con la web abierta, entra en la lista sin recargar
+  // (el panel puede estar abierto o cerrado; al abrirlo se vuelve a cargar todo igualmente).
+  useEffect(() => {
+    if (!userId) return;
+    const canal = supabase
+      .channel(`notif_panel_${userId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notificaciones', filter: `user_id=eq.${userId}` },
+        (payload) => {
+          const nueva = payload.new as Notificacion;
+          setNotificacionesInApp((actuales) =>
+            actuales.some((n) => n.id === nueva.id) ? actuales : [nueva, ...actuales]
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(canal);
+    };
+  }, [userId]);
+
   async function solicitarPermisoPush() {
     if (!userId) return;
     const r = await activarPush(userId, true);
     if (r === 'no_soportado') alert('Tu navegador no soporta push. En iPhone hay que añadir la web a la pantalla de inicio.');
+    else if (r === 'servicio_push') alert('Este navegador no puede conectar con su servicio de notificaciones push (pasa en Opera y en algunos navegadores basados en Chromium). Prueba con Chrome, Edge o Firefox. Los avisos dentro de la web seguirán funcionando.');
     else if (r === 'denegado') alert('Notificaciones bloqueadas: actívalas en los ajustes del sitio.');
     else if (r === 'error' || r === 'sin_clave') alert(`No se pudo activar.\n${detalleErrorPush()}`);
     setPermisoPush(typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default');
