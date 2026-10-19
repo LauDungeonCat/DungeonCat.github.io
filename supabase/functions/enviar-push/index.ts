@@ -38,7 +38,9 @@ Deno.serve(async (req) => {
   const resultados = await Promise.all(
     (suscripciones ?? []).map(async (s) => {
       try {
-        await webpush.sendNotification(s.subscription, carga);
+        // urgency 'high' evita que Android (Doze/ahorro de batería) retrase el aviso;
+        // TTL: si el dispositivo está apagado, el aviso caduca a la hora.
+        await webpush.sendNotification(s.subscription, carga, { urgency: 'high', TTL: 3600 });
         return 'enviada';
       } catch (e) {
         const codigo = (e as { statusCode?: number }).statusCode;
