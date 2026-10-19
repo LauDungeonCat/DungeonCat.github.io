@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import './ModalPreferenciasUsuario.css';
+import './PreferenciasUsuario.css';
 
 type ModalPreferenciasProps = {
   userId: string;

@@ -17,6 +17,8 @@ export type ProfileRow = {
   } | null;
   lineas_evitar?: string | null;
   estilo_master?: string | null;
+  notif_email_activo?: boolean;
+  notif_inapp_activo?: boolean; 
 };
 
 export type PartidaRow = {
@@ -108,9 +110,24 @@ export type SesionUsuarioRow = SesionRow & {
   titulo_partida: string;
 };
 
+  export type NotificacionRow = {
+  id: string;
+  user_id: string;
+  titulo: string;
+  mensaje: string;
+  leida: boolean;
+  created_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
+      notificaciones: {
+        Row: NotificacionRow;
+        Insert: Pick<NotificacionRow, "user_id" | "titulo" | "mensaje"> & Partial<Pick<NotificacionRow, "id" | "leida" | "created_at">>;
+        Update: Partial<Omit<NotificacionRow, "id" | "user_id" | "created_at">>;
+        Relationships: [];
+      };
       profiles: {
         Row: ProfileRow;
         Insert: Pick<ProfileRow, "id" | "username"> &

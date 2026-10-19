@@ -1,5 +1,6 @@
 import type {
   DisponibilidadPartidaRow,
+  NotificacionRow,
   PartidaConAccesoRow as PartidaConAccesoRowOriginal,
   ProfileRow,
   RolUsuario,
@@ -65,4 +66,5 @@ export interface UsuarioActivo extends ProfileRow {
 
 export type MapaDisponibilidad = DisponibilidadPartidaRow;
 export type SesionAgendada = SesionUsuarioRow;
+export type Notificacion = NotificacionRow;
 export type { RolUsuario };

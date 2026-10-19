@@ -241,7 +241,6 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
               alt=""
               aria-hidden="true"
             />
-            <span>Notificaciones</span>
             {solicitudes.length > 0 && <span className="header-notification-count">{solicitudes.length}</span>}
           </button>
         </> : <button className="header-sign-out" type="button" onClick={requestLogin}>Acceder</button>}
@@ -255,6 +254,7 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
         error={errorNotificaciones}
         solicitudEnResolucion={solicitudEnResolucion}
         onResolver={resolverSolicitud}
+        userId={profile?.id}
       />
     </header>
   );

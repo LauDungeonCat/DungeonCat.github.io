@@ -270,9 +270,23 @@ export function useRolData() {
       await ejecutar(async () => {
         const { error: joinError } = await supabase.rpc("unirse_partida", { p_partida_id: partidaId });
         if (joinError) throw joinError;
+
+        const { data: partidaData } = await supabase
+          .from("partidas")
+          .select("titulo, dm_id")
+          .eq("id", partidaId)
+          .single();
+
+        if (partidaData?.dm_id && partidaData.dm_id !== profile?.id) {
+          await supabase.from("notificaciones").insert({
+            user_id: partidaData.dm_id,
+            titulo: "Nuevo jugador en tu partida",
+            mensaje: `${profile?.username ?? "Un usuario"} se ha unido a tu campaña "${partidaData.titulo}".`,
+          });
+        }
       });
     },
-    [ejecutar]
+    [ejecutar, profile]
   );
 
   const solicitarUnirseAPartida = useCallback(
@@ -280,9 +294,23 @@ export function useRolData() {
       await ejecutar(async () => {
         const { error: requestError } = await supabase.rpc("solicitar_unirse_partida", { p_partida_id: partidaId });
         if (requestError) throw requestError;
+
+        const { data: partidaData } = await supabase
+          .from("partidas")
+          .select("titulo, dm_id")
+          .eq("id", partidaId)
+          .single();
+
+        if (partidaData?.dm_id && partidaData.dm_id !== profile?.id) {
+          await supabase.from("notificaciones").insert({
+            user_id: partidaData.dm_id,
+            titulo: "Solicitud de unión recibida",
+            mensaje: `${profile?.username ?? "Un usuario"} quiere unirse a tu campaña "${partidaData.titulo}".`,
+          });
+        }
       });
     },
-    [ejecutar]
+    [ejecutar, profile]
   );
 
   const unirsePorInvitacion = useCallback(
@@ -293,9 +321,23 @@ export function useRolData() {
           p_codigo_invitacion: codigoInvitacion,
         });
         if (joinError) throw joinError;
+
+        const { data: partidaData } = await supabase
+          .from("partidas")
+          .select("titulo, dm_id")
+          .eq("id", partidaId)
+          .single();
+
+        if (partidaData?.dm_id && partidaData.dm_id !== profile?.id) {
+          await supabase.from("notificaciones").insert({
+            user_id: partidaData.dm_id,
+            titulo: "Nuevo jugador por invitación",
+            mensaje: `${profile?.username ?? "Un usuario"} se ha unido a tu campaña "${partidaData.titulo}".`,
+          });
+        }
       });
     },
-    [ejecutar]
+    [ejecutar, profile]
   );
 
   const desapuntarseDePartida = useCallback(
@@ -326,7 +368,6 @@ export function useRolData() {
     [ejecutar]
   );
 
-  // Llamada correcta a la función RPC nativa de Supabase para obtener el roster con su disponibilidad calculada
   const cargarJugadoresPartida = useCallback(async (partidaId: string) => {
     const { data, error: partError } = await supabase.rpc("listar_jugadores_partida", {
       p_partida_id: partidaId,
@@ -386,9 +427,29 @@ export function useRolData() {
           onConflict: "partida_id,fecha,franja",
         });
         if (sessionError) throw sessionError;
+
+        // Notificar a todos los jugadores inscritos en la partida
+        const [{ data: partidaData }, { data: participantes }] = await Promise.all([
+          supabase.from("partidas").select("titulo").eq("id", partidaId).single(),
+          supabase.from("partida_participantes").select("user_id").eq("partida_id", partidaId)
+        ]);
+
+        if (participantes && participantes.length > 0 && partidaData) {
+          const notificacionesNuevas = participantes
+            .filter((p) => p.user_id !== profile?.id)
+            .map((p) => ({
+              user_id: p.user_id,
+              titulo: "Nueva sesión agendada",
+              mensaje: `El DM ha agendado nuevas sesiones para "${partidaData.titulo}".`,
+            }));
+
+          if (notificacionesNuevas.length > 0) {
+            await supabase.from("notificaciones").insert(notificacionesNuevas);
+          }
+        }
       });
     },
-    [ejecutar]
+    [ejecutar, profile?.id]
   );
 
   const borrarSesion = useCallback(
