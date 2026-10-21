@@ -78,7 +78,9 @@ export default function AgendamientoInteligente({ partida, onClose }: { partida:
 	const inicio = fechaIso(new Date(anio, mes, 1));
 	const fin = fechaIso(new Date(anio, mes + 1, 0));
 	const formatoMes = new Intl.DateTimeFormat("es-ES", { month: "long", year: "numeric" });
-	const puedeAvanzarMes = claveMes < claveMesActual || (claveMes === claveMesActual && rangoMeses.siguienteDisponible);
+	// El DM puede consultar siempre el mes siguiente: los jugadores pueden rellenarlo por adelantado si quieren
+	const puedeAvanzarMes = claveMes <= claveMesActual;
+	const mesSiguienteAdelantado = claveMes > claveMesActual && !rangoMeses.siguienteDisponible;
 	const cantidadDias = new Date(anio, mes + 1, 0).getDate();
 	const desplazamiento = (new Date(anio, mes, 1).getDay() + 6) % 7;
 	const mapaListo = resultadoMapa.clave === `${partida.id}:${claveMes}`;
@@ -150,10 +152,11 @@ export default function AgendamientoInteligente({ partida, onClose }: { partida:
 				{mapaListo && !hayFranjaCombinada && <p className="agendamiento-aviso">No hay ningún día disponible. Habla con tus jugadores.</p>}
 				{!mapaListo && <p className="agendamiento-cargando" role="status">Calculando disponibilidad de los jugadores…</p>}
 				{error && <p className="datos-error" role="alert">{error}</p>}
+				{mesSiguienteAdelantado && <p className="agendamiento-aviso">Los jugadores pueden rellenar el mes siguiente por adelantado, pero no es obligatorio: es normal que haya franjas sin responder.</p>}
 				<div className="agendamiento-mes">
 					<button type="button" onClick={() => cambiarMes(-1)} aria-label="Mes anterior" title="Consultar el mes anterior">‹</button>
 					<h3>{formatoMes.format(mesVisible)}</h3>
-					<button type="button" onClick={() => cambiarMes(1)} disabled={!puedeAvanzarMes} aria-label="Mes siguiente" title={puedeAvanzarMes ? "Ver el mes siguiente" : "Disponible durante los últimos tres días del mes actual"}>›</button>
+					<button type="button" onClick={() => cambiarMes(1)} disabled={!puedeAvanzarMes} aria-label="Mes siguiente" title={puedeAvanzarMes ? "Ver el mes siguiente" : "Solo se puede planificar hasta el mes siguiente"}>›</button>
 				</div>
 				<div className="agendamiento-grid" role="grid" aria-label={`Disponibilidad de ${formatoMes.format(mesVisible)}`}>
 					{nombresDias.map((dia) => <div className="agendamiento-dia-semana" role="columnheader" key={dia}>{dia}</div>)}

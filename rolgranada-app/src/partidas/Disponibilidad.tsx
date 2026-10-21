@@ -25,11 +25,6 @@ function claveMes(fecha: Date) {
 	return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function esMesSiguiente(mesOrigen: string, mesDestino: string) {
-	const [anio, mes] = mesOrigen.split("-").map(Number);
-	return claveMes(new Date(anio, mes, 1)) === mesDestino;
-}
-
 function claveDia(fecha: Date) {
 	return `${claveMes(fecha)}-${String(fecha.getDate()).padStart(2, "0")}`;
 }
@@ -75,6 +70,8 @@ export default function Disponibilidad() {
 	const [mesPlantillaDescartada, setMesPlantillaDescartada] = useState<string | null>(
 		() => leerAlmacen<string | null>(CLAVE_PLANTILLA_DESCARTADA, null),
 	);
+	// El usuario puede abrir el mes siguiente antes de los últimos tres días del mes
+	const [adelantarSiguiente, setAdelantarSiguiente] = useState(false);
 	const [modalAbierto, setModalAbierto] = useState(false);
 	const [modalVaciarAbierto, setModalVaciarAbierto] = useState(false); // <-- Estado para el popup de vaciar calendario
 	const [estadoFormulario, setEstadoFormulario] = useState<FranjaEstado>("puedo");
@@ -91,6 +88,11 @@ export default function Disponibilidad() {
 	const claveVisible = claveMes(mesVisible);
 	const claveActual = claveMes(rangoMeses.mesActual);
 	const claveSiguiente = claveMes(rangoMeses.mesSiguiente);
+	// Si ya marcaste alguna franja del mes siguiente, queda accesible siempre y no se ofrece adelantarlo
+	const haySiguienteRelleno = Object.entries(usuario?.disponibilidad ?? {}).some(
+		([fecha, dia]) => fecha.startsWith(claveSiguiente) && (dia.franjasMarcadas?.length ?? 0) > 0,
+	);
+	const siguienteDisponible = rangoMeses.siguienteDisponible || adelantarSiguiente || haySiguienteRelleno;
 	const sesionesConfirmadas = new Set(sesiones.map((sesion) => `${sesion.fecha}:${sesion.franja}`));
 	const diasEnMes = new Date(mesVisible.getFullYear(), mesVisible.getMonth() + 1, 0).getDate();
 	const calendarioCompleto = Array.from({ length: diasEnMes }, (_, indice) =>
@@ -102,10 +104,18 @@ export default function Disponibilidad() {
 			sesionesConfirmadas.has(`${fechaDia}:${franja}`) || Boolean(usuario?.disponibilidad[fechaDia]?.[franja]),
 		);
 	});
+	// Las claves "AAAA-MM" se comparan bien como texto
+	const mesesPlantillaAnterior = plantillas.map((regla) => regla.mesOrigen).filter((mes) => mes < claveVisible).sort();
+	const mesOrigenPlantilla = mesesPlantillaAnterior[mesesPlantillaAnterior.length - 1];
 	const mostrarPlantillaAnterior = Boolean(usuario)
 		&& !calendarioCompleto
 		&& mesPlantillaDescartada !== claveVisible
-		&& plantillas.some((regla) => esMesSiguiente(regla.mesOrigen, claveVisible));
+		&& Boolean(mesOrigenPlantilla);
+	const nombreMesOrigen = mesOrigenPlantilla
+		? new Intl.DateTimeFormat("es-ES", { month: "long" }).format(
+			new Date(Number(mesOrigenPlantilla.slice(0, 4)), Number(mesOrigenPlantilla.slice(5, 7)) - 1, 1),
+		)
+		: "";
 	const desplazamiento = (new Date(mesVisible.getFullYear(), mesVisible.getMonth(), 1).getDay() + 6) % 7;
 	const totalCeldas = Math.ceil((desplazamiento + diasEnMes) / 7) * 7;
 	const diasCalendario = Array.from({ length: totalCeldas }, (_, indice) => {
@@ -119,8 +129,13 @@ export default function Disponibilidad() {
 	function cambiarMes(direccion: -1 | 1) {
 		const nuevoMes = new Date(mesVisible.getFullYear(), mesVisible.getMonth() + direccion, 1);
 		const claveDestino = claveMes(nuevoMes);
-		if (claveDestino !== claveActual && !(rangoMeses.siguienteDisponible && claveDestino === claveSiguiente)) return;
+		if (claveDestino !== claveActual && !(siguienteDisponible && claveDestino === claveSiguiente)) return;
 		setMesVisible(nuevoMes);
+	}
+
+	function adelantarMesSiguiente() {
+		setAdelantarSiguiente(true);
+		setMesVisible(new Date(rangoMeses.mesSiguiente.getFullYear(), rangoMeses.mesSiguiente.getMonth(), 1));
 	}
 
 	async function cambiarFranja(fecha: Date, franja: FranjaHorario) {
@@ -178,11 +193,11 @@ export default function Disponibilidad() {
 			return;
 		}
 		try {
-			await aplicarReglas(plantillas);
+			await aplicarReglas(plantillas.filter((regla) => regla.mesOrigen < claveVisible));
 		} catch {
 			return;
 		}
-		setPlantillas((anteriores) => anteriores.map((regla) => ({ ...regla, mesOrigen: claveVisible })));
+		setPlantillas((anteriores) => anteriores.map((regla) => (regla.mesOrigen < claveVisible ? { ...regla, mesOrigen: claveVisible } : regla)));
 	}
 
 	function noUsarPlantillaAnterior() {
@@ -227,15 +242,7 @@ export default function Disponibilidad() {
 				<div>
 					<p className="seccion-etiqueta">Partidas</p>
 					<h1 className="page-title" id="disponibilidad-title">Disponibilidad</h1>
-					<p>Indica cuándo te viene bien jugar. Pulsa cada franja para cambiar su estado.</p>
-				</div>
-				<div className="disponibilidad-heading-actions">
-					<button className="relleno-rapido-trigger" type="button" onClick={() => setModalAbierto(true)}>
-						Relleno Rápido
-					</button>
-					<button className="vaciar-calendario-button" type="button" onClick={manejarClickVaciar}>
-						Vaciar calendario
-					</button>
+					<p>Indica cuándo te viene bien jugar. Pulsa cada franja para cambiar su estado. Con Relleno Rápido lo rellenas entero en un momento. El mes siguiente se abre por defecto durante los últimos tres días del mes, pero puedes adelantarte con «Planificar el mes siguiente».</p>
 				</div>
 			</header>
 			{!usuario && <p className="availability-login-note">El calendario es público. Inicia sesión para guardar tu disponibilidad. <button type="button" onClick={requestLogin}>Acceder</button></p>}
@@ -243,7 +250,7 @@ export default function Disponibilidad() {
 
 			{mostrarPlantillaAnterior && (
 				<div className="plantilla-banner" role="status">
-					<span>¿Usar la misma plantilla de Relleno Rápido del mes pasado?</span>
+					<span>¿Usar la plantilla de Relleno Rápido de {nombreMesOrigen}?</span>
 					<div className="plantilla-banner-acciones">
 						<button type="button" onClick={usarPlantillasAnteriores}>Usar plantilla</button>
 						<button type="button" className="plantilla-banner-rechazar" onClick={noUsarPlantillaAnterior}>No usar plantilla</button>
@@ -253,17 +260,32 @@ export default function Disponibilidad() {
 
 			<section className="disponibilidad-calendar" aria-label="Calendario de disponibilidad">
 				<div className="disponibilidad-calendar-header">
-					<h2 className="section-title">{formatoMes.format(mesVisible)}</h2>
+					<div className="calendar-header-main">
+						<h2 className="section-title">{formatoMes.format(mesVisible)}</h2>
+						<div className="calendar-header-tools">
+							<button className="relleno-rapido-trigger" type="button" onClick={() => setModalAbierto(true)}>
+								Relleno Rápido
+							</button>
+							<button className="vaciar-calendario-button" type="button" onClick={manejarClickVaciar}>
+								Vaciar calendario
+							</button>
+						</div>
+					</div>
 					<div className="calendar-month-actions">
-						{rangoMeses.siguienteDisponible && claveVisible === claveSiguiente && (
+						{!siguienteDisponible && claveVisible === claveActual && (
+							<button type="button" className="adelantar-mes-trigger" onClick={adelantarMesSiguiente}>
+								Planificar el mes siguiente
+							</button>
+						)}
+						{siguienteDisponible && claveVisible === claveSiguiente && (
 							<button type="button" onClick={() => cambiarMes(-1)} aria-label="Volver al mes actual">‹</button>
 						)}
 						<button
 							type="button"
 							onClick={() => cambiarMes(1)}
-							disabled={!rangoMeses.siguienteDisponible || claveVisible !== claveActual}
+							disabled={!siguienteDisponible || claveVisible !== claveActual}
 							aria-label="Ver el próximo mes"
-							title={rangoMeses.siguienteDisponible ? "Ver el próximo mes" : "Disponible durante los últimos tres días del mes"}
+							title={siguienteDisponible ? "Ver el próximo mes" : "Usa «Planificar el mes siguiente» para adelantarte"}
 						>
 							›
 						</button>

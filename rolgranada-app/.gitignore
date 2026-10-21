@@ -12,10 +12,8 @@ dist
 dist-ssr
 *.local
 
-context
+sql
 supabase/context.sql
-
-a
 supabase/schema_actualizado.sql
 
 # Editor directories and files

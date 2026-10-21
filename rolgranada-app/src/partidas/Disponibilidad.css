@@ -111,8 +111,32 @@
 	color: var(--text-primary);
 }
 
+.calendar-header-main {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem 1.25rem;
+	min-width: 0;
+}
+
+.calendar-header-tools {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.calendar-header-tools button {
+	min-height: 2.5rem;
+	padding: 0 0.9rem;
+	font-size: 0.85rem;
+	white-space: nowrap;
+}
+
 .calendar-month-actions {
 	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
 	gap: 0.5rem;
 }
 
@@ -128,6 +152,28 @@
 	background: var(--bg-subtle);
 	color: var(--text-muted);
 	cursor: not-allowed;
+}
+
+/* Botón "Planificar el mes siguiente".
+   Lleva .calendar-month-actions delante para ganar en especificidad a
+   ".calendar-month-actions button", que fija 2.5rem de ancho y 1.8rem de fuente
+   (pensado para las flechas) y aplastaría el texto. */
+.calendar-month-actions .adelantar-mes-trigger {
+	width: auto;
+	min-height: 2.5rem;
+	padding: 0 0.9rem;
+	border-color: var(--color-brand-dark);
+	background: var(--color-brand-header);
+	color: var(--text-inverted);
+	font-size: 0.85rem;
+	font-weight: 700;
+	line-height: 1.2;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.calendar-month-actions .adelantar-mes-trigger:hover {
+	background: var(--color-brand-dark);
 }
 
 .availability-grid {
@@ -358,7 +404,9 @@
 	.disponibilidad-page { width: min(100% - 1rem, 1100px); padding-top: 1.25rem; }
 	.disponibilidad-heading { align-items: start; flex-direction: column; }
 	.plantilla-banner { align-items: start; flex-direction: column; }
-	.disponibilidad-calendar-header { min-height: 64px; padding: 0.75rem; }
+	.disponibilidad-calendar-header { min-height: 64px; padding: 0.75rem; flex-wrap: wrap; }
+	.calendar-month-actions .adelantar-mes-trigger { padding: 0 0.6rem; font-size: 0.75rem; white-space: normal; }
+	.calendar-header-tools button { padding: 0 0.6rem; font-size: 0.75rem; }
 	.availability-weekday { padding: 0.55rem 0.1rem; font-size: 0.72rem; }
 	.availability-day, .availability-empty-cell { min-height: 104px; }
 	.availability-day { grid-template-rows: 1.4rem repeat(2, minmax(0, 1fr)); padding: 0.2rem; }
