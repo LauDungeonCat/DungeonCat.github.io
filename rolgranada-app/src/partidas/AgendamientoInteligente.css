@@ -248,3 +248,13 @@
 	.heatmap-slot { padding: 0.12rem; font-size: 0.63rem; }
 	.heatmap-slot small { font-size: 0.55rem; }
 }
+
+.agendamiento-dia-pasado {
+	background: var(--bg-alt);
+	opacity: 0.45;
+	filter: grayscale(0.5);
+}
+
+.agendamiento-dia-pasado > strong {
+	color: var(--text-muted);
+}

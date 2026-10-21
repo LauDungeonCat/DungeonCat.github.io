@@ -25,7 +25,10 @@ export default function BuscarPartidas({
   const codigoInvitacion = new URLSearchParams(window.location.search).get("invitacion");
   const termino = busqueda.trim().toLocaleLowerCase("es");
 
-  const partidasFiltradas = partidas.filter((p) => `${p.titulo} ${p.sistema}`.toLocaleLowerCase("es").includes(termino));
+  // Filtramos ahora por título, sistema y zona aproximada
+  const partidasFiltradas = partidas.filter((p) => 
+    `${p.titulo} ${p.sistema} ${p.ubicacionAproximada}`.toLocaleLowerCase("es").includes(termino)
+  );
 
   // Tipado seguro para las sesiones pasadas al componente AvisoDisponibilidad
   const sesionesTipadas = sesiones.map((s) => ({
@@ -62,8 +65,8 @@ export default function BuscarPartidas({
           </button>
         </div>
         <label className="buscar-partidas-busqueda">
-          <span>Buscar por título o sistema</span>
-          <input type="search" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Ej. Pathfinder" />
+          <span>Buscar por título, sistema o zona</span>
+          <input type="search" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Ej. D&D, Zaidín..." />
         </label>
       </header>
 
@@ -134,7 +137,7 @@ export default function BuscarPartidas({
       ) : (
         <div className="buscar-partidas-vacio">
           <h2>No hay partidas que coincidan</h2>
-          <p>Prueba otro título o sistema de juego.</p>
+          <p>Prueba otro título, sistema o zona de juego.</p>
         </div>
       )}
 

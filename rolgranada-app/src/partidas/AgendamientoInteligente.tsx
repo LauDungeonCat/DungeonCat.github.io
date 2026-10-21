@@ -53,7 +53,7 @@ function BotonFranja({
 			onClick={onSelect}
 			style={style}
 			aria-pressed={seleccionada || agendada}
-			aria-label={`${fecha}, ${nombresFranjas[franja]}: ${estado === "no-disponible" ? "alguien no puede" : estado === "incompleta" ? `${sinRespuesta} sin responder` : estado === "disponible" ? "todos pueden" : "disponibilidad posible"}${agendada ? ", sesión confirmada" : ""}`}
+			aria-label={`${fecha}, ${nombresFranjas[franja]}: ${estado === "no-disponible" ? "alguien no puede" : estado === "incompleta" ? `\${sinRespuesta} sin responder` : estado === "disponible" ? "todos pueden" : "disponibilidad posible"}${agendada ? ", sesión confirmada" : ""}`}
 			title={sinRespuesta > 0 ? `${sinRespuesta} jugadores sin responder` : undefined}
 		>
 			<span>{nombresFranjas[franja]}</span>
@@ -91,6 +91,8 @@ export default function AgendamientoInteligente({ partida, onClose }: { partida:
 		return clase === "disponible" || clase === "posible";
 	});
 	const jugadoresFaltantes = Math.max(0, partida.participantesMax - partida.participantesCount);
+
+	const hoyIso = fechaIso(new Date());
 
 	function cambiarMes(direccion: -1 | 1) {
 		const siguiente = new Date(anio, mes + direccion, 1);
@@ -163,13 +165,13 @@ export default function AgendamientoInteligente({ partida, onClose }: { partida:
 					{Array.from({ length: desplazamiento }, (_, indice) => <div className="agendamiento-vacio" role="gridcell" aria-hidden="true" key={`empty-${indice}`} />)}
 					{Array.from({ length: cantidadDias }, (_, indice) => {
 						const fecha = fechaIso(new Date(anio, mes, indice + 1));
-						return <div className="agendamiento-dia" role="gridcell" key={fecha}>
+						const fechaPasada = fecha < hoyIso;
+						return <div className={`agendamiento-dia${fechaPasada ? " agendamiento-dia-pasado" : ""}`} role="gridcell" key={fecha}>
 							<strong>{indice + 1}</strong>
 							{(["manana", "tarde"] as const).map((franja) => {
 								const slot = mapa.get(`${fecha}:${franja}`);
 								const agendada = sesionesPartida.some((sesion) => sesion.fecha === fecha && sesion.franja === franja);
 								const seleccionada = selecciones.some((item) => item.fecha === fecha && item.franja === franja);
-								const fechaPasada = fecha < fechaIso(new Date());
 								return <BotonFranja key={franja} fecha={fecha} franja={franja} respuestas={slot} agendada={agendada} fechaPasada={fechaPasada} seleccionada={Boolean(seleccionada)} onSelect={() => {
 									if (agendada) void quitarSesion(fecha, franja);
 									else {

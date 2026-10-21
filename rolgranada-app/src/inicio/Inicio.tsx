@@ -123,35 +123,37 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
         <h3 className="inicio-seccion-titulo">Evolución de la Web</h3>
         
         <div className="roadmap-grid">
-          <div className="roadmap-card">
-            <h4> Sistema de Notificaciones</h4>
-            <p>Avisos cuando un jugador se una a tu partida, cuando el DM fije una sesión, con ajustes para recibir avisos por correo o móvil.</p>
-          </div>
-
-          <div className="roadmap-card">
-            <h4> Perfil de Jugador (HECHO!)</h4>
-            <p>Define tus preferencias (roleplay, combate, exploración), gustos y líneas o temas que prefieres evitar en tus partidas.</p>
-          </div>
-
-          <div className="roadmap-card">
-            <h4> Calendario y Horarios (HECHO!) </h4>
-            <p>Días anteriores oscurecidos, enlaces directos a las partidas y exportación a Google Calendar.</p>
-          </div>
 
           <div className="roadmap-card">
             <h4> Valoraciones y Comentarios</h4>
-            <p>Sistema para dejar valoraciones y comentarios de agradecimiento o feedback a los Dungeon Masters de la comunidad.</p>
+            <p>Sistema para dejar valoraciones y comentarios de agradecimiento o feedback a Dungeon Masters de la comunidad.</p>
           </div>
 
           <div className="roadmap-card">
-            <h4> Modo Oscuro (HECHO!)</h4>
-            <p>Diseño alternativo con temática oscura para facilitar la lectura nocturna y dar una atmósfera más inmersiva.</p>
+            <h4> Mejora de Temas Sensibles</h4>
+            <p>Tabla con temas específicos que dará avisos si se seleccionan en una partida. Añadir Trigger Warnings.</p>
           </div>
 
           <div className="roadmap-card">
-            <h4> Búsqueda por Zonas</h4>
-            <p>Filtros avanzados de partidas presenciales según los barrios y zonas específicas de Granada.</p>
+            <h4> Sistema de Socios</h4>
+            <p>Todo es gratis, los socios solo apoyan a la comunidad y reciben un sombrerito personalizado encima de su avatar.</p>
           </div>
+
+          <div className="roadmap-card">
+            <h4> Mejoras para DM</h4>
+            <p>Más herramientas para Dungeon Masters y estadísticas de sus partidas.</p>
+          </div>
+
+          <div className="roadmap-card">
+            <h4> Mejora de Perfil</h4>
+            <p>Un sistema con insignias por logros, estadísticas de juego y recomendaciones de juegos.</p>
+          </div>
+
+          <div className="roadmap-card">
+            <h4> Sugerencias y Feedback</h4>
+            <p>Añadir un formulario para recoger sugerencias y feedback de la comunidad.</p>
+          </div>
+
         </div>
       </section>
     </div>
