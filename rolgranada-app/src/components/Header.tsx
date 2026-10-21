@@ -9,10 +9,8 @@ import moonIcon from '../assets/moon.svg';
 import { supabase } from '../lib/supabase';
 import { activarPush } from '../lib/push';
 import Notificaciones from './Notificaciones';
-import type { Database } from '../lib/database.types';
+import type { ProfileRow } from '../lib/database.helpers';
 
-// Tipos seguros para el Header
-export type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 export type SolicitudPendienteRow = {
   partida_id: string;
   user_id: string;

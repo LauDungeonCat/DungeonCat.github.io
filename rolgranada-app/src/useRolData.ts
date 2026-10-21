@@ -3,6 +3,7 @@ import { useAuth } from "./auth/useAuth";
 import type { Database } from "./lib/database.types";
 import { supabase } from "./lib/supabase";
 import type { CambioDisponibilidad, DisponibilidadDia, FranjaEstado, FranjaHorario, Partida, PartidaEditable, UsuarioActivo } from "./types";
+import { normalizarTriggerWarnings, type TriggerWarningsPartida } from "./temasSensibles";
 
 // Tipos auxiliares seguros basados en la Base de Datos
 export type SesionUsuarioRow = Database["public"]["Tables"]["sesiones"]["Row"];
@@ -26,7 +27,7 @@ function mensajeError(error: unknown) {
   return "No se pudo completar la operación.";
 }
 
-function mapearPartida(row: PartidaConAccesoRow): Partida {
+function mapearPartida(row: PartidaConAccesoRow, triggerWarnings: TriggerWarningsPartida = normalizarTriggerWarnings(null)): Partida {
   return {
     id: row.id,
     titulo: row.titulo,
@@ -48,6 +49,7 @@ function mapearPartida(row: PartidaConAccesoRow): Partida {
     estado: row.estado ?? "abierta",
     sesionesAlMes: row.sesiones_al_mes ?? 2,
     duracionEstimada: row.duracion_estimada,
+    triggerWarnings,
   };
 }
 
@@ -81,8 +83,19 @@ export function useRolData() {
   const [error, setError] = useState<string | null>(null);
 
   const cargarDatos = useCallback(async (userId: string) => {
-    const partidasResult = await supabase.rpc("listar_partidas");
+    const [partidasResult, avisosResult] = await Promise.all([
+      supabase.rpc("listar_partidas"),
+      supabase.rpc("listar_trigger_warnings"),
+    ]);
     if (partidasResult.error) throw partidasResult.error;
+
+    // Si falla la lectura de avisos (p. ej. migración sin aplicar) las partidas se cargan igualmente, sin avisos
+    const avisosPorPartida = new Map<string, TriggerWarningsPartida>(
+      ((avisosResult.data ?? []) as { partida_id: string; trigger_warnings: unknown }[]).map((fila) => [
+        fila.partida_id,
+        normalizarTriggerWarnings(fila.trigger_warnings),
+      ]),
+    );
 
     let sesionesUsuario: SesionUsuarioRow[] = [];
     let filasDisponibilidad: { fecha: string; manana: string; tarde: string }[] = [];
@@ -106,7 +119,7 @@ export function useRolData() {
 
     const ahora = new Date();
     const partidasActualizadas = (partidasResult.data ?? []).map((row) => {
-      const partida = mapearPartida(row);
+      const partida = mapearPartida(row, avisosPorPartida.get(row.id));
       const siguiente = sesionesUsuario
         .filter((sesion) => sesion.partida_id === partida.id)
         .map((sesion) => ({
@@ -240,6 +253,7 @@ export function useRolData() {
           ubicacion_aproximada: datos.ubicacionAproximada,
           ubicacion_exacta: datos.ubicacionExacta ?? null,
           es_privada: datos.esPrivada ?? false,
+          ...(datos.triggerWarnings ? { trigger_warnings: datos.triggerWarnings } : {}),
         });
         if (insertError) throw insertError;
       });
@@ -263,6 +277,7 @@ export function useRolData() {
             ubicacion_aproximada: datos.ubicacionAproximada,
             ubicacion_exacta: datos.ubicacionExacta ?? null,
             es_privada: datos.esPrivada ?? false,
+            ...(datos.triggerWarnings ? { trigger_warnings: datos.triggerWarnings } : {}),
           })
           .eq("id", id);
         if (updateError) throw updateError;

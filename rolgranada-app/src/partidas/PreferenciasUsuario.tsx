@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { etiquetaTema, normalizarTemasPerfil } from '../temasSensibles';
 import './PreferenciasUsuario.css';
 
 type ModalPreferenciasProps = {
@@ -19,7 +20,7 @@ export default function ModalPreferenciasUsuario({ userId, esMaster = false, onC
       setCargando(true);
       const { data, error: err } = await supabase
         .from('profiles')
-        .select('username, pronombres, avatar_url, avatar_position, rol_preferencias, lineas_evitar, estilo_master')
+        .select('username, pronombres, avatar_url, avatar_position, rol_preferencias, lineas_evitar, estilo_master, temas_sensibles')
         .eq('id', userId)
         .single();
 
@@ -36,6 +37,8 @@ export default function ModalPreferenciasUsuario({ userId, esMaster = false, onC
   const posX = avatarPos[0] || '50';
   const posY = avatarPos[1] || '50';
   const zoom = avatarPos[2] || '100';
+
+  const temas = normalizarTemasPerfil(perfil?.temas_sensibles);
 
   const tieneFotoValida = Boolean(perfil?.avatar_url && perfil.avatar_url.trim() !== '');
 
@@ -149,13 +152,41 @@ export default function ModalPreferenciasUsuario({ userId, esMaster = false, onC
                 </div>
 
                 <div className="modal-seccion-card">
-      <div className="modal-card-header">
-        <h4>Líneas y Temas a Evitar</h4>
-      </div>
-      <p className={`modal-texto-contenido ${!perfil.lineas_evitar ? 'sin-respuesta' : ''}`}>
-        {perfil.lineas_evitar ? perfil.lineas_evitar : 'No se han indicado líneas o temas sensibles a evitar.'}
-      </p>
-    </div>
+                  <div className="modal-card-header">
+                    <h4>Líneas y Velos</h4>
+                  </div>
+                  {temas.lineas.length > 0 || temas.velos.length > 0 ? (
+                    <div className="modal-temas">
+                      {temas.lineas.length > 0 && (
+                        <div className="modal-temas-grupo">
+                          <span className="modal-temas-titulo">Líneas <small>(no deben aparecer)</small></span>
+                          <ul className="modal-chips">
+                            {temas.lineas.map((id) => <li className="modal-chip linea" key={id}>{etiquetaTema(id)}</li>)}
+                          </ul>
+                        </div>
+                      )}
+                      {temas.velos.length > 0 && (
+                        <div className="modal-temas-grupo">
+                          <span className="modal-temas-titulo">Velos <small>(sin detalles / fuera de escena)</small></span>
+                          <ul className="modal-chips">
+                            {temas.velos.map((id) => <li className="modal-chip velo" key={id}>{etiquetaTema(id)}</li>)}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="modal-texto-contenido sin-respuesta">No ha marcado ninguna línea ni velo.</p>
+                  )}
+                </div>
+
+                <div className="modal-seccion-card">
+                  <div className="modal-card-header">
+                    <h4>Otros temas a evitar</h4>
+                  </div>
+                  <p className={`modal-texto-contenido ${!perfil.lineas_evitar ? 'sin-respuesta' : ''}`}>
+                    {perfil.lineas_evitar ? perfil.lineas_evitar : 'No se han indicado otros temas a evitar.'}
+                  </p>
+                </div>
   </>
 )}
           </div>

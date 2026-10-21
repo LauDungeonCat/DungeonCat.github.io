@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import type { Partida } from "../types";
 import { useRolData } from "../useRolData";
+import { contarTriggerWarnings, type TriggerWarningsPartida } from "../temasSensibles";
+import EditorTriggerWarnings from "./EditorTriggerWarnings";
 import "./FormularioPartida.css";
 
 const IMAGEN_DEFAULT = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1000&q=80";
@@ -15,6 +17,11 @@ export default function FormularioPartida({ partidaAEditar, partidaAEliminar, on
   const { crearPartida, actualizarPartida, eliminarPartida, usuario } = useRolData();
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [triggerWarnings, setTriggerWarnings] = useState<TriggerWarningsPartida>(
+    () => partidaAEditar?.triggerWarnings ?? { explicitos: [], implicitos: [], otro: "" },
+  );
+  const [editorAvisosAbierto, setEditorAvisosAbierto] = useState(false);
+  const totalAvisos = contarTriggerWarnings(triggerWarnings);
 
   const [formulario, setFormulario] = useState({
     titulo: partidaAEditar?.titulo ?? "",
@@ -49,6 +56,7 @@ export default function FormularioPartida({ partidaAEditar, partidaAEliminar, on
       sesionesAlMes: Math.max(1, parseInt(formulario.sesionesAlMes, 10) || 2),
       duracionEstimada: formulario.duracionEstimada.trim(),
       esPrivada: formulario.esPrivada,
+      triggerWarnings,
     };
 
     try {
@@ -108,6 +116,7 @@ export default function FormularioPartida({ partidaAEditar, partidaAEliminar, on
   }
 
   return (
+    <>
     <div className="crear-campana-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <section className="crear-campana-dialog" role="dialog" aria-modal="true" aria-labelledby="crear-campana-titulo">
         <header className="crear-campana-header">
@@ -171,6 +180,17 @@ export default function FormularioPartida({ partidaAEditar, partidaAEliminar, on
               Descripción
               <textarea required rows={3} maxLength={500} value={formulario.descripcion} onChange={(e) => actualizarCampo("descripcion", e.target.value)} />
             </label>
+
+            <div className="crear-campana-campo-amplio crear-campana-avisos">
+              <button type="button" className="crear-campana-avisos-boton" onClick={() => setEditorAvisosAbierto(true)}>
+                Trigger Warnings{totalAvisos > 0 ? ` (${totalAvisos})` : ""}
+              </button>
+              <p>
+                {totalAvisos > 0
+                  ? `${triggerWarnings.explicitos.length} explícitos, ${triggerWarnings.implicitos.length} implícitos${triggerWarnings.otro.trim() ? " y otros" : ""}. Se guardan al publicar la campaña.`
+                  : "Indica qué temas sensibles podrían aparecer en tu campaña, de forma explícita o implícita."}
+              </p>
+            </div>
           </div>
 
           <div className="crear-campana-acciones">
@@ -182,5 +202,14 @@ export default function FormularioPartida({ partidaAEditar, partidaAEliminar, on
         </form>
       </section>
     </div>
+
+    {editorAvisosAbierto && (
+      <EditorTriggerWarnings
+        valor={triggerWarnings}
+        onGuardar={setTriggerWarnings}
+        onClose={() => setEditorAvisosAbierto(false)}
+      />
+    )}
+    </>
   );
 }

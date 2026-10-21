@@ -1,4 +1,7 @@
 import type { Database } from "./lib/database.types";
+import type { ProfileRow } from "./lib/database.helpers";
+import type { TriggerWarningsPartida } from "./temasSensibles";
+export type { ProfileRow };
 
 export type FranjaEstado = "puedo" | "podria" | "no_puedo";
 export type FranjaHorario = "manana" | "tarde";
@@ -7,7 +10,6 @@ export type CambioDisponibilidad = { fecha: string } & Partial<
 >;
 
 // Tipos seguros extraídos o adaptados desde la base de datos
-export type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 export type RolUsuario = string; // O el tipo correspondiente de tu rol si es un enum o string
 
 export type PartidaConAccesoRow = any; 
@@ -43,6 +45,7 @@ export interface Partida {
   estado: "abierta" | "en_curso" | "finalizada";
   sesionesAlMes: number;
   duracionEstimada: string | null;
+  triggerWarnings: TriggerWarningsPartida;
 }
 
 export interface PartidaEditable {
@@ -56,6 +59,7 @@ export interface PartidaEditable {
   sesionesAlMes: number;
   duracionEstimada: string;
   esPrivada?: boolean;
+  triggerWarnings?: TriggerWarningsPartida;
 }
 
 export interface UsuarioActivo extends ProfileRow {

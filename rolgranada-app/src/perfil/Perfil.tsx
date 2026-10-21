@@ -1,5 +1,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useAuth } from '../auth/useAuth';
+import { supabase } from '../lib/supabase';
+import { TEMAS_SENSIBLES, normalizarTemasPerfil, type NivelPerfil } from '../temasSensibles';
 import crownIcon from '../assets/crown.svg';
 import './Perfil.css';
 import '../partidas/FormularioPartida.css';
@@ -21,7 +23,8 @@ export default function Perfil() {
   const [roleplay, setRoleplay] = useState<number>(3);
   const [combate, setCombate] = useState<number>(3);
   const [exploracion, setExploracion] = useState<number>(3);
-  const [lineasEvitar, setLineasEvitar] = useState<string>('');
+  const [lineasEvitar, setLineasEvitar] = useState<string>(''); // se muestra como el campo "Otro"
+  const [temasSeleccion, setTemasSeleccion] = useState<Record<string, NivelPerfil>>({});
 
   // Perfil de Máster
   const [estiloMaster, setEstiloMaster] = useState<string>('');
@@ -65,6 +68,38 @@ export default function Perfil() {
     setEstiloMaster(profileAny.estilo_master ?? '');
   }, [profile]);
 
+  // Líneas y velos: se leen directamente de la tabla profiles (columna temas_sensibles)
+  useEffect(() => {
+    if (!profile?.id) return;
+    let activo = true;
+    void supabase
+      .from('profiles')
+      .select('temas_sensibles')
+      .eq('id', profile.id)
+      .single()
+      .then(({ data }) => {
+        if (!activo || !data) return;
+        const temas = normalizarTemasPerfil((data as { temas_sensibles?: unknown }).temas_sensibles);
+        const seleccion: Record<string, NivelPerfil> = {};
+        temas.velos.forEach((id) => { seleccion[id] = 'velo'; });
+        temas.lineas.forEach((id) => { seleccion[id] = 'linea'; });
+        setTemasSeleccion(seleccion);
+      });
+    return () => { activo = false; };
+  }, [profile?.id]);
+
+  function cambiarTema(id: string, nivel: NivelPerfil | null) {
+    setTemasSeleccion((actual) => {
+      const siguiente = { ...actual };
+      if (nivel) siguiente[id] = nivel;
+      else delete siguiente[id];
+      return siguiente;
+    });
+  }
+
+  const totalLineas = Object.values(temasSeleccion).filter((nivel) => nivel === 'linea').length;
+  const totalVelos = Object.values(temasSeleccion).filter((nivel) => nivel === 'velo').length;
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!profile?.id) {
@@ -80,6 +115,16 @@ export default function Perfil() {
       const rolPreferencias = { roleplay, combate, exploracion };
       const avatarFinal: string | null = avatarUrl.trim() !== '' ? avatarUrl.trim() : null;
       const avatarPosicionStr = `${Math.round(posX)} ${Math.round(posY)} ${Math.round(zoom)}`;
+
+      const temasSensibles = {
+        lineas: TEMAS_SENSIBLES.filter((tema) => temasSeleccion[tema.id] === 'linea').map((tema) => tema.id),
+        velos: TEMAS_SENSIBLES.filter((tema) => temasSeleccion[tema.id] === 'velo').map((tema) => tema.id),
+      };
+      const { error: errorTemas } = await supabase
+        .from('profiles')
+        .update({ temas_sensibles: temasSensibles })
+        .eq('id', profile.id);
+      if (errorTemas) throw new Error(errorTemas.message);
 
       await updateProfile(
         username, 
@@ -305,13 +350,74 @@ export default function Perfil() {
               </label>
             </div>
 
+            <h3 className="perfil-subseccion">Líneas y velos</h3>
+
+            <div className="lineas-velos-explicacion">
+              <p>
+                <span className="lv-etiqueta linea">Línea</span>
+                Algo que no quieres que aparezca en la partida de ninguna forma, ni mostrado ni mencionado.
+                Es un límite firme: el DM no lo incluirá.
+              </p>
+              <p>
+                <span className="lv-etiqueta velo">Velo</span>
+                Algo que puede existir en la historia, pero sin verse: se menciona de pasada o ocurre fuera de escena,
+                como cuando una película corta a negro, sin detalles.
+              </p>
+              <p className="lv-nota">
+                Marca solo los temas que quieras evitar; lo que dejes en «Ninguno» se entiende que no te supone problema.
+                Si entras en una partida que incluya alguno, tu DM recibirá un aviso para hablarlo contigo.
+              </p>
+            </div>
+
+            <p className="temas-resumen">Líneas: <strong>{totalLineas}</strong> · Velos: <strong>{totalVelos}</strong></p>
+
+            <ul className="temas-lista">
+              {TEMAS_SENSIBLES.map((tema) => {
+                const nivelActual = temasSeleccion[tema.id] ?? null;
+                return (
+                  <li className={`tema-fila${nivelActual ? ` es-${nivelActual}` : ''}`} key={tema.id}>
+                    <span className="tema-nombre" id={`tema-${tema.id}`}>{tema.etiqueta}</span>
+                    <div className="tema-selector" role="group" aria-labelledby={`tema-${tema.id}`}>
+                      <button
+                        type="button"
+                        className={`tema-opcion${nivelActual === null ? ' activo' : ''}`}
+                        aria-pressed={nivelActual === null}
+                        onClick={() => cambiarTema(tema.id, null)}
+                      >
+                        Ninguno
+                      </button>
+                      <button
+                        type="button"
+                        className={`tema-opcion velo${nivelActual === 'velo' ? ' activo' : ''}`}
+                        aria-pressed={nivelActual === 'velo'}
+                        onClick={() => cambiarTema(tema.id, 'velo')}
+                      >
+                        Velo
+                      </button>
+                      <button
+                        type="button"
+                        className={`tema-opcion linea${nivelActual === 'linea' ? ' activo' : ''}`}
+                        aria-pressed={nivelActual === 'linea'}
+                        onClick={() => cambiarTema(tema.id, 'linea')}
+                      >
+                        Línea
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+
             <label className="perfil-textarea-label">
-              <span>Líneas o temas que prefieres evitar en tus partidas</span>
+              <div className="label-header">
+                <span className="label-title">Otro</span>
+                <span className="label-opcional">(temas que no estén en la lista)</span>
+              </div>
               <textarea
                 rows={3}
                 value={lineasEvitar}
                 onChange={(e) => setLineasEvitar(e.target.value)}
-                placeholder="Ej. Temas sensibles que prefieres no ver en mesa..."
+                placeholder="Ej. Otros temas que prefieres evitar o que se traten con velo..."
               />
             </label>
           </div>

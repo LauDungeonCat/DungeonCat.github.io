@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { useAuth } from "../auth/useAuth";
 import { useRolData } from "../useRolData";
 import { supabase } from "../lib/supabase";
-import type { JugadorPartidaRow } from "../lib/database.types";
+import type { JugadorPartidaRow } from "../lib/database.helpers";
 import type { Partida } from "../types";
 import ModalPreferenciasUsuario from "./PreferenciasUsuario";
 import { FichaParticipanteGestion } from "./FichaParticipanteGestion";

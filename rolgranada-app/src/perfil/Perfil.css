@@ -340,6 +340,145 @@ body.dark-mode .perfil-admin-crown {
   place-items: center;
 }
 
+.perfil-subseccion {
+  margin-top: 1.75rem !important;
+}
+
+/* ==========================================================
+   LÍNEAS Y VELOS
+   ========================================================== */
+.lineas-velos-explicacion {
+  display: grid;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--bg-alt);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+}
+
+.lineas-velos-explicacion p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.lineas-velos-explicacion .lv-nota {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.lv-etiqueta {
+  display: inline-block;
+  margin-right: 0.4rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.lv-etiqueta.linea {
+  background: var(--state-error-bg);
+  color: var(--state-error-text);
+}
+
+.lv-etiqueta.velo {
+  background: var(--state-warning-bg);
+  color: var(--state-warning-text);
+}
+
+.temas-resumen {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.temas-lista {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 0.9rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.tema-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  background: var(--bg-card);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+}
+
+.tema-fila.es-linea {
+  border-color: var(--state-error-text);
+}
+
+.tema-fila.es-velo {
+  border-color: var(--state-warning-text);
+}
+
+.tema-nombre {
+  flex: 1 1 8rem;
+  min-width: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tema-selector {
+  display: inline-flex;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+}
+
+/* Anulan los estilos globales de button */
+.perfil-form-card .tema-opcion {
+  min-height: auto;
+  margin: 0;
+  padding: 0.28rem 0.55rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  box-shadow: none;
+  transform: none;
+  cursor: pointer;
+}
+
+.perfil-form-card .tema-opcion + .tema-opcion {
+  border-left: 1px solid var(--input-border);
+}
+
+.perfil-form-card .tema-opcion:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.perfil-form-card .tema-opcion.activo {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.perfil-form-card .tema-opcion.velo.activo {
+  background: var(--state-warning-bg);
+  color: var(--state-warning-text);
+}
+
+.perfil-form-card .tema-opcion.linea.activo {
+  background: var(--state-error-bg);
+  color: var(--state-error-text);
+}
+
 @media (max-width: 600px) {
   .perfil-inputs-grid {
     grid-template-columns: 1fr;
@@ -358,5 +497,7 @@ body.dark-mode .perfil-admin-crown {
   .perfil-sliders-posicion {
     flex-direction: column;
   }
+  .temas-lista {
+    grid-template-columns: 1fr;
+  }
 }
-

@@ -130,7 +130,7 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
           </div>
 
           <div className="roadmap-card">
-            <h4> Mejora de Temas Sensibles</h4>
+            <h4> Mejora de Temas Sensibles (HECHO!)</h4>
             <p>Tabla con temas específicos que dará avisos si se seleccionan en una partida. Añadir Trigger Warnings.</p>
           </div>
 

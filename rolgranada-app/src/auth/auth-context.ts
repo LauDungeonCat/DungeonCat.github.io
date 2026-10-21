@@ -1,6 +1,7 @@
 import { createContext } from "react";
 import type { Session } from "@supabase/supabase-js";
-import type { ProfileRow } from "../lib/database.types";
+import type { ProfileRow } from "../lib/database.helpers";
+
 
 export type AuthContextValue = {
 	session: Session | null;

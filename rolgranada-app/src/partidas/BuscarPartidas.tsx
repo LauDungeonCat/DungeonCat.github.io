@@ -4,6 +4,8 @@ import { useAuth } from "../auth/useAuth";
 import type { Partida } from "../types";
 import AvisoDisponibilidad from "./AvisoDisponibilidad";
 import FormularioPartida from "./FormularioPartida";
+import VerTriggerWarnings from "./VerTriggerWarnings";
+import { hayTriggerWarnings } from "../temasSensibles";
 import "./BuscarPartidas.css";
 
 export default function BuscarPartidas({
@@ -20,12 +22,13 @@ export default function BuscarPartidas({
   const [crearAbierto, setCrearAbierto] = useState(abrirCreacionInicial);
   const [partidaEnEdicion, setPartidaEnEdicion] = useState<Partida | null>(partidaInicialAEditar);
   const [partidaAEliminar, setPartidaAEliminar] = useState<Partida | null>(null);
+  const [partidaConAvisos, setPartidaConAvisos] = useState<Partida | null>(null);
 
   const partidaEnlaceId = new URLSearchParams(window.location.search).get("partida");
   const codigoInvitacion = new URLSearchParams(window.location.search).get("invitacion");
   const termino = busqueda.trim().toLocaleLowerCase("es");
 
-  // Filtramos ahora por título, sistema y zona aproximada
+  // Búsqueda mejorada incluyendo título, sistema y zona aproximada
   const partidasFiltradas = partidas.filter((p) => 
     `${p.titulo} ${p.sistema} ${p.ubicacionAproximada}`.toLocaleLowerCase("es").includes(termino)
   );
@@ -109,6 +112,12 @@ export default function BuscarPartidas({
                   <p className="partida-ubicacion"><strong>Zona aproximada:</strong> {partida.ubicacionAproximada}</p>
                   <p className="partida-descripcion">{partida.descripcion}</p>
 
+                  {hayTriggerWarnings(partida.triggerWarnings) && (
+                    <button type="button" className="tw-boton-ver" onClick={() => setPartidaConAvisos(partida)}>
+                      Trigger Warnings
+                    </button>
+                  )}
+
                   {puedeGestionar && (
                     <div className="partida-gestion">
                       <button type="button" onClick={() => setPartidaEnEdicion(partida)}>Editar</button>
@@ -144,6 +153,7 @@ export default function BuscarPartidas({
       {crearAbierto && <FormularioPartida onClose={() => setCrearAbierto(false)} />}
       {partidaEnEdicion && <FormularioPartida partidaAEditar={partidaEnEdicion} onClose={() => setPartidaEnEdicion(null)} />}
       {partidaAEliminar && <FormularioPartida partidaAEliminar={partidaAEliminar} onClose={() => setPartidaAEliminar(null)} />}
+      {partidaConAvisos && <VerTriggerWarnings titulo={partidaConAvisos.titulo} avisos={partidaConAvisos.triggerWarnings} onClose={() => setPartidaConAvisos(null)} />}
     </section>
   );
 }

@@ -58,10 +58,7 @@
 }
 
 .campanas-carrusel {
-	display: grid;
-	grid-template-columns: auto minmax(0, 1fr) auto;
-	align-items: center;
-	gap: 1rem;
+	display: block;
 }
 
 .campana-tarjeta {
@@ -186,6 +183,11 @@
 	color: var(--color-brand-dark);
 }
 
+.campana-contenido .tw-boton-ver {
+	display: block;
+	margin-top: 1rem;
+}
+
 .mis-partidas-vacio {
 	border: 1px dashed var(--input-border);
 	padding: 3rem 1rem;
@@ -274,10 +276,290 @@
 	.mis-partidas-cabecera { display: block; }
 	.mis-partidas-cabecera-acciones { justify-content: start; margin-top: 1rem; }
 	.crear-partida { margin-top: 1rem; }
-	.campanas-carrusel { grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.4rem; }
 	.campana-tarjeta { display: block; }
 	.campana-imagen { min-height: 150px; }
 	.campana-contenido { padding: 1rem; }
 	.campana-contenido dl div { display: block; }
 	.campana-contenido dt { display: inline; margin-right: 0.35rem; }
+}
+
+/* ==========================================================
+   BARRA DE VISTA (toggle carrusel / cuadrícula)
+   ========================================================== */
+.mis-partidas-barra {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	margin-bottom: 1rem;
+}
+
+.vista-toggle {
+	display: inline-flex;
+	overflow: hidden;
+	border: 2px solid var(--border-neobrutal);
+	border-radius: 6px;
+	background: var(--bg-card);
+}
+
+/* Anulan los estilos globales de button */
+.mis-partidas .vista-toggle button {
+	min-height: 2.1rem;
+	margin: 0;
+	border: 0;
+	border-radius: 0;
+	padding: 0.3rem 0.9rem;
+	background: transparent;
+	color: var(--text-secondary);
+	font-size: 0.82rem;
+	font-weight: 700;
+	box-shadow: none;
+	transform: none;
+	cursor: pointer;
+}
+
+.mis-partidas .vista-toggle button + button {
+	border-left: 2px solid var(--border-neobrutal);
+}
+
+.mis-partidas .vista-toggle button:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.mis-partidas .vista-toggle button.activo {
+	background: var(--color-brand-header);
+	color: var(--text-inverted);
+}
+
+.grid-scroll-controles {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.grid-scroll-controles .carrusel-control {
+	width: 2.2rem;
+	height: 2.2rem;
+}
+
+.carrusel-control:disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+}
+
+.carrusel-control:disabled:hover {
+	transform: none;
+	background-color: var(--bg-card);
+}
+
+/* ==========================================================
+   CARRUSEL: navegación arriba, junto al toggle
+   ========================================================== */
+.campanas-carrusel-nav {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.6rem;
+	margin-left: auto;
+}
+
+.campanas-carrusel-nav .carrusel-control {
+	width: 2.2rem;
+	height: 2.2rem;
+}
+
+.campanas-carrusel-nav .carrusel-indicadores {
+	flex-wrap: wrap;
+	width: auto;
+	margin-top: 0;
+}
+
+.carrusel-contador {
+	min-width: 4.5rem;
+	text-align: center;
+	color: var(--text-primary);
+	font-size: 0.9rem;
+	font-weight: 700;
+}
+
+/* ==========================================================
+   CUADRÍCULA DE CAMPAÑAS
+   ========================================================== */
+.campanas-grid {
+	--fade-izq: 0px;
+	--fade-der: 0px;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* 150px = ANCHO_MINIMO_MINI en MisPartidas.tsx */
+	gap: 1rem;
+	margin: 0;
+	padding: 0 0 0.5rem; /* hueco para la sombra de las tarjetas */
+	list-style: none;
+}
+
+.campanas-grid > li {
+	min-width: 0;
+}
+
+/* Demasiadas campañas: 2 filas que se deslizan de lado, con degradado en el borde que continúa */
+.campanas-grid.desliza {
+	grid-template-columns: none;
+	grid-template-rows: repeat(2, auto);
+	grid-auto-flow: column;
+	grid-auto-columns: 160px;
+	overflow-x: auto;
+	overscroll-behavior-x: contain;
+	scroll-snap-type: x proximity;
+	scrollbar-width: none;
+	-webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-izq), #000 calc(100% - var(--fade-der)), transparent 100%);
+	mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-izq), #000 calc(100% - var(--fade-der)), transparent 100%);
+}
+
+.campanas-grid.desliza::-webkit-scrollbar {
+	display: none;
+}
+
+.campanas-grid.desliza > li {
+	scroll-snap-align: start;
+}
+
+.campanas-grid.desliza.borde-izq {
+	--fade-izq: 2.75rem;
+}
+
+.campanas-grid.desliza.borde-der {
+	--fade-der: 2.75rem;
+}
+
+/* Tarjeta pequeña: imagen, sistema y título */
+.mis-partidas .campana-mini {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	border: 2px solid var(--border-neobrutal);
+	border-radius: 8px;
+	background: var(--bg-card);
+	color: var(--text-primary);
+	font: inherit;
+	text-align: left;
+	box-shadow: 0 4px 0 var(--shadow-neobrutal);
+	cursor: pointer;
+	transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.mis-partidas .campana-mini:hover {
+	transform: translateY(-2px);
+	background: var(--bg-hover);
+}
+
+.mis-partidas .campana-mini:focus-visible {
+	outline: 3px solid var(--color-brand-header);
+	outline-offset: 2px;
+}
+
+.campana-mini-imagen {
+	position: relative;
+	display: block;
+	aspect-ratio: 4 / 3;
+	background: repeating-linear-gradient(135deg, #e51e25 0 12px, #c02642 12px 24px);
+}
+
+.campana-mini-imagen img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.campana-mini-info {
+	display: grid;
+	gap: 0.15rem;
+	padding: 0.5rem 0.6rem 0.6rem;
+}
+
+.campana-mini-sistema {
+	overflow: hidden;
+	color: var(--color-brand-dark);
+	font-size: 0.7rem;
+	font-weight: 700;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.campana-mini-titulo {
+	display: -webkit-box;
+	overflow: hidden;
+	-webkit-box-orient: vertical;
+	font-family: Georgia, serif;
+	font-size: 0.95rem;
+	font-weight: 700;
+	line-height: 1.2;
+}
+
+/* ==========================================================
+   VENTANA DE CAMPAÑA AMPLIADA (al pulsar una tarjeta de la cuadrícula)
+   z-index 900: por debajo de los formularios (1000), que se abren encima
+   ========================================================== */
+.campana-modal-overlay {
+	position: fixed;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	padding: 1rem;
+	background: rgba(20, 20, 20, 0.55);
+	z-index: 900;
+}
+
+.campana-modal-envoltorio {
+	position: relative;
+	width: min(100%, 900px);
+}
+
+.campana-modal-dialog {
+	max-height: calc(100vh - 2rem);
+	overflow-y: auto;
+	border-radius: 8px;
+	box-shadow: 0 16px 50px rgba(0, 0, 0, 0.35);
+}
+
+.campana-modal-dialog .campana-tarjeta {
+	box-shadow: none;
+}
+
+.campana-modal-envoltorio .campana-contenido h2 {
+	padding-right: 2.5rem;
+}
+
+.campana-modal-cerrar {
+	position: absolute;
+	top: 0.6rem;
+	right: 0.6rem;
+	z-index: 3;
+	display: grid;
+	place-items: center;
+	width: 2.4rem;
+	height: 2.4rem;
+	min-height: 0;
+	padding: 0;
+	border: 2px solid var(--border-neobrutal);
+	border-radius: 50%;
+	background: var(--bg-card);
+	color: var(--text-primary);
+	font-size: 1.4rem;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.campana-modal-cerrar:hover {
+	background: var(--state-error-bg);
+}
+
+@media (max-width: 680px) {
+	.mis-partidas-barra { flex-wrap: wrap; }
+	.campana-modal-overlay { padding: 0.5rem; }
+	.campana-modal-dialog { max-height: calc(100vh - 1rem); }
 }

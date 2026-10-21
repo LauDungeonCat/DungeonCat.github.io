@@ -198,3 +198,54 @@
   font-weight: 600;
   margin: 2rem 0;
 }
+
+/* Líneas y velos */
+.modal-temas {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.modal-temas-grupo {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.modal-temas-titulo {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modal-temas-titulo small {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.modal-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.modal-chip {
+  border: 1px solid;
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.modal-chip.linea {
+  border-color: var(--state-error-text);
+  background: var(--state-error-bg);
+  color: var(--state-error-text);
+}
+
+.modal-chip.velo {
+  border-color: var(--state-warning-text);
+  background: var(--state-warning-bg);
+  color: var(--state-warning-text);
+}

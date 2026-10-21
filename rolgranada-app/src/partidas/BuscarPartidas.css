@@ -209,6 +209,10 @@
 	color: var(--text-secondary);
 }
 
+.partida-catalogo-contenido .tw-boton-ver {
+	margin-top: 0.6rem;
+}
+
 .partida-gestion {
 	display: flex;
 	flex-wrap: wrap;

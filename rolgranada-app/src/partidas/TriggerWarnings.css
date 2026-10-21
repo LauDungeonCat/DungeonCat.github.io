@@ -1,0 +1,319 @@
+/* Modales de Trigger Warnings (editor del DM y vista de lectura del jugador) */
+
+.tw-overlay {
+	position: fixed;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	padding: 1rem;
+	background: rgba(20, 20, 20, 0.6);
+	z-index: 1100; /* por encima del formulario de campaña (1000) */
+}
+
+.tw-dialog {
+	width: min(100%, 720px);
+	max-height: calc(100vh - 2rem);
+	overflow-y: auto;
+	border: 2px solid var(--border-neobrutal);
+	border-radius: 8px;
+	padding: 1.5rem;
+	background: var(--bg-card);
+	color: var(--text-primary);
+	box-shadow: 0 16px 50px rgba(0, 0, 0, 0.35);
+}
+
+.tw-dialog-lectura {
+	width: min(100%, 560px);
+}
+
+.tw-header {
+	display: flex;
+	align-items: start;
+	justify-content: space-between;
+	gap: 1rem;
+	margin-bottom: 1rem;
+}
+
+.tw-header h2 {
+	margin: 0;
+	font-family: Georgia, "Times New Roman", serif;
+	color: var(--text-primary);
+}
+
+.tw-etiqueta {
+	margin: 0 0 0.4rem;
+	color: var(--color-brand-header);
+	font-size: 0.78rem;
+	font-weight: 700;
+	text-transform: uppercase;
+}
+
+.tw-cerrar {
+	width: 2.5rem;
+	min-height: 2.5rem;
+	padding: 0;
+	font-size: 1.5rem;
+	background: var(--bg-card);
+	color: var(--text-primary);
+	border: 2px solid var(--border-neobrutal);
+}
+
+.tw-explicacion {
+	display: grid;
+	gap: 0.55rem;
+	margin-bottom: 1rem;
+	border: 1px solid var(--input-border);
+	border-radius: 6px;
+	padding: 0.9rem 1.1rem;
+	background: var(--bg-alt);
+}
+
+.tw-explicacion p,
+.tw-intro {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.5;
+	color: var(--text-secondary);
+}
+
+.tw-intro {
+	margin-bottom: 1rem;
+}
+
+.tw-explicacion .tw-nota {
+	font-size: 0.82rem;
+	color: var(--text-muted);
+}
+
+.tw-nivel {
+	display: inline-block;
+	margin-right: 0.35rem;
+	border-radius: 3px;
+	padding: 0.05rem 0.4rem;
+	font-size: 0.78rem;
+	font-weight: 700;
+}
+
+.tw-nivel.explicito {
+	background: var(--state-error-bg);
+	color: var(--state-error-text);
+}
+
+.tw-nivel.implicito {
+	background: var(--state-warning-bg);
+	color: var(--state-warning-text);
+}
+
+.tw-resumen {
+	margin: 0 0 0.75rem;
+	font-size: 0.85rem;
+	color: var(--text-secondary);
+}
+
+.tw-lista {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.5rem 0.9rem;
+	margin: 0 0 1rem;
+	padding: 0;
+	list-style: none;
+}
+
+.tw-fila {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	border: 1px solid var(--input-border);
+	border-radius: 6px;
+	padding: 0.45rem 0.6rem;
+	background: var(--bg-card);
+}
+
+.tw-fila.es-explicito {
+	border-color: var(--state-error-text);
+}
+
+.tw-fila.es-implicito {
+	border-color: var(--state-warning-text);
+}
+
+.tw-nombre {
+	min-width: 0;
+	flex: 1 1 8rem;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--text-primary);
+}
+
+.tw-selector {
+	display: inline-flex;
+	flex: 0 0 auto;
+	overflow: hidden;
+	border: 1px solid var(--input-border);
+	border-radius: 4px;
+}
+
+/* Los botones del selector anulan los estilos globales de button */
+.tw-selector .tw-opcion {
+	min-height: auto;
+	margin: 0;
+	border: 0;
+	border-radius: 0;
+	padding: 0.28rem 0.55rem;
+	background: transparent;
+	color: var(--text-muted);
+	font-size: 0.72rem;
+	font-weight: 700;
+	box-shadow: none;
+	transform: none;
+	cursor: pointer;
+}
+
+.tw-selector .tw-opcion + .tw-opcion {
+	border-left: 1px solid var(--input-border);
+}
+
+.tw-selector .tw-opcion:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.tw-selector .tw-opcion.activo {
+	background: var(--bg-subtle);
+	color: var(--text-primary);
+}
+
+.tw-selector .tw-opcion.implicito.activo {
+	background: var(--state-warning-bg);
+	color: var(--state-warning-text);
+}
+
+.tw-selector .tw-opcion.explicito.activo {
+	background: var(--state-error-bg);
+	color: var(--state-error-text);
+}
+
+.tw-otro {
+	display: grid;
+	gap: 0.4rem;
+	color: var(--text-primary);
+	font-size: 0.88rem;
+	font-weight: 700;
+}
+
+.tw-otro small {
+	color: var(--text-muted);
+	font-weight: 400;
+}
+
+.tw-otro textarea {
+	width: 100%;
+	border: 1px solid var(--input-border);
+	border-radius: 4px;
+	padding: 0.6rem 0.7rem;
+	background: var(--input-bg);
+	color: var(--input-text);
+	font: inherit;
+	font-weight: 400;
+	resize: vertical;
+}
+
+.tw-acciones {
+	display: flex;
+	justify-content: end;
+	gap: 0.75rem;
+	margin-top: 1.25rem;
+}
+
+.tw-guardar {
+	border-color: var(--color-brand-dark);
+	background: var(--color-brand-header);
+	color: var(--text-inverted);
+	font-weight: 700;
+}
+
+.tw-guardar:hover {
+	background: var(--color-brand-dark);
+}
+
+.tw-cancelar {
+	background: var(--bg-card);
+	color: var(--text-primary);
+}
+
+/* Vista de lectura */
+.tw-grupo {
+	margin-bottom: 1rem;
+}
+
+.tw-grupo h3 {
+	margin: 0 0 0.5rem;
+	font-size: 0.9rem;
+	color: var(--text-primary);
+}
+
+.tw-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.tw-chip {
+	border: 1px solid;
+	border-radius: 999px;
+	padding: 0.2rem 0.65rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+}
+
+.tw-chip.explicito {
+	border-color: var(--state-error-text);
+	background: var(--state-error-bg);
+	color: var(--state-error-text);
+}
+
+.tw-chip.implicito {
+	border-color: var(--state-warning-text);
+	background: var(--state-warning-bg);
+	color: var(--state-warning-text);
+}
+
+.tw-otro-texto {
+	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.5;
+	white-space: pre-wrap;
+	color: var(--text-secondary);
+}
+
+/* Botón "Trigger Warnings" que se ve en las tarjetas de partida */
+.tw-boton-ver {
+	align-self: flex-start;
+	min-height: 2.1rem;
+	border-color: var(--state-warning-text);
+	padding: 0.3rem 0.65rem;
+	background: var(--state-warning-bg);
+	color: var(--state-warning-text);
+	font-size: 0.8rem;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.tw-boton-ver:hover {
+	filter: brightness(0.95);
+}
+
+@media (max-width: 640px) {
+	.tw-lista {
+		grid-template-columns: 1fr;
+	}
+
+	.tw-dialog {
+		padding: 1rem;
+	}
+}
