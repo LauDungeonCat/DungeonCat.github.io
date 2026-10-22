@@ -133,7 +133,7 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
           </div>
 
           <div className="roadmap-card">
-            <h4> Sistema de Socios</h4>
+            <h4> Sistema de Socios (HECHO!)</h4>
             <p>Todo es gratis, los socios solo apoyan a la comunidad y reciben un sombrerito personalizado encima de su avatar.</p>
           </div>
 
@@ -148,8 +148,8 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
           </div>
 
           <div className="roadmap-card">
-            <h4> Sugerencias y Feedback</h4>
-            <p>Añadir un formulario para recoger sugerencias y feedback de la comunidad.</p>
+            <h4> Sugerencias y Feedback*</h4>
+            <p>Podéis escribirme por WhatsApp con sugerencias o feedback sobre la plataforma.</p>
           </div>
         </div>
       </section>

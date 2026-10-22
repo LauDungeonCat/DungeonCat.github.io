@@ -147,9 +147,9 @@ export default function Perfil() {
   const ejecutarCerrarSesion = async () => {
     try {
       await signOut();
-      window.location.href = '/';
+      window.location.href = import.meta.env.BASE_URL;
     } catch {
-      window.location.href = '/';
+      window.location.href = import.meta.env.BASE_URL;
     }
   };
 

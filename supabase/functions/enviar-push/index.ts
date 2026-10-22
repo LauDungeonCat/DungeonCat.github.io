@@ -9,12 +9,32 @@ webpush.setVapidDetails(
   Deno.env.get('VAPID_PRIVATE_KEY')!
 );
 
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL')!,
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-);
+// Clave con permisos de servidor, por orden de preferencia:
+//  1. SB_SECRET_KEY: la clave "secret" (sb_secret_...) que creas tú y guardas con `supabase secrets set`
+//  2. SUPABASE_SECRET_KEYS: JSON {"default": "sb_secret_..."} si Supabase lo inyecta en la función
+//  3. SUPABASE_SERVICE_ROLE_KEY: la clave legacy (deja de valer cuando desactives las claves legacy)
+function claveDeServidor(): string {
+  const propia = Deno.env.get('SB_SECRET_KEY');
+  if (propia) return propia;
+  try {
+    const inyectadas = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') ?? '{}');
+    if (inyectadas?.default) return inyectadas.default as string;
+  } catch {
+    // formato inesperado: se ignora y se prueba la siguiente opción
+  }
+  return Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+}
+
+const supabase = createClient(Deno.env.get('SUPABASE_URL')!, claveDeServidor());
 
 Deno.serve(async (req) => {
+  // El webhook de la base de datos manda un secreto propio (no una clave de Supabase).
+  // Requiere desplegar con --no-verify-jwt y definir WEBHOOK_SECRET como secreto de la función.
+  const secretoEsperado = Deno.env.get('WEBHOOK_SECRET');
+  if (!secretoEsperado || req.headers.get('x-webhook-secret') !== secretoEsperado) {
+    return new Response('No autorizado', { status: 401 });
+  }
+
   const { record } = await req.json();
   if (!record?.user_id) return new Response('Sin registro', { status: 400 });
 

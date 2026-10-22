@@ -26,3 +26,6 @@ supabase/schema_actualizado.sql
 *.njsproj
 *.sln
 *.sw?
+
+otro
+push.bat
