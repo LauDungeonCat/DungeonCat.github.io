@@ -6,7 +6,6 @@ export default function Contacto() {
   return (
     <div className="contact-container">
       <section className="contact-page" aria-labelledby="contact-title">
-        {/* Columna Izquierda: Tu info arriba y el WhatsApp de comunidad debajo */}
         <div className="contact-left-column">
           <div className="contact-identity">
             <p className="contact-eyebrow">Contacto</p>
@@ -18,7 +17,6 @@ export default function Contacto() {
           </div>
         </div>
 
-        {/* Columna Derecha: Los enlaces de contacto */}
         <address className="contact-details">
           <a href="https://dungeoncat.site" target="_blank" rel="noreferrer">
             <span>Web</span>
@@ -38,6 +36,7 @@ export default function Contacto() {
           </a>
         </address>
       </section>
+
       <section className="inicio-comunidad-section">
         <div className="comunidad-box-header">
           <h3>Nuestra Comunidad</h3>
@@ -64,7 +63,6 @@ export default function Contacto() {
             </p>
           </div>
 
-          {/* Tarjeta Instagram */}
           <div className="comunidad-qr-card">
             <a
               href="https://instagram.com/rol_granada"
@@ -86,6 +84,29 @@ export default function Contacto() {
           </div>
         </div>
       </section>
-      </div>
+
+      {/* Sección de Apoyo en Contacto */}
+      <section className="inicio-comunidad-section" style={{ marginTop: '2rem' }}>
+        <div className="comunidad-box-header">
+          <h3>Apoya el Proyecto</h3>
+        </div>
+        <div className="apoyo-box">
+          <p className="apoyo-texto">
+            ¿Te gusta el proyecto? ¡Invítame a un café en Ko-fi para ayudar a su mantenimiento!
+          </p>
+          <a 
+            href="https://ko-fi.com/lauradungeoncat" 
+            target="_blank" 
+            rel="noreferrer"
+            className="btn-kofi"
+          >
+            ☕ Apoyar en Ko-fi
+          </a>
+          <p className="apoyo-nota">
+            * Si me escribes por WhatsApp tras apoyar, te configuraré un sombrerito o orejitas personalizadas para tu avatar.
+          </p>
+        </div>
+      </section>
+    </div>
   );
 }

@@ -67,7 +67,7 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
         </article>
       </div>
 
-{/* Sección de Comunidad / Redes con Doble QR */}
+      {/* Sección de Comunidad / Redes con Doble QR */}
       <section className="inicio-comunidad-section">
         <div className="comunidad-box-header">
           <h3>Nuestra Comunidad</h3>
@@ -93,7 +93,6 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
         </div>
       </section>
       
-
       {/* Estadísticas de la Comunidad */}
       <section className="inicio-stats-section">
         <p className="seccion-etiqueta">Comunidad</p>
@@ -123,7 +122,6 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
         <h3 className="inicio-seccion-titulo">Evolución de la Web</h3>
         
         <div className="roadmap-grid">
-
           <div className="roadmap-card">
             <h4> Valoraciones y Comentarios</h4>
             <p>Sistema para dejar valoraciones y comentarios de agradecimiento o feedback a Dungeon Masters de la comunidad.</p>
@@ -153,7 +151,29 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
             <h4> Sugerencias y Feedback</h4>
             <p>Añadir un formulario para recoger sugerencias y feedback de la comunidad.</p>
           </div>
+        </div>
+      </section>
 
+      {/* Sección de Apoyo al Proyecto */}
+      <section className="inicio-comunidad-section" style={{ marginTop: '2rem' }}>
+        <div className="comunidad-box-header">
+          <h3>Apoya el Proyecto</h3>
+        </div>
+        <div className="apoyo-box">
+          <p className="apoyo-texto">
+            ¿Te gusta la plataforma y quieres ayudar a mantenerla activa? ¡Puedes invitarme a un café en Ko-fi!
+          </p>
+          <a 
+            href="https://ko-fi.com/lauradungeoncat" 
+            target="_blank" 
+            rel="noreferrer"
+            className="btn-kofi"
+          >
+            ☕ Invítame a un café en Ko-fi
+          </a>
+          <p className="apoyo-nota">
+            * Si me escribes por WhatsApp tras apoyar, te configuraré un sombrerito o orejitas personalizadas para tu avatar.
+          </p>
         </div>
       </section>
     </div>

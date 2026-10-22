@@ -1,14 +1,13 @@
 .contact-container {
   width: min(100% - 2rem, 1000px);
   margin: 0 auto;
-  padding: 2rem 0 1rem;
+  padding: 1.5rem 0 1rem;
 }
 
 .contact-page {
-    width: min(100% - 2rem, 1000px);
-    min-height: 20vh;
+    width: 100%;
     margin: 0 auto;
-    padding: clamp(2rem, 8vh, 5rem) 0;
+    padding: 1rem 0 1.5rem 0; /* Reducido de clamp(2rem, 8vh, 5rem) a un espacio mucho más cercano */
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
     align-content: start;
@@ -20,7 +19,7 @@
 .contact-left-column {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 .contact-identity {
@@ -50,7 +49,7 @@
 }
 
 .contact-role {
-    margin: 0.5rem 0 1.1rem;
+    margin: 0.5rem 0 0.5rem; /* Ajustado el margen inferior */
     color: var(--text-primary);
     font-size: 1.25rem;
     font-weight: 800;
@@ -73,7 +72,7 @@
     display: grid;
     gap: 0.25rem;
     border-bottom: 1px solid var(--input-border);
-    padding: 1rem 0;
+    padding: 0.8rem 0; /* Ligera reducción del padding vertical de los enlaces */
     color: inherit;
     text-decoration: none;
     transition: color 0.15s ease;
@@ -101,8 +100,8 @@
 @media (max-width: 650px) {
     .contact-page {
         grid-template-columns: 1fr;
-        gap: 2rem;
-        padding: 2rem 0 3rem;
+        gap: 1.5rem;
+        padding: 1rem 0 1.5rem;
     }
 
     .contact-identity {
