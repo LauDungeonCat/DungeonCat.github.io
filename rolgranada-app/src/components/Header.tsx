@@ -228,6 +228,7 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
               {menuAbierto && (
                 <ul className="tools-dropdown">
                   <li><a href="#generador-encuentros" onClick={(event) => navegarDesdeEnlace(event, 'generador-encuentros')}>Generador de Encuentros</a></li>
+                  <li><a href="#wotf-ficha" onClick={(event) => navegarDesdeEnlace(event, 'wotf-ficha')}>Personajes Will of the Forge</a></li>
                 </ul>
               )}
             </div>

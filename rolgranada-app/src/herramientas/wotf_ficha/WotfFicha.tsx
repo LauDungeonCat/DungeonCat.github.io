@@ -1,12 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { Dispatch, DragEvent, ReactNode, SetStateAction } from 'react';
+import { armaVacia } from './wotfTipos';
+import type { Arma, AttrKey, FichaData, Item } from './wotfTipos';
 import './WotfFicha.css';
 
-type AttrKey = 'fue' | 'des' | 'per' | 'int' | 'pro' | 'alm';
 type Grupo = 'equipada' | 'banco';
 type Pos = { grupo: Grupo; i: number };
-interface Item { nombre: string; slots: number }
-interface Arma { nombre: string; t: number; dano: string | null; q: number; magia: string } // dano null = el de por defecto según T
 interface Formula {
   vida: (fue: number, pro: number, niv: number) => number; vidaTxt: string;
   wp: (pro: number, fue: number, arm: number) => number; wpTxt: string;
@@ -52,14 +51,13 @@ const HAB_DER = [
   ...hab('pro', ['afinidad', 'Afinidad'], ['influencia', 'Influencia']),
 ];
 
-const SALVACIONES: [string, AttrKey, AttrKey][] = [['Reflejos', 'des', 'per'], ['Aguante', 'fue', 'alm'], ['Voluntad', 'int', 'pro']];
+const SALVACIONES: [string, AttrKey, AttrKey][] = [['⇋ Reflejos ⌖', 'des', 'per'], ['✠ Aguante 🙪', 'fue', 'alm'], ['⟡ Voluntad ☍', 'int', 'pro']];
 const CORE = [['creencia', 'Creencia'], ['objetivo', 'Objetivo'], ['rasgo', 'Rasgo'], ['exasperacion', 'Exasperación']] as const;
 
 /** Daño por defecto según el tamaño (T) del arma: 0 → 1, 1 → 1d4, 2 → 1d6 ... 6 → 1d20. */
 const DANO = ['1', '1d4', '1d6', '1d8', '1d10', '1d12', '1d20'];
 const danoDe = (t: number) => DANO[Math.min(6, Math.max(0, Math.round(t)))] ?? '1';
 
-const armaVacia = (): Arma => ({ nombre: '', t: 0, dano: null, q: 0, magia: '' });
 const esVacia = (a: Arma) => !a.nombre && !a.t && !a.q && !a.magia && a.dano === null;
 const suma = (nums: number[]) => nums.reduce((acc, n) => acc + (n || 0), 0);
 
@@ -136,38 +134,42 @@ const Campo = ({ label, className = '', children }: { label: string; className?:
    Ficha
    ========================================================================== */
 
-export default function WotfFicha() {
-  const [info, setInfo] = useState({ nombre: '', pronom: '', clase: 'Guerrero', raza: 'Ninguna' });
-  const [nivel, setNivel] = useState(1);
-  const [xp, setXp] = useState(0);
-  const [atributos, setAtributos] = useState<Record<AttrKey, number>>({ fue: 1, des: 1, per: 1, int: 1, pro: 1, alm: 1 });
-  const [competencias, setCompetencias] = useState<Record<string, boolean>>({});
-  const [rapidezBonus, setRapidezBonus] = useState(0);
-  const [dado, setDado] = useState(0);
-  const [dadoBajo, setDadoBajo] = useState(0);
-  const [vidaActual, setVidaActual] = useState(0);
-  const [wpActual, setWpActual] = useState(0);
+export default function WotfFicha({ inicial, onChange }: { inicial: FichaData; onChange?: (d: FichaData) => void }) {
+  const [f, setF] = useState(inicial);
+  useEffect(() => { if (f !== inicial) onChange?.(f); }, [f]); // avisa de cada cambio (para guardarlo)
 
-  const [armaduraSlots, setArmaduraSlots] = useState(0);
-  const [inventario, setInventario] = useState<Item[]>(Array.from({ length: 9 }, () => ({ nombre: '', slots: 0 })));
-  const [invBonus, setInvBonus] = useState(0);
-  const [dinero, setDinero] = useState({ a: 0, b: 0, c: 0 });
-
-  const [armas, setArmas] = useState<Arma[]>(Array.from({ length: 4 }, armaVacia));
-  const [banco, setBanco] = useState<Arma[]>([]); // no ocupan slots; se llena arrastrando
+  /** Como useState, pero sobre un campo de la ficha. */
+  const campo = <K extends keyof FichaData>(k: K): [FichaData[K], Dispatch<SetStateAction<FichaData[K]>>] => [
+    f[k],
+    (v) => setF((p) => ({ ...p, [k]: typeof v === 'function' ? (v as (x: FichaData[K]) => FichaData[K])(p[k]) : v })),
+  ];
+  const [nivel, setNivel] = campo('nivel');
+  const [xp, setXp] = campo('xp');
+  const [atributos, setAtributos] = campo('atributos');
+  const [competencias, setCompetencias] = campo('competencias');
+  const [rapidezBonus, setRapidezBonus] = campo('rapidezBonus');
+  const [dado, setDado] = campo('dado');
+  const [dadoBajo, setDadoBajo] = campo('dadoBajo');
+  const [vidaActual, setVidaActual] = campo('vidaActual');
+  const [wpActual, setWpActual] = campo('wpActual');
+  const [armaduraSlots, setArmaduraSlots] = campo('armaduraSlots');
+  const [inventario, setInventario] = campo('inventario');
+  const [invBonus, setInvBonus] = campo('invBonus');
+  const [dinero, setDinero] = campo('dinero');
+  const [armas, setArmas] = campo('armas');
+  const [banco, setBanco] = campo('banco'); // no ocupan slots; se llena arrastrando
+  const [recursoActual, setRecursoActual] = campo('recursoActual');
+  const [recursoMax, setRecursoMax] = campo('recursoMax'); // null = 3 × nivel
+  const [limite, setLimite] = campo('limite'); // null = 3
+  const [casting, setCasting] = campo('casting');
+  const [notas, setNotas] = campo('notas');
+  const [core, setCore] = campo('core');
   const [drag, setDrag] = useState<Pos | null>(null);
   const [over, setOver] = useState<Pos | null>(null);
 
-  const [recursoActual, setRecursoActual] = useState(0);
-  const [recursoMax, setRecursoMax] = useState<number | null>(null); // null = 3 × nivel
-  const [limite, setLimite] = useState<number | null>(null); // null = 3
-  const [casting, setCasting] = useState('');
-  const [notas, setNotas] = useState('');
-  const [core, setCore] = useState({ creencia: '', objetivo: '', rasgo: '', exasperacion: '' });
-
   /* ---------- Cálculos derivados ---------- */
-  const F = RAZAS[info.raza];
-  const recurso = CLASES[info.clase];
+  const F = RAZAS[f.raza] ?? RAZAS.Ninguna;
+  const recurso = CLASES[f.clase] ?? 'Recursos';
   const rapidezBase = atributos.des <= 2 ? 5 : atributos.des <= 4 ? 6 : 7;
   const invMax = 6 + atributos.fue + invBonus;
   const slotsArmas = suma(armas.map((a) => a.t));
@@ -279,7 +281,7 @@ export default function WotfFicha() {
     );
   };
 
-  const txt = (k: keyof typeof info) => ({ value: info[k], onChange: (e: { target: { value: string } }) => setInfo((p) => ({ ...p, [k]: e.target.value })) });
+  const txt = (k: 'nombre' | 'pronom' | 'clase' | 'raza') => ({ value: f[k], onChange: (e: { target: { value: string } }) => setF((p) => ({ ...p, [k]: e.target.value })) });
 
   return (
     <div className="wotf-sheet">
@@ -315,7 +317,7 @@ export default function WotfFicha() {
 
             <div className="chips-row">
               <div className="chip chip-rapidez c-des" title={`Base ${rapidezBase} (según DES) + Bon ${rapidezBonus}`}>
-                <span className="chip-label">Rapidez</span>
+                <span className="chip-label"><span className="sym">↠</span>Rap</span>
                 <span className="chip-big calc">{rapidezBase + rapidezBonus}</span>
                 <label className="chip-bonus"><span>Bon</span><Num value={rapidezBonus} onChange={setRapidezBonus} label="Bonus de rapidez" className="num-sm" /></label>
               </div>

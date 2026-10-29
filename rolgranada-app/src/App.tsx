@@ -7,11 +7,12 @@ import Login from "./auth/Login";
 import { useAuth } from "./auth/useAuth";
 import { Inicio } from "./inicio/Inicio";
 import Perfil from "./perfil/Perfil";
+import WotfPersonajes from "./herramientas/wotf_ficha/WotfPersonajes";
 
 import "./App.css";
+import { supabase } from "./lib/supabase";
 
 const GeneradorEncuentros = lazy(() => import("./herramientas/generador_encuentros/GeneradorEncuentros"));
-const WotfFicha = lazy(() => import("./herramientas/wotf_ficha/WotfFicha"));
 const Disponibilidad = lazy(() => import("./partidas/Disponibilidad"));
 const MisPartidas = lazy(() => import("./partidas/MisPartidas"));
 const BuscarPartidas = lazy(() => import("./partidas/BuscarPartidas"));
@@ -75,7 +76,7 @@ function AplicacionAutenticada() {
       case "generador-encuentros":
         return <GeneradorEncuentros />;
       case "wotf-ficha":
-        return <WotfFicha />;
+        return <WotfPersonajes supabase={supabase} />;
       case "disponibilidad":
         return <Disponibilidad />;
       case "mis-partidas":
