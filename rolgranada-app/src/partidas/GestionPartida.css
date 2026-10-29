@@ -286,3 +286,59 @@
         align-self: flex-end;
     }
 }
+/* Selector de mes para la gestión de partidas centrado */
+.gestion-selector-mes-container {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Cambiado de flex-end a center para centrarlo */
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.gestion-selector-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.gestion-selector-botones {
+    display: inline-flex;
+    background: var(--bg-alt);
+    border: 2px solid var(--border-neobrutal);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 2px 0 var(--shadow-neobrutal);
+}
+
+.btn-mes-opcion {
+    background: transparent;
+    border: none;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-mes-opcion:not(:last-child) {
+    border-right: 1px solid var(--border-neobrutal);
+}
+
+.btn-mes-opcion:hover {
+    background: var(--bg-hover);
+}
+
+.btn-mes-opcion.activo {
+    background: var(--color-brand-header, #c02642);
+    color: #ffffff;
+}
+
+@media (max-width: 600px) {
+    .gestion-selector-mes-container {
+        justify-content: space-width;
+        justify-content: space-between;
+    }
+}

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@400&display=swap');
+
 .wotf-sheet {
   --ink: #1c1b22;
   --paper: #ffffff;
@@ -7,7 +9,7 @@
   --danger: #e5484d;
   --focus: #3b6cf6;
 
-  --fue: #ffd0dc; --des: #cfeed4; --per: #ffc8b2;
+  --fue: #ff9d9d; --des: #cfeed4; --per: #ffd0dc;
   --int: #cdeafb; --pro: #ffe0a8; --alm: #fff0a0;
   --armadura: #ffd9a3; --lila: #d9ccf2; --lila-2: #e7ddf8;
 
@@ -21,8 +23,9 @@
   margin: 0 auto;
   padding: 1rem;
   color: var(--ink);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: system-ui, -apple-system, 'Noto Emoji', sans-serif;
   font-size: 15px;
+  font-variant-emoji: text; /* emojis en monocromo, con Noto Emoji */
   background-color: var(--bg);
   background-image: radial-gradient(rgba(28, 27, 34, 0.14) 1.2px, transparent 1.3px);
   background-size: 18px 18px;
@@ -30,6 +33,8 @@
 }
 
 .wotf-sheet *, .wotf-sheet *::before, .wotf-sheet *::after { box-sizing: border-box; }
+.wotf-sheet .sym { font-family: 'Segoe UI Symbol', 'Noto Sans Symbols 2', 'Noto Sans Symbols', system-ui, sans-serif; font-variant-emoji: text; font-weight: 700; }
+.wotf-sheet .emoji { font-family: 'Noto Emoji', sans-serif; font-weight: 400; font-variant-emoji: text; }
 .wotf-sheet .c-fue { background-color: var(--fue); }
 .wotf-sheet .c-des { background-color: var(--des); }
 .wotf-sheet .c-per { background-color: var(--per); }
@@ -51,13 +56,22 @@
 }
 .wotf-sheet .num-sm { width: 2rem; height: 1.45rem; font-size: 0.78rem; }
 
+/* Editable: caja blanca con relieve interior. Calculado: plano, sin caja. */
+.wotf-sheet .num { box-shadow: inset 0 2px 0 rgba(28, 27, 34, 0.1); cursor: text; }
+.wotf-sheet .num:hover { background: #fffbe6; }
+.wotf-sheet .num.is-custom { text-decoration: underline dotted; text-underline-offset: 3px; }
+.wotf-sheet .calc {
+  cursor: default; user-select: none; color: var(--ink);
+  background: rgba(28, 27, 34, 0.09); border: none; border-radius: 5px;
+}
+
 .wotf-card {
   --accent: var(--lila);
   display: flex; flex-direction: column; min-width: 0; padding: 0.75rem 0.85rem;
   background: var(--paper); border: var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
 }
 
-.acc-attr { --accent: var(--fue); } .acc-skills { --accent: var(--int); }
+.acc-attr { --accent: var(--per); } .acc-skills { --accent: var(--int); }
 .acc-salv { --accent: var(--des); } .acc-inv { --accent: var(--armadura); }
 .acc-notas { --accent: var(--alm); } .acc-core { --accent: var(--pro); }
 .acc-casting { --accent: var(--int); } .acc-armas { --accent: var(--lila); }
@@ -79,12 +93,16 @@
 .h-field.flex-2 { flex: 2 1 200px; } .h-field.mini { flex: 0 0 85px; }
 .h-label { font-size: 0.8rem; font-weight: 800; white-space: nowrap; }
 
-.header-grid :is(input, select.h-select) {
+.header-grid :is(input:not(.num), select.h-select) {
   width: 100%; padding: 0.15rem 0.1rem; font-size: 0.9rem; font-weight: 700;
   background: transparent; border: none; border-bottom: 2.5px solid var(--ink); border-radius: 0;
 }
 .header-grid input.h-name { font-size: 1.05rem; font-weight: 900; }
 .mini input { text-align: center; }
+.header-grid .num {
+  width: 100%; height: auto; padding: 0.15rem 0.1rem; font-size: 0.9rem; font-weight: 700;
+  background: transparent; border: none; border-bottom: 2.5px solid var(--ink); border-radius: 0; box-shadow: none;
+}
 
 /* Layout Grid */
 .wotf-main-grid { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: var(--gap); }
@@ -93,13 +111,18 @@
 .wotf-col > .grow, .wotf-subgrid-2col > .grow, .right-stacked-col > .grow { flex: 1 1 auto; }
 
 /* Atributos */
-.attr-wrapper { display: grid; grid-template-columns: minmax(0, 1fr) 82px; gap: 0.4rem; }
-.attr-list { display: grid; grid-template-rows: repeat(6, 1fr); gap: 0.2rem; }
-.attr-row { display: flex; justify-content: space-between; align-items: center; padding: 0.08rem 0.25rem 0.08rem 0.5rem; font-size: 0.82rem; font-weight: 900; border: 2px solid var(--ink); border-radius: 6px; }
-.attr-sub-col { display: flex; flex-direction: column; gap: 0.3rem; }
-.sub-box { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 0.1rem; padding: 0.2rem; border: 2px solid var(--ink); border-radius: 6px; }
-.sub-label { font-size: 0.68rem; font-weight: 800; }
-.sub-big { font-size: 1.35rem; font-weight: 900; line-height: 1; }
+.attr-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.25rem 0.35rem; }
+.attr-row { display: flex; justify-content: space-between; align-items: center; gap: 0.25rem; padding: 0.12rem 0.25rem 0.12rem 0.45rem; font-size: 0.82rem; font-weight: 900; border: 2px solid var(--ink); border-radius: 6px; }
+.attr-name { display: flex; align-items: center; gap: 0.25rem; }
+.attr-name .sym { width: 1.1em; text-align: center; font-size: 0.95rem; }
+.attr-row .num { width: 2.3rem; height: 1.7rem; }
+
+.chips-row { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 0.35rem; margin-top: 0.4rem; }
+.chip { display: flex; align-items: center; justify-content: space-between; gap: 0.2rem; min-width: 0; padding: 0.25rem 0.3rem; font-weight: 800; border: 2px solid var(--ink); border-radius: 6px; }
+.chip-label { font-size: 0.64rem; }
+.chip-big { display: grid; place-items: center; width: 1.75rem; height: 1.45rem; font-size: 0.85rem; font-weight: 900; }
+.chip-bonus { display: flex; align-items: center; gap: 0.2rem; font-size: 0.6rem; }
+.chip .num-sm { width: 1.75rem; min-width: 0; }
 
 .vital-horizontal { display: flex; justify-content: space-between; gap: 0.4rem; margin-top: 0.5rem; padding-top: 0.4rem; border-top: 2px solid var(--ink); }
 .vital-item { display: flex; align-items: center; gap: 0.2rem; font-size: 0.82rem; font-weight: 900; }
@@ -124,6 +147,7 @@
 
 .salv-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35rem; }
 .salv-tile { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.3rem 0.1rem 0.4rem; font-size: 0.72rem; font-weight: 800; background: var(--field); border: 2px solid var(--ink); border-radius: 6px; }
+.salv-stats { font-size: 0.62rem; font-weight: 700; color: var(--muted); opacity: 0.75; letter-spacing: 0.02em; }
 .salv-calc-val { width: 100%; padding: 0.12rem 0; text-align: center; font-size: 0.9rem; font-weight: 900; background: var(--paper); border: 2px solid var(--ink); border-radius: 4px; }
 
 /* Inventario */
@@ -153,15 +177,11 @@
 .top-right-duo { display: grid; grid-template-columns: 1.1fr 1fr; gap: var(--gap); }
 
 .casting-header-inline { margin-bottom: 0.4rem; flex-wrap: wrap; }
-.title-with-input { display: flex; align-items: center; gap: 0.4rem; flex: 1; min-width: 0; }
-.title-with-input .card-title { margin-bottom: 0; }
-.casting-inline-input {
-  flex: 1; min-width: 80px; padding: 0.15rem 0.4rem; font-size: 0.85rem; font-weight: 900;
-  background: var(--int); border: 2px solid var(--ink); border-radius: 6px;
-}
 .casting-limit { display: flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 800; white-space: nowrap; }
+.casting-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.8rem; }
+.formula-lines { display: flex; flex-direction: column; gap: 0.1rem; margin-top: 0.35rem; font-size: 0.68rem; font-weight: 700; color: var(--muted); }
 
-.wotf-sheet textarea { width: 100%; padding: 0.4rem 0.5rem; font-size: 0.82rem; line-height: 1.4; background: var(--field); border: 2px solid var(--ink); border-radius: 6px; resize: vertical; }
+.wotf-sheet textarea { width: 100%; padding: 0.4rem 0.5rem; font-size: 0.82rem; line-height: 1.4; background: var(--field); border: 2px solid var(--ink); border-radius: 6px; resize: none; }
 .notas-area, .casting-area { flex: 1; min-height: 8.5rem; }
 
 .core-compact { flex: 0 0 auto; }
@@ -169,9 +189,10 @@
 .core-item { display: flex; flex-direction: column; gap: 0.1rem; }
 .core-item label { font-size: 0.72rem; font-weight: 800; color: var(--muted); }
 .wotf-sheet .core-input { padding: 0.25rem 0.4rem; font-size: 0.82rem; font-weight: 600; border-width: 1.5px; border-radius: 5px; resize: none; }
+.wotf-sheet .auto-textarea { display: block; overflow: hidden; }
 
 /* Armas */
-.armas-scroll { overflow-x: auto; border: 2px solid var(--ink); border-radius: 6px; }
+.armas-scroll { overflow-x: auto; }
 .armas-table { width: 100%; min-width: 650px; table-layout: fixed; border-collapse: collapse; font-size: 0.82rem; }
 .armas-table .col-nombre { width: 20%; }
 .armas-table .col-t { width: 5.5rem; }
@@ -186,11 +207,40 @@
 .armas-table input { width: 100%; padding: 0.15rem 0; font-size: 0.82rem; font-weight: 600; background: transparent; border: none; }
 .armas-table .magia-input { padding: 0.15rem 0; font-size: 0.82rem; font-weight: 600; background: transparent; border: none; resize: none; }
 
+.acc-armas { padding: 0; overflow: hidden; }
+.armas-table th.th-title { font-size: 0.9rem; font-weight: 900; }
+.armas-table th .slots-tag { color: var(--ink); background: #fff; }
+.armas-table .arma-name { font-weight: 800; }
+.armas-table .arma-dano.is-custom { text-decoration: underline dotted; text-underline-offset: 3px; }
+.slots-tag-off { opacity: 0.85; }
+.armas-table .banco-head th { border-top: 2px solid var(--ink); }
+.armas-table td.center .arma-dano { text-align: center; font-weight: 800; }
+
+/* Pistas de que un campo de texto es editable */
+.armas-table input[type='text']:hover,
+.inv-name:hover,
+.wotf-sheet .magia-input:hover { background: rgba(255, 255, 255, 0.6); }
+
+.arma-name-wrap { display: flex; align-items: center; gap: 0.35rem; }
+.armas-table .arma-name { flex: 1; min-width: 0; }
+.drag-handle {
+  flex: 0 0 auto; width: 0.7rem; height: 1.1rem; cursor: grab; opacity: 0.55;
+  background-image: radial-gradient(var(--ink) 1.3px, transparent 1.4px); background-size: 5px 5px;
+}
+.drag-handle:hover { opacity: 1; }
+.drag-handle:active { cursor: grabbing; }
+.armas-table tr.is-dragging td { opacity: 0.45; }
+.armas-table tr.is-over td,
+.armas-table tr.is-over-head th { box-shadow: inset 0 3px 0 0 var(--focus); }
+.armas-table .banco-drop td {
+  padding: 0.3rem; text-align: center; font-size: 0.7rem; font-weight: 700; color: var(--muted);
+  background: var(--field); border-top: 2px dashed rgba(28, 27, 34, 0.4);
+}
+
 @media (max-width: 1220px) {
   .wotf-main-grid, .wotf-subgrid-2col { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 760px) {
   .wotf-sheet { width: 100%; padding: 0.5rem; border-radius: 0; }
-  .attr-wrapper { grid-template-columns: minmax(0, 1fr) 75px; }
   .core-grid-2x2, .top-right-duo { grid-template-columns: 1fr; }
 }

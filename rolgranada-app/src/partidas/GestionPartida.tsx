@@ -23,10 +23,6 @@ function mensajeError(value: unknown, fallback: string): string {
     return fallback;
 }
 
-function fechaIso(fecha: Date) {
-    return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}-${String(fecha.getDate()).padStart(2, "0")}`;
-}
-
 export default function GestionPartida({ partida }: { partida: Partida }) {
     const { profile } = useAuth();
     const { error, actualizarCapacidad, cargarJugadoresPartida, obtenerCodigoInvitacion, echarJugador } = useRolData();
@@ -41,6 +37,9 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
     const [guardando, setGuardando] = useState(false);
     const [capacidadAbierta, setCapacidadAbierta] = useState(false);
     const [agendamientoAbierto, setAgendamientoAbierto] = useState(false);
+
+    // Estado para alternar el cálculo de disponibilidad (0: Este mes, 1: Mes siguiente)
+    const [mesOffset, setMesOffset] = useState<0 | 1>(0);
     
     const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<{ id: string; nombre: string; esMaster: boolean } | null>(null);
     const [perfilesJugadores, setPerfilesJugadores] = useState<Record<string, { avatar_url: string | null; avatar_position: string | null }>>({});
@@ -64,7 +63,7 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
         };
     }, [partida.id]);
 
-    // Cargar perfil y disponibilidad exacta del Master (filtrando desde hoy en adelante)
+    // Cargar perfil y disponibilidad exacta del Master según el mes seleccionado
     useEffect(() => {
         let activa = true;
         if (!partida.dmId) return;
@@ -79,23 +78,28 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
                 ]);
 
                 if (activa) {
-                    const ahora = new Date();
-                    const hoyStr = fechaIso(ahora);
-                    const mesActual = hoyStr.slice(0, 7);
-                    const diasEnMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0).getDate();
+                    const baseDate = new Date();
+                    baseDate.setMonth(baseDate.getMonth() + mesOffset);
+                    
+                    const anio = baseDate.getFullYear();
+                    const mes = baseDate.getMonth();
+                    const mesStr = `${anio}-${String(mes + 1).padStart(2, "0")}`;
+                    
+                    const diaInicio = mesOffset === 0 ? baseDate.getDate() : 1;
+                    const diasEnMes = new Date(anio, mes + 1, 0).getDate();
 
                     let franjasConDisponibilidad = 0;
                     let franjasPendientes = 0;
 
                     const dispMap = new Map<string, { manana?: string; tarde?: string }>();
                     for (const d of (dispData ?? [])) {
-                        if (d.fecha.startsWith(`${mesActual}-`)) {
+                        if (d.fecha.startsWith(`${mesStr}-`)) {
                             dispMap.set(d.fecha, { manana: d.manana ?? "no_indicado", tarde: d.tarde ?? "no_indicado" });
                         }
                     }
 
-                    for (let dia = ahora.getDate(); dia <= diasEnMes; dia += 1) {
-                        const fecha = `${mesActual}-${String(dia).padStart(2, "0")}`;
+                    for (let dia = diaInicio; dia <= diasEnMes; dia += 1) {
+                        const fecha = `${mesStr}-${String(dia).padStart(2, "0")}`;
                         const disponibilidadDia = dispMap.get(fecha);
                         
                         for (const franja of ["manana", "tarde"] as const) {
@@ -126,59 +130,118 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
 
         void cargarMaster();
         return () => { activa = false; };
-    }, [partida.dmId, partida.dmAvatarUrl, partida.id]);
+    }, [partida.dmId, partida.dmAvatarUrl, partida.id, mesOffset]);
 
-    // Cargar roster de jugadores para todos los usuarios (eliminada restricción restrictiva)
+    // Cargar roster de jugadores y calcular su disponibilidad adaptada al mes seleccionado (mesOffset)
     useEffect(() => {
         let activa = true;
 
         setCargandoRoster(true);
         setErrorRoster(null);
 
-        void cargarJugadoresPartida(partida.id)
-            .then(async (lista) => {
+        async function cargarRosterConMes() {
+            try {
+                const listaBase = await cargarJugadoresPartida(partida.id);
                 if (!activa) return;
 
-                setJugadores(lista ?? []);
+                if (!listaBase || listaBase.length === 0) {
+                    setJugadores([]);
+                    setPerfilesJugadores({});
+                    setJugadoresCargadosId(partida.id);
+                    return;
+                }
+
+                const ids = listaBase.map((j) => j.user_id);
+
+                // Calculamos el rango de fechas para el mesOffset (este mes o mes siguiente)
+                const baseDate = new Date();
+                baseDate.setMonth(baseDate.getMonth() + mesOffset);
+                const anio = baseDate.getFullYear();
+                const mes = baseDate.getMonth();
+                const mesStr = `${anio}-${String(mes + 1).padStart(2, "0")}`;
+                const diaInicio = mesOffset === 0 ? baseDate.getDate() : 1;
+                const diasEnMes = new Date(anio, mes + 1, 0).getDate();
+
+                // Consultar perfiles y disponibilidades de todos los jugadores de una vez
+                const [{ data: profilesData }, { data: dispData }] = await Promise.all([
+                    supabase.from('profiles').select('id, avatar_url, avatar_position').in('id', ids),
+                    supabase.from('disponibilidades').select('user_id, fecha, manana, tarde').in('user_id', ids)
+                ]);
+
+                if (!activa) return;
+
+                // Mapear perfiles
+                const mapaPerfiles: Record<string, { avatar_url: string | null; avatar_position: string | null }> = {};
+                (profilesData as any[] || []).forEach((p: any) => {
+                    mapaPerfiles[p.id] = { 
+                        avatar_url: p.avatar_url ?? null, 
+                        avatar_position: p.avatar_position ?? null
+                    };
+                });
+                setPerfilesJugadores(mapaPerfiles);
+
+                // Mapear disponibilidades por usuario y fecha
+                const dispPorUsuario = new Map<string, Map<string, { manana?: string; tarde?: string }>>();
+                for (const d of (dispData ?? [])) {
+                    if (d.fecha.startsWith(`${mesStr}-`)) {
+                        if (!dispPorUsuario.has(d.user_id)) {
+                            dispPorUsuario.set(d.user_id, new Map());
+                        }
+                        dispPorUsuario.get(d.user_id)?.set(d.fecha, { 
+                            manana: d.manana ?? "no_indicado", 
+                            tarde: d.tarde ?? "no_indicado" 
+                        });
+                    }
+                }
+
+                // Recalcular franjas indicadas y sin indicar para cada jugador en el mes seleccionado
+                const listaProcesada = listaBase.map((jugador) => {
+                    let franjasConDisponibilidad = 0;
+                    let franjasPendientes = 0;
+                    const userDisp = dispPorUsuario.get(jugador.user_id);
+
+                    for (let dia = diaInicio; dia <= diasEnMes; dia += 1) {
+                        const fecha = `${mesStr}-${String(dia).padStart(2, "0")}`;
+                        const disponibilidadDia = userDisp?.get(fecha);
+                        
+                        for (const franja of ["manana", "tarde"] as const) {
+                            const estadoFranja = disponibilidadDia?.[franja];
+                            const marcada = estadoFranja && estadoFranja !== "no_indicado";
+                            if (marcada) {
+                                franjasConDisponibilidad += 1;
+                            } else {
+                                franjasPendientes += 1;
+                            }
+                        }
+                    }
+
+                    return {
+                        ...jugador,
+                        franjas_indicadas: franjasConDisponibilidad,
+                        franjas_sin_indicar: franjasPendientes
+                    };
+                });
+
+                setJugadores(listaProcesada);
                 setErrorRoster(null);
                 setJugadoresCargadosId(partida.id);
-
-                if (lista && lista.length > 0) {
-                    const ids = lista.map((j) => j.user_id);
-                    const { data: profilesData } = await supabase
-                        .from('profiles')
-                        .select('id, avatar_url, avatar_position')
-                        .in('id', ids);
-
-                    if (activa && profilesData) {
-                        const mapa: Record<string, { avatar_url: string | null; avatar_position: string | null }> = {};
-                        (profilesData as any[]).forEach((p: any) => {
-                            mapa[p.id] = { 
-                                avatar_url: p.avatar_url ?? null, 
-                                avatar_position: p.avatar_position ?? null
-                            };
-                        });
-                        setPerfilesJugadores(mapa);
-                    }
-                } else {
-                    setPerfilesJugadores({});
-                }
-            })
-            .catch((loadError: unknown) => {
+            } catch (loadError) {
                 if (activa) {
                     setErrorRoster(mensajeError(loadError, "No se pudo cargar el roster."));
                 }
-            })
-            .finally(() => {
+            } finally {
                 if (activa) {
                     setCargandoRoster(false);
                 }
-            });
+            }
+        }
+
+        void cargarRosterConMes();
 
         return () => {
             activa = false;
         };
-    }, [cargarJugadoresPartida, partida.id]);
+    }, [cargarJugadoresPartida, partida.id, mesOffset]);
 
     useEffect(() => {
         if (!mensajeEnlace) return;
@@ -265,6 +328,27 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
                 </p>
             )}
 
+            {/* Selector de Mes centrado */}
+            <div className="gestion-selector-mes-container">
+                <span className="gestion-selector-label">Ver Disponibilidad:</span>
+                <div className="gestion-selector-botones">
+                    <button
+                        type="button"
+                        className={`btn-mes-opcion ${mesOffset === 0 ? "activo" : ""}`}
+                        onClick={() => setMesOffset(0)}
+                    >
+                        Este Mes
+                    </button>
+                    <button
+                        type="button"
+                        className={`btn-mes-opcion ${mesOffset === 1 ? "activo" : ""}`}
+                        onClick={() => setMesOffset(1)}
+                    >
+                        Mes Siguiente
+                    </button>
+                </div>
+            </div>
+
             {/* Tarjeta del Master unificada */}
             <div className="gestion-dm-card">
                 <FichaParticipanteGestion
@@ -280,7 +364,7 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
             </div>
 
             <div className="gestion-partida-roster">
-                <details className="gestion-roster-details">
+                <details className="gestion-roster-details" open>
                     <summary className="gestion-partida-roster-header">
                         <h4>
                             Jugadores ({esPartidaActual ? jugadores.length : "…"}/{partida.participantesMax})

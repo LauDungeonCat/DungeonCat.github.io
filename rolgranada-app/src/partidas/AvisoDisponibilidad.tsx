@@ -49,9 +49,12 @@ export default function AvisoDisponibilidad({ disponibilidad, sesiones = [] }: P
         : `Te faltan ${franjasPendientes} franjas por rellenar.`,
     );
   }
-  if (obtenerRangoMeses(ahora).siguienteDisponible) {
+  
+  // Solo muestra el aviso del mes siguiente si la disponibilidad de este mes NO está llena (franjasPendientes > 0)
+  if (franjasPendientes > 0 && obtenerRangoMeses(ahora).siguienteDisponible) {
     mensajes.push("Ya puedes rellenar el mes siguiente.");
   }
+
   if (mensajes.length === 0) return null;
 
   return (
