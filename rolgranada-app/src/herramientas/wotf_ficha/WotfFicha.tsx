@@ -170,7 +170,7 @@ export default function WotfFicha({ inicial, onChange }: { inicial: FichaData; o
   /* ---------- Cálculos derivados ---------- */
   const F = RAZAS[f.raza] ?? RAZAS.Ninguna;
   const recurso = CLASES[f.clase] ?? 'Recursos';
-  const rapidezBase = atributos.des <= 2 ? 5 : atributos.des <= 4 ? 6 : 7;
+  const rapidezBase = 5 + Math.floor(atributos.des / 2);
   const invMax = 6 + atributos.fue + invBonus;
   const slotsArmas = suma(armas.map((a) => a.t));
   const totalSlots = armaduraSlots + slotsArmas + suma(inventario.map((i) => i.slots));
