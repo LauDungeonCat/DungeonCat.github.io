@@ -78,14 +78,15 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
                 ]);
 
                 if (activa) {
-                    const baseDate = new Date();
-                    baseDate.setMonth(baseDate.getMonth() + mesOffset);
-                    
+                    // Ojo: no usar setMonth() sobre la fecha de hoy; el día 31 desborda al mes siguiente al siguiente.
+                    const hoy = new Date();
+                    const baseDate = new Date(hoy.getFullYear(), hoy.getMonth() + mesOffset, 1);
+
                     const anio = baseDate.getFullYear();
                     const mes = baseDate.getMonth();
                     const mesStr = `${anio}-${String(mes + 1).padStart(2, "0")}`;
-                    
-                    const diaInicio = mesOffset === 0 ? baseDate.getDate() : 1;
+
+                    const diaInicio = mesOffset === 0 ? hoy.getDate() : 1;
                     const diasEnMes = new Date(anio, mes + 1, 0).getDate();
 
                     let franjasConDisponibilidad = 0;
@@ -154,12 +155,13 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
                 const ids = listaBase.map((j) => j.user_id);
 
                 // Calculamos el rango de fechas para el mesOffset (este mes o mes siguiente)
-                const baseDate = new Date();
-                baseDate.setMonth(baseDate.getMonth() + mesOffset);
+                // Ojo: no usar setMonth() sobre la fecha de hoy; el día 31 desborda al mes siguiente al siguiente.
+                const hoy = new Date();
+                const baseDate = new Date(hoy.getFullYear(), hoy.getMonth() + mesOffset, 1);
                 const anio = baseDate.getFullYear();
                 const mes = baseDate.getMonth();
                 const mesStr = `${anio}-${String(mes + 1).padStart(2, "0")}`;
-                const diaInicio = mesOffset === 0 ? baseDate.getDate() : 1;
+                const diaInicio = mesOffset === 0 ? hoy.getDate() : 1;
                 const diasEnMes = new Date(anio, mes + 1, 0).getDate();
 
                 // Consultar perfiles y disponibilidades de todos los jugadores de una vez
