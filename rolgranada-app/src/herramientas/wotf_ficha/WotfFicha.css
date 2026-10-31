@@ -57,14 +57,12 @@
 
 .wotf-sheet .num {
   width: 2.2rem; height: 1.6rem; padding: 0; text-align: center; font-weight: 800; font-size: 0.88rem;
-  background: var(--paper); border: 2px solid var(--ink); border-radius: 6px;
+  background: var(--paper); border: 2px solid var(--ink); border-radius: 6px; box-shadow: inset 0 2px 0 rgba(28, 27, 34, 0.1); cursor: text;
 }
 .wotf-sheet .num-sm { width: 2rem; height: 1.45rem; font-size: 0.78rem; }
-
-/* Editable: caja blanca con relieve interior. Calculado: plano, sin caja. */
-.wotf-sheet .num { box-shadow: inset 0 2px 0 rgba(28, 27, 34, 0.1); cursor: text; }
 .wotf-sheet .num:hover { background: #fffbe6; }
 .wotf-sheet .num.is-custom { text-decoration: underline dotted; text-underline-offset: 3px; }
+
 .wotf-sheet .calc {
   cursor: default; user-select: none; color: var(--ink);
   background: rgba(28, 27, 34, 0.09); border: none; border-radius: 5px;
@@ -91,7 +89,7 @@
 .formula-hint { display: inline-block; font-size: 0.7rem; font-weight: 700; color: var(--muted); background: var(--field); padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(28, 27, 34, 0.2); }
 .formula-badge { margin-top: 0.2rem; }
 
-.slots-tag { padding: 0.15rem 0.5rem; font-size: 0.7rem; font-weight: 800; color: #1c1b22 !important; background: #ffffff !important; border: 1.5px solid var(--ink); }
+.slots-tag { padding: 0.15rem 0.5rem; font-size: 0.7rem; font-weight: 800; color: #1c1b22 !important; background: #ffffff !important; border: 1.5px solid var(--ink); border-radius: 6px; }
 
 .header-card { margin-bottom: var(--gap); padding: 0.6rem 0.85rem; }
 .header-grid { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.5rem 1rem; }
@@ -131,25 +129,9 @@
 .wotf-sheet .c-alm { background-color: var(--alm); }
 .wotf-sheet .c-armadura { background-color: var(--armadura); }
 
-/* Rapidez y Dados en 1fr exactos */
-.chips-row { 
-  display: grid; 
-  grid-template-columns: repeat(2, minmax(0, 1fr)); 
-  gap: 0.35rem; 
-  margin-top: 0.4rem; 
-}
-
-.chip { 
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between; 
-  gap: 0.2rem; 
-  min-width: 0; 
-  padding: 0.25rem 0.2rem; 
-  font-weight: 800; 
-  border: 2px solid var(--ink); 
-  border-radius: 6px; 
-}
+/* Rapidez y Dados */
+.chips-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.35rem; margin-top: 0.4rem; }
+.chip { display: flex; align-items: center; justify-content: space-between; gap: 0.2rem; min-width: 0; padding: 0.25rem 0.2rem; font-weight: 800; border: 2px solid var(--ink); border-radius: 6px; }
 .chip-label { font-size: 0.64rem; }
 .chip-big { display: grid; place-items: center; width: 1.75rem; height: 1.45rem; font-size: 0.85rem; font-weight: 900; }
 .chip-bonus { display: flex; align-items: center; gap: 0.2rem; font-size: 0.6rem; }
@@ -166,72 +148,27 @@
 .skills-col { display: flex; flex-direction: column; gap: 0.2rem; }
 
 .skill-item { 
-  display: grid; 
-  grid-template-columns: minmax(0, 1fr) auto 1.05rem; 
-  align-items: center; 
-  gap: 0.3rem; 
-  padding: 0.15rem 0.3rem 0.15rem 0.4rem; 
-  font-size: 0.73rem; 
-  font-weight: 700; 
-  cursor: pointer; 
-  border: 2px solid var(--ink); 
-  border-radius: 6px; 
+  display: grid; grid-template-columns: minmax(0, 1fr) auto 1.05rem; align-items: center; gap: 0.3rem; 
+  padding: 0.15rem 0.3rem 0.15rem 0.4rem; font-size: 0.73rem; font-weight: 700; cursor: pointer; border: 2px solid var(--ink); border-radius: 6px; 
 }
-
-.skill-item.is-trained { 
-  box-shadow: 2px 2px 0 var(--ink); 
-  font-weight: 900;
-}
+.skill-item.is-trained { box-shadow: 2px 2px 0 var(--ink); font-weight: 900; }
 
 .skill-val { 
-  min-width: 1.55rem; 
-  padding: 0.02rem 0.15rem; 
-  text-align: center; 
-  font-size: 0.78rem; 
-  font-weight: 900; 
-  background: var(--paper) !important; 
-  color: var(--ink) !important;
-  border: 2px solid var(--ink); 
-  border-radius: 4px; 
+  min-width: 1.55rem; padding: 0.02rem 0.15rem; text-align: center; font-size: 0.78rem; font-weight: 900; 
+  background: var(--paper) !important; color: var(--ink) !important; border: 2px solid var(--ink); border-radius: 4px; 
 }
-
-.skill-item.is-trained .skill-val { 
-  color: var(--ink) !important; 
-  background: var(--paper) !important; 
-}
+.skill-item.is-trained .skill-val { color: var(--ink) !important; background: var(--paper) !important; }
 
 .trained-check {
-  appearance: none; 
-  -webkit-appearance: none; 
-  display: grid; 
-  place-content: center;
-  width: 1.05rem; 
-  height: 1.05rem; 
-  margin: 0; 
-  cursor: pointer; 
-  background: var(--paper); 
-  border: 2px solid var(--ink); 
-  border-radius: 4px;
+  appearance: none; -webkit-appearance: none; display: grid; place-content: center;
+  width: 1.05rem; height: 1.05rem; margin: 0; cursor: pointer; background: var(--paper); border: 2px solid var(--ink); border-radius: 4px;
 }
-
 .trained-check::before { 
-  content: ''; 
-  width: 0.5rem; 
-  height: 0.5rem; 
-  background: var(--ink); 
-  transform: scale(0); 
-  transition: transform 0.1s ease-out; 
+  content: ''; width: 0.5rem; height: 0.5rem; background: var(--ink); transform: scale(0); transition: transform 0.1s ease-out; 
   clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); 
 }
-
-.trained-check:checked { 
-  background: var(--paper); 
-  border-color: var(--ink);
-}
-
-.trained-check:checked::before { 
-  transform: scale(1); 
-}
+.trained-check:checked { background: var(--paper); border-color: var(--ink); }
+.trained-check:checked::before { transform: scale(1); }
 
 .salv-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.35rem; }
 .salv-tile { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.3rem 0.1rem 0.4rem; font-size: 0.72rem; font-weight: 800; background: var(--field); border: 2px solid var(--ink); border-radius: 6px; }
@@ -241,9 +178,7 @@
 /* Inventario */
 .inv-full-column { justify-content: space-between; }
 .inv-armor, .inv-item { display: grid; grid-template-columns: minmax(0, 1fr) 2.4rem; align-items: center; gap: 0.4rem; }
-
 .inv-armor { margin-bottom: 0.35rem; padding: 0.2rem 0.3rem 0.2rem 0.6rem; font-size: 0.85rem; font-weight: 900; border: 2px solid var(--ink); border-radius: 6px; color: #1c1b22 !important; }
-
 .inv-items { margin-bottom: 0.5rem; }
 .inv-item { padding: 0.1rem 0; border-bottom: 1.5px dashed rgba(28, 27, 34, 0.3); }
 .inv-name { width: 100%; padding: 0.12rem 0.1rem; font-size: 0.8rem; font-weight: 700; background: transparent; border: none; }
@@ -263,9 +198,8 @@
 .dinero-col { display: flex; flex-direction: column; align-items: center; gap: 0.08rem; }
 .dinero-col > span { font-size: 0.65rem; color: var(--muted); }
 
-/* Casting Integrado y Bloque Mágico */
+/* Casting y Notas */
 .top-right-duo { display: grid; grid-template-columns: 1.1fr 1fr; gap: var(--gap); }
-
 .casting-header-inline { margin-bottom: 0.4rem; flex-wrap: wrap; }
 .casting-limit { display: flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 800; white-space: nowrap; }
 .casting-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.8rem; }
@@ -289,50 +223,37 @@
 .armas-table .col-dano { width: 4.8rem; }
 .armas-table .col-q { width: 3.2rem; }
 
-.armas-table th { 
-  padding: 0.35rem 0.5rem; 
-  text-align: left; 
-  font-size: 0.76rem; 
-  font-weight: 800; 
-  color: #ffffff !important; 
-  background: #1c1b22 !important; 
-}
-
+.armas-table th { padding: 0.35rem 0.5rem; text-align: left; font-size: 0.76rem; font-weight: 800; color: #ffffff !important; background: #1c1b22 !important; }
 .armas-table td { padding: 0.25rem 0.5rem; vertical-align: middle; background: var(--lila); border-top: 2px solid var(--ink); }
 .armas-table tbody tr:nth-child(even) td { background: var(--lila-2); }
 .armas-table td + td { border-left: 2px solid var(--ink); }
 .armas-table :is(th.center, td.center) { text-align: center; }
-.armas-table input { width: 100%; padding: 0.15rem 0; font-size: 0.82rem; font-weight: 600; background: transparent; border: none; }
-.armas-table .magia-input { padding: 0.15rem 0; font-size: 0.82rem; font-weight: 600; background: transparent; border: none; resize: none; }
+.armas-table input, .armas-table .magia-input { width: 100%; padding: 0.15rem 0; font-size: 0.82rem; font-weight: 600; background: transparent; border: none; }
+.armas-table .magia-input { resize: none; }
 
 .acc-armas { padding: 0; overflow: hidden; }
 .armas-table th.th-title { font-size: 0.9rem; font-weight: 900; }
 .armas-table th .slots-tag { color: #1c1b22 !important; background: #ffffff !important; }
-.armas-table .arma-name { font-weight: 800; }
+.armas-table .arma-name { font-weight: 800; flex: 1; min-width: 0; }
 .armas-table .arma-dano.is-custom { text-decoration: underline dotted; text-underline-offset: 3px; }
 .slots-tag-off { opacity: 0.85; }
 .armas-table .banco-head th { border-top: 2px solid var(--ink); }
 .armas-table td.center .arma-dano { text-align: center; font-weight: 800; }
 
-.armas-table input[type='text']:hover,
-.inv-name:hover,
-.wotf-sheet .magia-input:hover { background: rgba(255, 255, 255, 0.2); }
-
+.armas-table input[type='text']:hover, .inv-name:hover, .wotf-sheet .magia-input:hover { background: rgba(255, 255, 255, 0.2); }
 .arma-name-wrap { display: flex; align-items: center; gap: 0.35rem; }
-.armas-table .arma-name { flex: 1; min-width: 0; }
+
 .drag-handle {
-  flex: 0 0 auto; width: 0.7rem; height: 1.1rem; cursor: grab; opacity: 0.55;
-  background-image: radial-gradient(var(--ink) 1.3px, transparent 1.4px); background-size: 5px 5px;
+  flex: 0 0 auto; width: 0.9rem; height: 1.1rem; cursor: grab; opacity: 0.65;
+  background-image: radial-gradient(circle, var(--ink) 1.2px, transparent 1.3px), radial-gradient(circle, var(--ink) 1.2px, transparent 1.3px);
+  background-size: 4px 6px; background-position: 0 0, 4px 0; background-repeat: repeat-y;
 }
 .drag-handle:hover { opacity: 1; }
 .drag-handle:active { cursor: grabbing; }
+
 .armas-table tr.is-dragging td { opacity: 0.45; }
-.armas-table tr.is-over td,
-.armas-table tr.is-over-head th { box-shadow: inset 0 3px 0 0 var(--focus); }
-.armas-table .banco-drop td {
-  padding: 0.3rem; text-align: center; font-size: 0.7rem; font-weight: 700; color: var(--muted);
-  background: var(--field); border-top: 2px dashed rgba(28, 27, 34, 0.4);
-}
+.armas-table tr.is-over td, .armas-table tr.is-over-head th { box-shadow: inset 0 3px 0 0 var(--focus); }
+.armas-table .banco-drop td { padding: 0.3rem; text-align: center; font-size: 0.7rem; font-weight: 700; color: var(--muted); background: var(--field); border-top: 2px dashed rgba(28, 27, 34, 0.4); }
 
 @media (max-width: 1220px) {
   .wotf-main-grid, .wotf-subgrid-2col { grid-template-columns: minmax(0, 1fr); }
@@ -377,7 +298,7 @@
 .pj-nuevo:hover:not(:disabled) { color: var(--ink); background: var(--paper); }
 
 /* ==========================================================================
-   Modo Oscuro Integrado y Operativo
+   Modo Oscuro Integrado, Optimizado y Unificado
    ========================================================================== */
 
 body.dark-mode {
@@ -388,110 +309,46 @@ body.dark-mode {
   --bg: #121212;
   --danger: #ff6b6b;
   --focus: #5c85ff;
-}
-
-/* Modo Oscuro: tonos de atributos y estadísticas */
-body.dark-mode .wotf-sheet .c-fue { background-color: #5c2d2d !important; }
-body.dark-mode .wotf-sheet .c-des { background-color: #244731 !important; }
-body.dark-mode .wotf-sheet .c-per { background-color: #522737 !important; }
-body.dark-mode .wotf-sheet .c-int { background-color: #243d52 !important; }
-body.dark-mode .wotf-sheet .c-pro { background-color: #523f20 !important; }
-body.dark-mode .wotf-sheet .c-alm { background-color: #4f461b !important; }
-body.dark-mode .wotf-sheet .c-armadura { background-color: #523b1b !important; }
-
-/* Tabla de armas en modo oscuro */
-body.dark-mode .armas-table td {
-  background: #2a2038 !important;
-}
-body.dark-mode .armas-table tbody tr:nth-child(even) td {
-  background: #231b2e !important;
-}
-
-/* Slots de inventario en modo oscuro con tu fix */
-body.dark-mode .inv-armor {
-  background: #dca860 !important;
-  color: #ffffff !important;
-}
-body.dark-mode .inv-armor .num {
-  background: #ffffff !important;
-  color: #121212 !important;
-}
-
-/* Evita el hover excesivamente blanco en campos numéricos y inputs en modo oscuro */
-body.dark-mode .wotf-sheet .num:hover {
-  background: #383838 !important;
-  color: #f3f3f3 !important;
-}
-
-body.dark-mode .wotf-sheet input[type='text']:hover,
-body.dark-mode .wotf-sheet .magia-input:hover,
-body.dark-mode .wotf-sheet textarea:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
-}
-
-body.dark-mode .pj-card:not(.pj-nuevo):hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--ink);
-  background: #262626;
-}
-
-body.dark-mode .wotf-btn:hover {
-  background: #2a2a2a;
-}
-
-/* ==========================================================================
-   Corrección de títulos de tarjetas en Modo Oscuro (.card-title)
-   ========================================================================== */
-
-body.dark-mode .card-title {
-  background-color: #2e283b !important;
-  color: #f3f3f3 !important;
-  border-color: #f3f3f3 !important;
-  box-shadow: 2px 2px 0 #f3f3f3 !important;
-}
-
-/* ==========================================================================
-   Corrección de etiquetas de estado en Modo Oscuro
-   ========================================================================== */
-
-body.dark-mode .wotf-estado {
-  background-color: #244731 !important;
-  color: #f3f3f3 !important;
-  border-color: #f3f3f3 !important;
-}
-
-body.dark-mode .wotf-estado.is-pendiente, 
-body.dark-mode .wotf-estado.is-guardando {
-  background-color: #523f20 !important;
-  color: #f3f3f3 !important;
-}
-
-body.dark-mode .wotf-estado.is-error, 
-body.dark-mode .wotf-estado.is-conflicto {
-  background-color: #5c2d2d !important;
-  color: #f3f3f3 !important;
-}
-
-/* ==========================================================================
-   Corrección del tag de armadura junto al WP en Modo Oscuro
-   ========================================================================== */
-
-body.dark-mode .armadura-tag {
-  background-color: #523f20 !important;
-  color: #f3f3f3 !important;
-  border-color: #f3f3f3 !important;
-}
-
-/* ==========================================================================
-   Unificación de Bordes y Sombras Neobrutalistas en Modo Oscuro
-   ========================================================================== */
-
-body.dark-mode {
   --border: 2.5px solid var(--border-neobrutal, #f3f3f3);
   --shadow: 4px 4px 0 var(--shadow-neobrutal, #f3f3f3);
 }
 
-/* Bordes unificados con --border-neobrutal */
+/* Colores de atributos y estados en modo oscuro */
+body.dark-mode .wotf-sheet .c-fue, body.dark-mode .wotf-estado.is-error, body.dark-mode .wotf-estado.is-conflicto { background-color: #5c2d2d !important; }
+body.dark-mode .wotf-sheet .c-des, body.dark-mode .wotf-estado { background-color: #244731 !important; }
+body.dark-mode .wotf-sheet .c-per { background-color: #522737 !important; }
+body.dark-mode .wotf-sheet .c-int { background-color: #243d52 !important; }
+body.dark-mode .wotf-sheet .c-pro, body.dark-mode .wotf-estado.is-pendiente, body.dark-mode .wotf-estado.is-guardando, body.dark-mode .armadura-tag { background-color: #523f20 !important; }
+body.dark-mode .wotf-sheet .c-alm { background-color: #4f461b !important; }
+body.dark-mode .wotf-sheet .c-armadura { background-color: #523b1b !important; }
+
+/* Tabla de armas en modo oscuro */
+body.dark-mode .armas-table td { background: #2a2038 !important; }
+body.dark-mode .armas-table tbody tr:nth-child(even) td { background: #231b2e !important; }
+
+/* Slots de inventario en modo oscuro */
+body.dark-mode .inv-armor { background: #dca860 !important; color: #ffffff !important; }
+body.dark-mode .inv-armor .num { background: #ffffff !important; color: #121212 !important; }
+
+/* Interacciones y Hovers de Modo Oscuro unificados */
+body.dark-mode .wotf-sheet .num:hover { background: #383838 !important; color: #f3f3f3 !important; }
+body.dark-mode .wotf-sheet input[type='text']:hover,
+body.dark-mode .wotf-sheet .magia-input:hover,
+body.dark-mode .wotf-sheet textarea:hover { background: rgba(255, 255, 255, 0.08) !important; }
+body.dark-mode .pj-card:not(.pj-nuevo):hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); background: #262626; }
+body.dark-mode .wotf-btn:hover { background: #2a2a2a; }
+
+/* Títulos de tarjetas en modo oscuro */
+body.dark-mode .card-title { background-color: #2e283b !important; color: #f3f3f3 !important; }
+
+/* Selectores y Opciones */
+body.dark-mode select { background-color: var(--field) !important; color: var(--ink) !important; }
+body.dark-mode select option { background-color: var(--paper) !important; color: var(--ink) !important; }
+
+/* Habilidad con competencia (marcada) */
+body.dark-mode .skill-item.is-trained { border-color: #adacac !important; box-shadow: 2px 2px 0 #adacac !important; }
+
+/* Bucle global unificado para bordes y sombras neobrutalistas en modo oscuro */
 body.dark-mode .wotf-sheet :is(input, textarea, select),
 body.dark-mode .wotf-sheet .num,
 body.dark-mode .wotf-sheet .calc,
@@ -519,53 +376,9 @@ body.dark-mode .armadura-tag {
   border-color: var(--border-neobrutal, #f3f3f3) !important;
 }
 
-/* Sombras neobrutalistas unificadas con --shadow-neobrutal */
 body.dark-mode .wotf-card,
 body.dark-mode .wotf-btn,
 body.dark-mode .pj-card,
 body.dark-mode .card-title {
   box-shadow: 4px 4px 0 var(--shadow-neobrutal, #f3f3f3) !important;
-}
-
-/* ==========================================================================
-   Destacado de competencia en Modo Oscuro: Borde y sombra con extra de brillo
-   ========================================================================== */
-
-body.dark-mode .skill-item.is-trained {
-  border-color: #adacac !important;
-  box-shadow: 2px 2px 0 #adacac !important;
-}
-
-/* ==========================================================================
-   Restaurar el redondeado y diseño original del slots-tag
-   ========================================================================== */
-
-.slots-tag {
-  border-radius: 6px !important;
-}
-
-/* ==========================================================================
-   Corrección definitiva del drag-handle (6 puntos limpios y centrados)
-   ========================================================================== */
-
-.drag-handle {
-  flex: 0 0 auto;
-  width: 0.9rem;
-  height: 1.1rem;
-  cursor: grab;
-  opacity: 0.65;
-  background-image: 
-    radial-gradient(circle, var(--ink) 1.2px, transparent 1.3px),
-    radial-gradient(circle, var(--ink) 1.2px, transparent 1.3px);
-  background-size: 4px 6px;
-  background-position: 0 0, 4px 0;
-  background-repeat: repeat-y;
-}
-
-.drag-handle:hover {
-  opacity: 1;
-}
-
-.drag-handle:active {
-  cursor: grabbing;
 }
