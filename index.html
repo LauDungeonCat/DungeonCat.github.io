@@ -1,15 +1,97 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-	<head>
-		<meta charset="UTF-8" />
-		<meta http-equiv="refresh" content="0; url=/rolgranada/" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>DungeonCat</title>
-		<script>
-			window.location.replace("/rolgranada/");
-		</script>
-	</head>
-	<body>
-		<p>Redirigiendo a <a href="/rolgranada/">Rol Granada</a>...</p>
-	</body>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DungeonCat · Portfolio</title>
+<meta name="description" content="Portfolio de DungeonCat: diseño de juegos de rol y desarrollo web.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+<main class="desk">
+<div class="topbar"><button class="prt ico" id="print"><svg viewBox="0 0 64 68" aria-hidden="true"><g class="out"><rect x="17" y="20" width="30" height="32" rx="2" fill="#fff" stroke="#3b4a47" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="Caveat,cursive" font-weight="700" font-size="14" fill="#F28482">CV</text><path d="M23 49h18" stroke="#84A59D" stroke-width="2.5" stroke-linecap="round"/></g><rect x="19" y="6" width="26" height="14" rx="2" fill="#fff" stroke="#3b4a47" stroke-width="2.5"/><rect x="5" y="18" width="54" height="26" rx="7" fill="#84A59D" stroke="#3b4a47" stroke-width="2.5"/><rect x="12" y="37" width="40" height="4" rx="2" fill="#3b4a47" opacity=".35"/><circle cx="49" cy="26" r="2.5" fill="#F6BD60"/></svg><span data-i18n="printCV"></span></button><button class="globe" id="lang"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21" fill="#c4e5db"/><g fill="none" stroke="#84A59D" stroke-width="2"><ellipse class="m" cx="24" cy="24" rx="9" ry="21"/><path d="M3 24h42M6 13h36M6 35h36"/></g><circle cx="24" cy="24" r="21" fill="none" stroke="#3b4a47" stroke-width="2.5"/></svg><b id="lc">EN</b></button></div>
+<div class="book closed" id="book"><div class="view"><div class="spread" id="spread"></div></div>
+ <nav class="tabs" id="tabs"><button data-page="inicio" data-i18n="tHome"></button><button data-page="proyectos" data-i18n="tProj"></button><button data-page="juegos" data-i18n="tGames"></button><button data-page="sobre" data-i18n="tAbout"></button><button data-page="skills" data-i18n="tSkills"></button><button data-page="contacto" data-i18n="tContact"></button></nav>
+</div>
+<div class="pager"><button id="prev" aria-label="←">‹</button><span id="pn"></span><button id="next" aria-label="→">›</button></div>
+<button class="close" id="close" data-i18n="closeBook"></button>
+</main>
+
+<div id="src" hidden>
+<div class="cover"><span class="band"></span><span class="label"><span class="wordmark">DungeonCat</span><span class="sub" data-i18n="coverSub"></span></span><span class="tap" data-i18n="tap"></span></div>
+<section class="pg" data-tab="inicio">
+        <h1 class="big">DungeonCat</h1>
+        <p class="by"><span data-i18n="by"></span> Laura RA</p>
+        <p class="lead" data-i18n="lead"></p>
+        <p data-i18n="intro"></p>
+        <div class="chips">
+          <span data-i18n="c1"></span><span data-i18n="c2"></span><span data-i18n="c3"></span>
+        </div>
+      </section>
+<section class="pg" data-tab="proyectos"><h2 data-i18n="tProj"></h2><div class="note">
+          <h3>Rol Granada</h3>
+          <p data-i18n="rg"></p>
+          <p class="small">React · TypeScript · Supabase</p>
+          <a class="btn" href="https://dungeoncat.site/rolgranada/" target="_blank" rel="noopener" data-i18n="rgBtn"></a>
+        </div></section>
+<section class="pg" data-tab="proyectos"><h2 data-i18n="tfgT"></h2><div class="note"><p data-i18n="tfg"></p><p class="small" data-i18n="tfgTech"></p><a class="btn" href="https://dungeoncat.site/TFG/" target="_blank" rel="noopener" data-i18n="tfgBtn"></a></div></section>
+<section class="pg" data-tab="juegos">
+        <h2 data-i18n="tGames"></h2>
+        <p data-i18n="gamesIntro"></p>
+        <div class="polas"><a class="pola a" data-only="en" href="https://dungeon-cat.itch.io/exalted-blood" target="_blank" rel="noopener"><i class="tape"></i><span class="ph"><span>itch.io</span><img src="img/exalted-blood.png" alt="" width="315" height="250" onerror="this.remove()"></span><b>Exalted Blood</b></a><a class="pola a" data-only="es" href="https://dungeon-cat.itch.io/sangre-exaltada" target="_blank" rel="noopener"><i class="tape"></i><span class="ph"><span>itch.io</span><img src="img/sangre-exaltada.png" alt="" width="315" height="250" onerror="this.remove()"></span><b>Sangre Exaltada</b></a><a class="pola b" href="https://dungeon-cat.itch.io/no-point" target="_blank" rel="noopener"><i class="tape"></i><span class="ph"><span>itch.io</span><img src="img/no-point.png" alt="" width="315" height="250" onerror="this.remove()"></span><b>No Point</b></a></div>
+        <a class="btn" href="https://dungeon-cat.itch.io" target="_blank" rel="noopener" data-i18n="allGames"></a>
+      </section>
+<section class="pg" data-tab="sobre">
+        <h2 data-i18n="tAbout"></h2>
+        <p data-i18n="about1"></p>
+        <p data-i18n="about2"></p>
+        <h3 data-i18n="edu"></h3>
+        <p><b data-i18n="eduT"></b><br><span class="small">Universidad de Granada, ETSIIT · 2021–2026</span></p>
+        <h3 data-i18n="langs"></h3>
+        <p class="ll" data-i18n="langList"></p>
+      </section>
+<section class="pg" data-tab="skills"><h2 data-i18n="tSkills"></h2><h3 data-i18n="skills"></h3>
+        <div class="chips">
+          <span>Python</span><span>Java</span><span>C++</span><span>HTML</span><span>CSS</span><span>JavaScript</span><span>React</span><span>TypeScript</span><span>Git</span><span>Linux</span><span>Affinity</span>
+        </div>
+        <h3 data-i18n="design"></h3>
+        <div class="chips">
+          <span data-i18n="d1"></span><span data-i18n="d2"></span><span data-i18n="d3"></span><span data-i18n="d4"></span><span data-i18n="d5"></span><span data-i18n="d6"></span>
+        </div>
+        </section>
+<section class="pg" data-tab="contacto"><h2 data-i18n="tContact"></h2><div class="card"><i class="tape"></i><p class="cn">DungeonCat</p><p class="cby">Laura R.A</p><p class="crole"><b>TTRPG Designer</b> <span>&amp; Web Developer</span></p></div><ul class="clist"><li><span class="ci" style="--c:var(--sun)"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></span><div><small>Web</small><a href="https://dungeoncat.site">dungeoncat.site</a></div></li><li><span class="ci" style="--c:var(--coral)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span><div><small data-i18n="mail"></small><a href="mailto:lau.ra.dungeoncat@gmail.com">lau.ra.dungeoncat@gmail.com</a></div></li><li><span class="ci" style="--c:var(--sage)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></span><div><small data-i18n="phone"></small><a href="tel:+34652585634">652 58 56 34</a></div></li><li><span class="ci" style="--c:var(--blush)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/></svg></span><div><small>itch.io</small><a href="https://dungeon-cat.itch.io" target="_blank" rel="noopener">dungeon-cat.itch.io</a></div></li></ul><p class="talk" data-i18n="talk"></p></section>
+<div class="cover bk"><span class="band"></span><span class="label"><span class="wordmark">DungeonCat</span><p class="by">Laura RA</p><p class="role2" data-i18n="cvRole"></p><p class="small">dungeoncat.site · dungeon-cat.itch.io</p><button class="prt" id="print2"><svg viewBox="0 0 64 68" aria-hidden="true"><g class="out"><rect x="17" y="20" width="30" height="32" rx="2" fill="#fff" stroke="#3b4a47" stroke-width="2.5"/><text x="32" y="44" text-anchor="middle" font-family="Caveat,cursive" font-weight="700" font-size="14" fill="#F28482">CV</text><path d="M23 49h18" stroke="#84A59D" stroke-width="2.5" stroke-linecap="round"/></g><rect x="19" y="6" width="26" height="14" rx="2" fill="#fff" stroke="#3b4a47" stroke-width="2.5"/><rect x="5" y="18" width="54" height="26" rx="7" fill="#84A59D" stroke="#3b4a47" stroke-width="2.5"/><rect x="12" y="37" width="40" height="4" rx="2" fill="#3b4a47" opacity=".35"/><circle cx="49" cy="26" r="2.5" fill="#F6BD60"/></svg><span data-i18n="printCV"></span></button><p class="bye" data-i18n="bye"></p></span></div>
+</div>
+
+<section id="cv">
+  <header><h1>DungeonCat</h1><p class="n">Laura RA</p><p class="r" data-i18n="cvRole"></p></header>
+  <div class="cols">
+    <aside>
+      <h2 data-i18n="tContact"></h2>
+      <p>lau.ra.dungeoncat@gmail.com<br>652 58 56 34<br>dungeoncat.site<br>dungeon-cat.itch.io</p>
+      <h2 data-i18n="skills"></h2>
+      <p>Python, Java, C++, HTML, CSS, JavaScript, React, TypeScript, Git, Linux, Affinity</p>
+      <h2 data-i18n="design"></h2>
+      <ul><li data-i18n="d1"></li><li data-i18n="d2"></li><li data-i18n="d3"></li><li data-i18n="d4"></li><li data-i18n="d5"></li><li data-i18n="d6"></li></ul>
+      <h2 data-i18n="langs"></h2>
+      <p class="ll" data-i18n="langList"></p>
+    </aside>
+    <div>
+      <h2 data-i18n="cvProfT"></h2><p data-i18n="about1"></p>
+      <h2 data-i18n="edu"></h2><p><b data-i18n="eduT"></b><br>Universidad de Granada, ETSIIT · 2021–2026</p>
+      <h2 data-i18n="tProj"></h2>
+      <p><b>Rol Granada</b> · dungeoncat.site/rolgranada<br><span data-i18n="cvRg"></span></p>
+      <p><b data-i18n="tfgT"></b> · dungeoncat.site/TFG<br><span data-i18n="cvTfg"></span></p>
+      <p><b>Exalted Blood · Sangre Exaltada · No Point</b> · dungeon-cat.itch.io<br><span data-i18n="cvGames"></span></p>
+    </div>
+  </div>
+</section>
+<script src="script.js"></script>
+</body>
 </html>

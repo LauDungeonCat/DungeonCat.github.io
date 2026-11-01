@@ -70,10 +70,9 @@ export default function Disponibilidad() {
 	const [mesPlantillaDescartada, setMesPlantillaDescartada] = useState<string | null>(
 		() => leerAlmacen<string | null>(CLAVE_PLANTILLA_DESCARTADA, null),
 	);
-	// El usuario puede abrir el mes siguiente antes de los últimos tres días del mes
 	const [adelantarSiguiente, setAdelantarSiguiente] = useState(false);
 	const [modalAbierto, setModalAbierto] = useState(false);
-	const [modalVaciarAbierto, setModalVaciarAbierto] = useState(false); // <-- Estado para el popup de vaciar calendario
+	const [modalVaciarAbierto, setModalVaciarAbierto] = useState(false);
 	const [estadoFormulario, setEstadoFormulario] = useState<FranjaEstado>("puedo");
 	const [diasFormulario, setDiasFormulario] = useState<PlantillaRapida["dias"]>("diario");
 	const [franjaFormulario, setFranjaFormulario] = useState<PlantillaRapida["franja"]>("manana");
@@ -88,7 +87,6 @@ export default function Disponibilidad() {
 	const claveVisible = claveMes(mesVisible);
 	const claveActual = claveMes(rangoMeses.mesActual);
 	const claveSiguiente = claveMes(rangoMeses.mesSiguiente);
-	// Si ya marcaste alguna franja del mes siguiente, queda accesible siempre y no se ofrece adelantarlo
 	const haySiguienteRelleno = Object.entries(usuario?.disponibilidad ?? {}).some(
 		([fecha, dia]) => fecha.startsWith(claveSiguiente) && (dia.franjasMarcadas?.length ?? 0) > 0,
 	);
@@ -104,7 +102,6 @@ export default function Disponibilidad() {
 			sesionesConfirmadas.has(`${fechaDia}:${franja}`) || Boolean(usuario?.disponibilidad[fechaDia]?.[franja]),
 		);
 	});
-	// Las claves "AAAA-MM" se comparan bien como texto
 	const mesesPlantillaAnterior = plantillas.map((regla) => regla.mesOrigen).filter((mes) => mes < claveVisible).sort();
 	const mesOrigenPlantilla = mesesPlantillaAnterior[mesesPlantillaAnterior.length - 1];
 	const mostrarPlantillaAnterior = Boolean(usuario)
@@ -154,6 +151,22 @@ export default function Disponibilidad() {
 
 	async function aplicarReglas(reglas: Omit<PlantillaRapida, "mesOrigen">[]) {
 		const cambiosPorFecha = new Map<string, CambioDisponibilidad>();
+
+		// Partimos de los datos ya existentes en la disponibilidad del usuario para este mes
+		for (let numeroDia = 1; numeroDia <= diasEnMes; numeroDia += 1) {
+			const fecha = new Date(mesVisible.getFullYear(), mesVisible.getMonth(), numeroDia);
+			const clave = claveDia(fecha);
+			const actual = usuario?.disponibilidad[clave];
+			if (actual) {
+				cambiosPorFecha.set(clave, {
+					fecha: clave,
+					manana: actual.manana,
+					tarde: actual.tarde,
+				});
+			}
+		}
+
+		// Aplicamos cada regla de la plantilla de forma acumulativa
 		for (const configuracion of reglas) {
 			for (let numeroDia = 1; numeroDia <= diasEnMes; numeroDia += 1) {
 				const fecha = new Date(mesVisible.getFullYear(), mesVisible.getMonth(), numeroDia);
@@ -193,7 +206,10 @@ export default function Disponibilidad() {
 			return;
 		}
 		try {
-			await aplicarReglas(plantillas.filter((regla) => regla.mesOrigen < claveVisible));
+			const reglasAnteriores = plantillas
+				.filter((regla) => regla.mesOrigen < claveVisible)
+				.map(({ estado, dias, franja }) => ({ estado, dias, franja }));
+			await aplicarReglas(reglasAnteriores);
 		} catch {
 			return;
 		}
@@ -387,7 +403,6 @@ export default function Disponibilidad() {
 				</div>
 			)}
 
-			{/* Modal de confirmación para Vaciar Calendario con las clases .crear-campana-* */}
 			{modalVaciarAbierto && (
 				<div className="crear-campana-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget) setModalVaciarAbierto(false); }}>
 					<section className="crear-campana-dialog" role="dialog" aria-modal="true" aria-labelledby="vaciar-calendar-title">
