@@ -104,11 +104,19 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
 
     void cargarSolicitudesYAvisos();
 
-    // Event listener personalizado para refrescar notificaciones
+    // Listener para refrescar notificaciones manualmente
     const refrescar = () => void cargarSolicitudesYAvisos(true);
     window.addEventListener('notificaciones-actualizadas', refrescar);
 
-    // Suscripción Realtime a nuevas notificaciones
+    // Recuperación de conexión al volver a enfocar la pestaña en escritorio
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void cargarSolicitudesYAvisos(true);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Suscripción Realtime a notificaciones y solicitudes
     const canal = supabase
       .channel(`notif_header_${usuarioId}`)
       .on(
@@ -116,7 +124,6 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
         { event: 'INSERT', schema: 'public', table: 'notificaciones', filter: `user_id=eq.${usuarioId}` },
         () => {
           void cargarSolicitudesYAvisos(true);
-          // Refresca también partidas, aforos y sesiones sin recargar la página
           window.dispatchEvent(new Event('rol-data-actualizado'));
         }
       )
@@ -131,6 +138,7 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
 
     return () => {
       activa = false;
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('notificaciones-actualizadas', refrescar);
       supabase.removeChannel(canal);
     };

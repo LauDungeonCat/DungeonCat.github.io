@@ -216,8 +216,61 @@ export function useRolData() {
         tarde: tarde ?? disponibilidad[fecha]?.tarde ?? ("no_indicado" as const),
       }));
       await ejecutar(async () => {
+        // 1. Guardar la disponibilidad actual
         const { error: saveError } = await supabase.from("disponibilidades").upsert(filas, { onConflict: "user_id,fecha" });
         if (saveError) throw saveError;
+
+        // 2. Comprobar campañas del usuario para notificar al DM si todos han rellenado
+        const { data: misPartidas } = await supabase
+          .from("partida_participantes")
+          .select("partida_id")
+          .eq("user_id", profile.id);
+
+        if (!misPartidas || misPartidas.length === 0) return;
+
+        for (const { partida_id } of misPartidas) {
+          const { data: partida } = await supabase
+            .from("partidas")
+            .select("titulo, dm_id")
+            .eq("id", partida_id)
+            .single();
+
+          if (!partida || !partida.dm_id || partida.dm_id === profile.id) continue;
+
+          // Obtener todos los participantes de la partida
+          const { data: participantes } = await supabase
+            .from("partida_participantes")
+            .select("user_id")
+            .eq("partida_id", partida_id);
+
+          if (!participantes || participantes.length === 0) continue;
+          const idsParticipantes = participantes.map((p) => p.user_id);
+
+          // Contar cuántos participantes tienen al menos un registro en 'disponibilidades'
+          // (Esto permite que aunque dejen celdas vacías o sin marcar, si ya guardaron el mes, cuentan como listos)
+          const { count: usuariosConDatos } = await supabase
+            .from("disponibilidades")
+            .select("user_id", { count: "exact", head: true })
+            .in("user_id", idsParticipantes);
+
+          if (usuariosConDatos === participantes.length) {
+            // Evitar duplicar la notificación si ya se envió recientemente para esta partida
+            const { count: previas } = await supabase
+              .from("notificaciones")
+              .select("id", { count: "exact", head: true })
+              .eq("user_id", partida.dm_id)
+              .ilike("titulo", "%Disponibilidad completa%")
+              .ilike("mensaje", `%${partida.titulo}%`);
+
+            if (!previas || previas === 0) {
+              await supabase.from("notificaciones").insert({
+                user_id: partida.dm_id,
+                titulo: "¡Disponibilidad completa!",
+                mensaje: `Todos los jugadores de la campaña "${partida.titulo}" han rellenado su disponibilidad. ¡Ya podéis fijar sesión!`,
+              });
+            }
+          }
+        }
       });
     },
     [disponibilidad, ejecutar, profile]
