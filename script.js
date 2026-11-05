@@ -89,7 +89,7 @@ for (let k = 0; k < NF; k += 2) {
     fc.className = "face " + (j ? "back L" : "front"); fc.dataset.face = idx;
     if (el.classList.contains("cover")) {
       fc.classList.add("cover"); if (el.classList.contains("bk")) fc.classList.add("bk");
-      fc.append(...el.childNodes);
+      const inn = document.createElement("div"); inn.className = "in"; inn.append(...el.childNodes); fc.appendChild(inn);
     } else {
       el.classList.toggle("L", !!j); fc.appendChild(el);
       if (el.dataset.tab) (tabFaces[el.dataset.tab] = tabFaces[el.dataset.tab] || []).push(idx);
@@ -163,20 +163,30 @@ function zone(e) {
   const f = Math.ceil(step / 2), nx = sheets[f], pv = sheets[f - 1], m = mq.matches;
   const hit = (r, left) => e.clientY > r.bottom - 90 && e.clientY <= r.bottom &&
     (left ? e.clientX >= r.left && e.clientX < r.left + 90 : e.clientX > r.right - 90 && e.clientX <= r.right);
-  if (nx && step < maxStep() && (!m || step % 2 === 0) && hit(nx.getBoundingClientRect(), false)) return "next";
-  if (pv && (!m || step % 2 === 1) && hit(pv.getBoundingClientRect(), true)) return "prev";
+  // tapas (y sus páginas contiguas): zona en todo el lateral, medida sobre el libro (no sobre la hoja que se levanta)
+  const sp = spread.getBoundingClientRect(), inY = e.clientY >= sp.top && e.clientY <= sp.bottom;
+  if (nx && step < maxStep() && (!m || step % 2 === 0)) {
+    if (nx.classList.contains("board")) { if (inY && e.clientX > sp.right - 80 && e.clientX <= sp.right) return "bnext"; }
+    else if (hit(nx.getBoundingClientRect(), false)) return "next";
+  }
+  if (pv && (!m || step % 2 === 1)) {
+    if (pv.classList.contains("board")) { if (inY && e.clientX >= sp.left && e.clientX < sp.left + 80) return "bprev"; }
+    else if (hit(pv.getBoundingClientRect(), true)) return "prev";
+  }
   return "";
 }
 const peek = z => {
   if (peek.k !== z) { peek.k = z; track(450); }
   book.classList.toggle("peek-next", z === "next");
   book.classList.toggle("peek-prev", z === "prev");
+  book.classList.toggle("peek-bnext", z === "bnext");
+  book.classList.toggle("peek-bprev", z === "bprev");
   book.style.cursor = z ? "pointer" : "";
 };
 
 faces.forEach(el => {   // la solapa muestra el reverso de la hoja: si es una tapa, sale del color de la tapa
   const c = document.createElement("i"), o = (+el.dataset.face) ^ 1;
-  c.className = "curl" + (o === 0 || o === NF - 1 ? " rc" : ""); el.appendChild(c);
+  c.className = "curl" + (o === 0 || o === NF - 1 ? " rc" : "") + (el.closest(".board") ? " bd" : ""); el.appendChild(c);
 });
 let noClick = false, drag = null;
 book.addEventListener("pointermove", e => { if (e.pointerType === "mouse" && !drag) peek(zone(e)); });
@@ -184,8 +194,8 @@ book.addEventListener("pointerleave", () => peek(""));
 book.addEventListener("click", e => {
   if (noClick || e.target.closest("button,a,iframe,.tab")) return;
   const z = zone(e);
-  if (z === "next") go(step + inc());
-  else if (z === "prev") go(step - inc());
+  if (z === "next" || z === "bnext") go(step + inc());
+  else if (z === "prev" || z === "bprev") go(step - inc());
   else if (step === 0 && e.target.closest(".cover")) go(1);
   peek("");
 });
@@ -254,5 +264,5 @@ $("#lang").addEventListener("click", () => setLang(document.documentElement.lang
 let saved = null;
 try { saved = localStorage.getItem("dc-lang"); } catch (e) {}
 setLang(saved || ((navigator.language || "es").toLowerCase().startsWith("en") ? "en" : "es"));
-render();
+spread.style.transition = "none"; render(); void spread.offsetWidth; spread.style.transition = "";   // sin deslizamiento inicial
 addEventListener("load", fit);
