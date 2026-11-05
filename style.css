@@ -85,10 +85,13 @@ a{color:#b24a49}
 /* el recorte va en el contenido y el grosor (filter) se calcula sobre lo ya recortado: así el canto también sigue la diagonal */
 .face .pg,.face .in{transition:clip-path .25s;clip-path:polygon(-60px -60px,calc(100% + 60px) -60px,calc(100% + 60px) calc(100% - var(--s) - 60px),calc(100% - var(--s) - 60px) calc(100% + 60px),-60px calc(100% + 60px))}
 .face.L .pg,.face.L .in{clip-path:polygon(calc(100% + 60px) -60px,-60px -60px,-60px calc(100% - var(--s) - 60px),calc(var(--s) + 60px) calc(100% + 60px),calc(100% + 60px) calc(100% + 60px))}
-.face{--k:1;--e1:#e6dac6;--e2:#d8cab2;filter:drop-shadow(calc(var(--k)*1px) 1px 0 var(--e1)) drop-shadow(calc(var(--k)*1px) 1px 0 var(--e2))}
+.face{--k:1;--e1:#e6dac6;--e2:#d8cab2;--e3:transparent;--e4:transparent;--e5:transparent;--e6:transparent;filter:none}
+/* páginas normales: canto con capa propia (sin cuñas en la esquina); solo la hoja con la esquina recortada usa drop-shadow para que el canto siga la diagonal */
+.sheet:not(.board).top .front,.sheet:not(.board).last .back{filter:drop-shadow(calc(var(--k)*1px) 1px 0 var(--e1)) drop-shadow(calc(var(--k)*1px) 1px 0 var(--e2))}
+.sheet:not(.board).top .front .th,.sheet:not(.board).last .back .th{display:none}
 .face.L{--k:-1}
 .face.cover{--e1:#a7cdc1;--e2:#98c0b3;--e3:#89b2a5;--e4:#7ba397;filter:drop-shadow(calc(var(--k)*1px) 1px 0 var(--e1)) drop-shadow(calc(var(--k)*1px) 1px 0 var(--e2)) drop-shadow(calc(var(--k)*1px) 1px 0 var(--e3)) drop-shadow(calc(var(--k)*1px) 1px 0 var(--e4))}
-.sheet.board .face{--e1:#a7cdc1;--e2:#98c0b3;--e3:#89b2a5;--e4:#7ba397;--e5:#6f988b;--e6:#648d80;filter:drop-shadow(calc(var(--k)*1px) 1px 0 var(--e1)) drop-shadow(calc(var(--k)*1px) 1px 0 var(--e2)) drop-shadow(calc(var(--k)*1px) 1px 0 var(--e3)) drop-shadow(calc(var(--k)*1px) 1px 0 var(--e4)) drop-shadow(calc(var(--k)*1px) 1px 0 var(--e5)) drop-shadow(calc(var(--k)*1px) 1px 0 var(--e6))}
+.sheet.board .face{--e1:#a7cdc1;--e2:#98c0b3;--e3:#89b2a5;--e4:#7ba397;--e5:#6f988b;--e6:#648d80;filter:none;isolation:isolate}
 .face.cover.bk{cursor:default}
 .face.front{transform:translateZ(calc(var(--t)/2))}
 .face.back{transform:rotateY(180deg) translateZ(calc(var(--t)/2))}
@@ -138,14 +141,15 @@ a{color:#b24a49}
 body{overflow-x:hidden}
 
 /* polaroids de los juegos */
-.polas{display:flex;gap:1em;justify-content:center;margin:1.8em 0 1.2em}
+.polas{display:flex;flex-wrap:wrap;gap:1.7em 1em;justify-content:center;margin:1.8em 0 1.2em}
 .pola{position:relative;width:9.9em;padding:.6em .6em .4em;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.22);text-decoration:none;color:var(--ink);text-align:center;transition:transform .25s}
-.pola.a{transform:rotate(-3deg)}.pola.b{transform:rotate(2.5deg)}
+.pola.a{transform:rotate(-3deg)}.pola.b{transform:rotate(2.5deg)}.pola.c{transform:rotate(-1.5deg)}
 .pola:hover{transform:rotate(0) scale(1.05)}
 .ph{position:relative;display:grid;place-items:center;aspect-ratio:315/250;background:#222;color:#aca9a3;font:600 1.1em 'Caveat',cursive}
 .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .pola b{display:block;margin-top:.2em;font:700 1.35em/1.1 'Caveat',cursive}
 .tape{position:absolute;top:-.9em;left:50%;width:4.6em;height:1.5em;margin-left:-2.3em;background:rgba(246,189,96,.78);transform:rotate(-4deg);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.pola.c .tape{background:rgba(132,165,157,.75);transform:rotate(2deg)}
 .pola.b .tape{background:rgba(245,202,195,.9);transform:rotate(3deg)}
 
 @media (max-width:820px){
@@ -204,6 +208,7 @@ h2{display:inline-block;padding-bottom:10px;margin-bottom:14px;background:url("d
 
 /* grosor real al girar, sombra fija del libro y solapa del color de la tapa */
 .sheet.board{--t:7px;--cs:0px}
+.th{position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:inherit;clip-path:inset(16px -12px -12px -12px);box-shadow:calc(var(--k)*1px) 1px 0 var(--e1),calc(var(--k)*2px) 2px 0 var(--e2),calc(var(--k)*3px) 3px 0 var(--e3),calc(var(--k)*4px) 4px 0 var(--e4),calc(var(--k)*5px) 5px 0 var(--e5),calc(var(--k)*6px) 6px 0 var(--e6)}
 .sheet.board.top .front,.sheet.board.last .back{--s:0px}
 .book.peek-bnext .sheet.top{transform:rotateY(-11deg);transition:transform .35s cubic-bezier(.3,.9,.4,1)}
 .book.peek-bprev .sheet.last{transform:rotateY(-169deg);transition:transform .35s cubic-bezier(.3,.9,.4,1)}

@@ -187,6 +187,7 @@ const peek = z => {
 faces.forEach(el => {   // la solapa muestra el reverso de la hoja: si es una tapa, sale del color de la tapa
   const c = document.createElement("i"), o = (+el.dataset.face) ^ 1;
   c.className = "curl" + (o === 0 || o === NF - 1 ? " rc" : "") + (el.closest(".board") ? " bd" : ""); el.appendChild(c);
+  const th = document.createElement("i"); th.className = "th"; el.prepend(th);   // canto falso, detrás del contenido
 });
 let noClick = false, drag = null;
 book.addEventListener("pointermove", e => { if (e.pointerType === "mouse" && !drag) peek(zone(e)); });
