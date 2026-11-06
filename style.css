@@ -221,6 +221,30 @@ h2{display:inline-block;padding-bottom:10px;margin-bottom:14px;background:url("d
 .curl.rc{background:linear-gradient(135deg,#d9f0e7 0,#bfe0d4 46%,#8db5a8 50%,transparent 50.6%)}
 .ll{white-space:pre-line}
 
+/* modo ligero (móvil / táctil): sin sombras difuminadas ni recortes animados */
+html.lite .bs,html.lite .curl{display:none}
+html.lite .face,html.lite .sheet:not(.board).top .front,html.lite .sheet:not(.board).last .back{filter:none}
+html.lite .sheet:not(.board).top .front .th,html.lite .sheet:not(.board).last .back .th{display:block}
+html.lite .face .pg,html.lite .face .in{transition:none;clip-path:none}
+html.lite .sheet{will-change:transform}
+html.lite .view{border-radius:6px 16px 16px 6px;box-shadow:0 12px 18px -10px rgba(0,0,0,.45)}
+
+/* móvil en horizontal / pantallas bajas: lectura continua en lugar del libro */
+#flat{display:none}
+html.flat #book,html.flat .pager,html.flat .close{display:none}
+html.flat #flat{display:grid;gap:26px;width:min(100% - 24px,720px);margin:6px auto 60px}
+html.flat .desk{min-height:0;justify-content:flex-start;padding:10px 12px 0}
+html.flat .topbar{position:static;width:min(100%,720px);margin:0 0 6px}
+.fhero,.fend{display:grid;justify-items:center;gap:6px;padding:26px 16px;border-radius:12px;font-size:16px;background:radial-gradient(circle at 30% 20%,#d6efe6,var(--mint));box-shadow:0 6px 16px rgba(0,0,0,.25),0 4px 0 #8db5a8}
+.fhero .wordmark{font:700 3.2rem/1 'Caveat',cursive;color:var(--ink)}
+.fhero .sub{font-size:.75rem;letter-spacing:.14em;color:var(--ink-soft)}
+.fnav{position:sticky;top:0;z-index:6;margin:0;padding:8px 2px;font-size:16px;background:linear-gradient(var(--desk) 70%,transparent)}
+.fnav span{cursor:pointer}
+#flat .pg{position:relative;inset:auto;overflow:visible;font-size:16px;scroll-margin-top:58px;border-radius:10px;box-shadow:0 6px 16px rgba(0,0,0,.25),0 3px 0 #d8cab2;padding:1.6em 1.4em 1.8em 3.6em}
+.fend .label{position:static;transform:none;width:min(100%,420px);z-index:auto}
+.fend .label p{margin:.3em 0;text-align:center}
+@media print{#flat{display:none!important}}
+
 /* CV impreso */
 #cv{display:none}
 @media print{

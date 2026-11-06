@@ -56,6 +56,14 @@ const T = {
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
+// modos: "flat" = pantallas bajas en horizontal (móvil tumbado) → página que se desplaza; "lite" = móvil/táctil → sin efectos pesados
+const mqFlat = matchMedia("(max-height:520px) and (orientation:landscape)");
+const mqLite = matchMedia("(max-width:820px), (pointer:coarse)");
+const root = document.documentElement;
+const isLite = () => root.classList.contains("lite");
+const applyMode = () => { root.classList.toggle("flat", mqFlat.matches); root.classList.toggle("lite", mqLite.matches); };
+mqFlat.addEventListener("change", applyMode); mqLite.addEventListener("change", applyMode); applyMode();
+
 // widgets de itch.io: se escalan para no cortarse
 function fit() {
   $$(".wg").forEach(w => {
@@ -77,6 +85,22 @@ function setLang(l) {
 // ---- montaje del libro: portada + páginas (+ una en blanco si hace falta) + contraportada ----
 const src = $("#src"), spread = $("#spread");
 const pages = $$("section.pg", src);
+const flatEl = document.createElement("div"); flatEl.id = "flat";
+{
+  const nav = document.createElement("nav"); nav.className = "fnav chips";
+  $$("#tabs button").forEach(nb => {
+    const s = document.createElement("span"); s.dataset.i18n = nb.dataset.i18n; s.dataset.page = nb.dataset.page;
+    s.tabIndex = 0; s.setAttribute("role", "button"); nav.appendChild(s);
+  });
+  const go2 = s => { const t = flatEl.querySelector('.pg[data-tab="' + s.dataset.page + '"]'); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); };
+  nav.addEventListener("click", e => { const s = e.target.closest("[data-page]"); if (s) go2(s); });
+  nav.addEventListener("keydown", e => { const s = e.target.closest("[data-page]"); if (s && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); go2(s); } });
+  const end = document.createElement("div"); end.className = "fend";
+  end.appendChild($(".cover.bk .label", src).cloneNode(true));
+  const pr = $(".prt", end); pr.removeAttribute("id"); pr.addEventListener("click", () => window.print());
+  flatEl.append(nav, ...pages.map(p => p.cloneNode(true)), end);
+  $("#cv").before(flatEl);
+}
 if (pages.length % 2) { const b = document.createElement("section"); b.className = "pg blank"; pages.push(b); }
 const list = [$(".cover:not(.bk)", src), ...pages, $(".cover.bk", src)];
 const NF = list.length;               // siempre par: la contraportada es la última cara y queda por fuera
@@ -142,6 +166,7 @@ function render() {
 // sombra del libro: sigue por abajo a las hojas fotograma a fotograma (también al arrastrar despacio)
 let raf = 0, until = 0;
 function shadow() {
+  if (isLite()) return;
   const w = sheets[0].offsetWidth; let lo = 0, hi = 0;
   sheets.forEach(s => {
     const t = getComputedStyle(s).transform, c = t === "none" ? 1 : parseFloat(t.slice(t.indexOf("(") + 1));
@@ -150,6 +175,7 @@ function shadow() {
   bs.style.left = w + lo + 5 + "px"; bs.style.width = Math.max(0, hi - lo - 10) + "px";
 }
 function track(ms) {
+  if (isLite()) return;
   until = Math.max(until, performance.now() + ms);
   if (!raf) raf = requestAnimationFrame(function tick() {
     shadow();
@@ -254,6 +280,7 @@ $$("#tabs button,.tab").forEach(b => {
   b.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
 });
 document.addEventListener("keydown", e => {
+  if (root.classList.contains("flat")) return;
   if (e.key === "ArrowRight") go(step + inc());
   if (e.key === "ArrowLeft") go(step - inc());
 });
