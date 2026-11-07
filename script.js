@@ -61,7 +61,19 @@ const mqFlat = matchMedia("(max-height:520px) and (orientation:landscape)");
 const mqLite = matchMedia("(max-width:820px), (pointer:coarse)");
 const root = document.documentElement;
 const isLite = () => root.classList.contains("lite");
-const applyMode = () => { root.classList.toggle("flat", mqFlat.matches); root.classList.toggle("lite", mqLite.matches); };
+const getPref = () => { try { return localStorage.getItem("dc-view"); } catch (e) { return null; } };
+let built = false;
+const viewLabel = () => {
+  const f = root.classList.contains("flat"), es = root.lang === "es", b = document.getElementById("view");
+  const t = f ? (es ? "Ver como libro" : "View as a book") : (es ? "Ver en lectura continua" : "View as a scrolling page");
+  if (b) { b.title = t; b.setAttribute("aria-label", t); }
+};
+const applyMode = () => {
+  const lite = mqLite.matches, pref = getPref();
+  root.classList.toggle("lite", lite);
+  root.classList.toggle("flat", (mqFlat.matches && pref !== "book") || (lite && pref === "flat"));
+  if (built) { if (root.classList.contains("flat")) ensureFlat(); viewLabel(); cull(); }
+};
 mqFlat.addEventListener("change", applyMode); mqLite.addEventListener("change", applyMode); applyMode();
 
 // widgets de itch.io: se escalan para no cortarse
@@ -85,22 +97,6 @@ function setLang(l) {
 // ---- montaje del libro: portada + páginas (+ una en blanco si hace falta) + contraportada ----
 const src = $("#src"), spread = $("#spread");
 const pages = $$("section.pg", src);
-const flatEl = document.createElement("div"); flatEl.id = "flat";
-{
-  const nav = document.createElement("nav"); nav.className = "fnav chips";
-  $$("#tabs button").forEach(nb => {
-    const s = document.createElement("span"); s.dataset.i18n = nb.dataset.i18n; s.dataset.page = nb.dataset.page;
-    s.tabIndex = 0; s.setAttribute("role", "button"); nav.appendChild(s);
-  });
-  const go2 = s => { const t = flatEl.querySelector('.pg[data-tab="' + s.dataset.page + '"]'); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); };
-  nav.addEventListener("click", e => { const s = e.target.closest("[data-page]"); if (s) go2(s); });
-  nav.addEventListener("keydown", e => { const s = e.target.closest("[data-page]"); if (s && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); go2(s); } });
-  const end = document.createElement("div"); end.className = "fend";
-  end.appendChild($(".cover.bk .label", src).cloneNode(true));
-  const pr = $(".prt", end); pr.removeAttribute("id"); pr.addEventListener("click", () => window.print());
-  flatEl.append(nav, ...pages.map(p => p.cloneNode(true)), end);
-  $("#cv").before(flatEl);
-}
 if (pages.length % 2) { const b = document.createElement("section"); b.className = "pg blank"; pages.push(b); }
 const list = [$(".cover:not(.bk)", src), ...pages, $(".cover.bk", src)];
 const NF = list.length;               // siempre par: la contraportada es la última cara y queda por fuera
@@ -158,6 +154,7 @@ function render() {
   const W2 = "calc(var(--W) / 2)", shut = step === 0 || step === NF;   // libro cerrado por delante o por detrás
   book.classList.toggle("closed", shut);
   track(1100);
+  cull();
   book.style.setProperty("--tx", mq.matches ? (step % 2 ? "0px" : "calc(var(--W) * -1)") : step === 0 ? `calc(${W2} * -1)` : step === NF ? W2 : "0px");
   $("#pn").textContent = mq.matches ? `${step + 1} / ${NF}` : `${step / 2 + 1} / ${NF / 2 + 1}`;
   $("#prev").disabled = step === 0;
@@ -183,6 +180,39 @@ function track(ms) {
   });
 }
 const go = t => { const n = norm(t); if (n !== step) { step = n; render(); } };
+
+// lectura continua: se construye al activarla, copiando las páginas del libro
+const flatEl = document.createElement("div"); flatEl.id = "flat";
+function ensureFlat() {
+  if (flatEl.isConnected) return;
+  const nav = document.createElement("nav"); nav.className = "fnav chips";
+  $$("#tabs button").forEach(nb => {
+    const s = document.createElement("span"); s.dataset.i18n = nb.dataset.i18n; s.dataset.page = nb.dataset.page;
+    s.tabIndex = 0; s.setAttribute("role", "button"); nav.appendChild(s);
+  });
+  const go2 = s => { const t = flatEl.querySelector('.pg[data-tab="' + s.dataset.page + '"]'); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); };
+  nav.addEventListener("click", e => { const s = e.target.closest("[data-page]"); if (s) go2(s); });
+  nav.addEventListener("keydown", e => { const s = e.target.closest("[data-page]"); if (s && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); go2(s); } });
+  const pgs = $$(".pg[data-tab]", spread).map(p => { const c = p.cloneNode(true); c.classList.remove("L"); return c; });
+  const end = document.createElement("div"); end.className = "fend";
+  end.appendChild($(".face.bk .label", spread).cloneNode(true));
+  const pr = $(".prt", end); pr.removeAttribute("id"); pr.addEventListener("click", () => window.print());
+  flatEl.append(nav, ...pgs, end);
+  $("#cv").before(flatEl);
+  setLang(root.lang);
+}
+
+// móvil: solo se pintan las hojas cercanas (menos capas y menos memoria gráfica)
+let prevStep = 0, cullT = 0;
+const needSet = s => { const f = Math.ceil(s / 2), set = new Set(); for (let i = 2 * (f - 1); i <= 2 * (f + 1) + 1; i++) set.add(i); return set; };
+function cull() {
+  clearTimeout(cullT);
+  if (!isLite()) { faces.forEach(el => el.classList.remove("far")); prevStep = step; return; }
+  const now = needSet(step), old = needSet(prevStep), jump = Math.abs(step - prevStep) > 2;
+  faces.forEach(el => el.classList.toggle("far", !jump && !now.has(+el.dataset.face) && !old.has(+el.dataset.face)));
+  cullT = setTimeout(() => faces.forEach(el => el.classList.toggle("far", !now.has(+el.dataset.face))), 1100);
+  prevStep = step;
+}
 
 // esquinas sensibles
 function zone(e) {
@@ -287,10 +317,15 @@ document.addEventListener("keydown", e => {
 mq.addEventListener("change", () => { step = norm(step); render(); fit(); });
 addEventListener("resize", fit);
 $$("#print,#print2").forEach(b => b.addEventListener("click", () => window.print()));
-$("#lang").addEventListener("click", () => setLang(document.documentElement.lang === "es" ? "en" : "es"));
+$("#lang").addEventListener("click", () => { setLang(document.documentElement.lang === "es" ? "en" : "es"); viewLabel(); });
+$("#view").addEventListener("click", () => {
+  try { localStorage.setItem("dc-view", root.classList.contains("flat") ? "book" : "flat"); } catch (e) {}
+  applyMode(); if (!root.classList.contains("flat")) render(); window.scrollTo(0, 0);
+});
 
 let saved = null;
 try { saved = localStorage.getItem("dc-lang"); } catch (e) {}
 setLang(saved || ((navigator.language || "es").toLowerCase().startsWith("en") ? "en" : "es"));
 spread.style.transition = "none"; render(); void spread.offsetWidth; spread.style.transition = "";   // sin deslizamiento inicial
 addEventListener("load", fit);
+built = true; applyMode();
