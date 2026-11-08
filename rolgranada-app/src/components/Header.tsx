@@ -21,13 +21,14 @@ export type SolicitudPendienteRow = {
 
 type HeaderProps = {
   onNavigate: (pagina: string) => void;
+  wotfMode?: boolean;
   profile: ProfileRow | null;
   onSignOut: () => Promise<void>;
   requestLogin: () => void;
   updateProfile: (username: string, avatarUrl: string | null, rolPreferencias?: any, lineasEvitar?: string, estiloMaster?: string) => Promise<void>;
 };
 
-export default function Header({ onNavigate, profile, requestLogin }: HeaderProps) {
+export default function Header({ onNavigate, profile, requestLogin, wotfMode = false }: HeaderProps) {
   const [partidasAbierto, setPartidasAbierto] = useState(false);
   const [notificacionesAbiertas, setNotificacionesAbiertas] = useState(false);
   const [solicitudesCargadas, setSolicitudesCargadas] = useState<{ usuarioId: string; items: SolicitudPendienteRow[] } | null>(null);
@@ -179,44 +180,54 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
   }
 
   const totalNotificaciones = solicitudes.length + noLeidasCount;
+  const paginaInicio = wotfMode ? 'wotf-inicio' : 'inicio';
 
   return (
-    <header className="main-header">
+    <header className={`main-header${wotfMode ? ' wotf-header' : ''}`}>
       <div className="header-logo">
-        <a className="header-logo-link" href="#inicio" onClick={(event) => navegarDesdeEnlace(event, 'inicio')} aria-label="Ir al inicio">
-          <img src={logo} alt="Icono D20" />
-          <span>Rol Granada</span>
+        <a className="header-logo-link" href={`#/${paginaInicio}`} onClick={(event) => navegarDesdeEnlace(event, paginaInicio)} aria-label="Ir al inicio">
+          {!wotfMode && <img src={logo} alt="Icono D20" />}
+          <span>{wotfMode ? 'Will of the Forge' : 'Rol Granada'}</span>
         </a>
       </div>
 
       <nav className="header-nav">
         <ul>
-          <li><a href="#inicio" onClick={(event) => navegarDesdeEnlace(event, 'inicio')}>Inicio</a></li>
-          <li><a href="#disponibilidad" onClick={(event) => navegarDesdeEnlace(event, 'disponibilidad')}>Disponibilidad</a></li>
-          <li
-            className="tools-menu"
-            onMouseEnter={abrirMenu}
-            onMouseLeave={cerrarMenu}
-          >
-            <div className="tools-menu-content">
-              <button
-                className="tools-trigger active"
-                type="button"
-                aria-expanded={partidasAbierto}
-                aria-haspopup="true"
-                onClick={() => setPartidasAbierto((abierto) => !abierto)}
+          {wotfMode ? (
+            <>
+              <li><a href="#/wotf-inicio" onClick={(event) => navegarDesdeEnlace(event, 'wotf-inicio')}>Inicio</a></li>
+              <li><a href="#/wotf-ficha" onClick={(event) => navegarDesdeEnlace(event, 'wotf-ficha')}>Mis Personajes</a></li>
+            </>
+          ) : (
+            <>
+              <li><a href="#/inicio" onClick={(event) => navegarDesdeEnlace(event, 'inicio')}>Inicio</a></li>
+              <li><a href="#/disponibilidad" onClick={(event) => navegarDesdeEnlace(event, 'disponibilidad')}>Disponibilidad</a></li>
+              <li
+                className="tools-menu"
+                onMouseEnter={abrirMenu}
+                onMouseLeave={cerrarMenu}
               >
-                <span>Partidas</span>
-              </button>
-              {partidasAbierto && (
-                <ul className="tools-dropdown">
-                  <li><a href="#mis-partidas" onClick={(event) => navegarDesdeEnlace(event, 'mis-partidas')}>Mis Partidas</a></li>
-                  <li><a href="#buscar-partidas" onClick={(event) => navegarDesdeEnlace(event, 'buscar-partidas')}>Buscar Partidas</a></li>
-                </ul>
-              )}
-            </div>
-          </li>
-          <li><a href="#contacto" onClick={(event) => navegarDesdeEnlace(event, 'contacto')}>Contacto</a></li>
+                <div className="tools-menu-content">
+                  <button
+                    className="tools-trigger active"
+                    type="button"
+                    aria-expanded={partidasAbierto}
+                    aria-haspopup="true"
+                    onClick={() => setPartidasAbierto((abierto) => !abierto)}
+                  >
+                    <span>Partidas</span>
+                  </button>
+                  {partidasAbierto && (
+                    <ul className="tools-dropdown">
+                      <li><a href="#/mis-partidas" onClick={(event) => navegarDesdeEnlace(event, 'mis-partidas')}>Mis Partidas</a></li>
+                      <li><a href="#/buscar-partidas" onClick={(event) => navegarDesdeEnlace(event, 'buscar-partidas')}>Buscar Partidas</a></li>
+                    </ul>
+                  )}
+                </div>
+              </li>
+              <li><a href="#/contacto" onClick={(event) => navegarDesdeEnlace(event, 'contacto')}>Contacto</a></li>
+            </>
+          )}
         </ul>
       </nav>
 

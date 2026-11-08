@@ -1,0 +1,169 @@
+@import url('https://fonts.googleapis.com/css2?family=Manufacturing+Consent&family=Metamorphous&family=Spectral:wght@400;500;600;700&display=swap');
+
+.wotf-site {
+  --color-brand: var(--wotf-primary);
+  --color-brand-header: #571845;
+  --color-brand-dark: #900c3e;
+  --color-brand-hover: #900c3e;
+  --state-error-text: var(--wotf-secondary);
+  --state-error-border: var(--wotf-secondary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Spectral', Georgia, serif;
+}
+
+.wotf-site > main {
+  flex: 1;
+}
+
+.wotf-site .main-header {
+  background-color: #571845;
+}
+
+.wotf-site .header-logo span {
+  color: var(--wotf-gold);
+  font-family: 'Manufacturing Consent', Georgia, serif;
+  font-size: 1.9rem;
+  letter-spacing: 0.02em;
+}
+
+.wotf-site .header-logo-link::before {
+  content: "";
+  display: block;
+  flex: 0 0 60px;
+  width: 60px;
+  height: 60px;
+}
+
+.wotf-site .header-nav a,
+.wotf-site .header-action,
+.wotf-site .header-sign-out {
+  font-family: 'Metamorphous', Georgia, serif;
+}
+
+.wotf-site .header-nav a:hover,
+.wotf-site .header-nav a:active,
+.wotf-site .header-nav a.active,
+.wotf-site .header-action:hover,
+.wotf-site .header-sign-out:hover {
+  background-color: #900c3e;
+}
+
+.wotf-home {
+  width: min(100% - 2rem, 1040px);
+  margin: 0 auto;
+  padding: 1rem 0 4rem;
+  display: grid;
+  gap: 1.5rem;
+  color: var(--text-primary);
+}
+
+.wotf-panel {
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.wotf-home h1,
+.wotf-home h2 {
+  margin: 0 0 1rem;
+  color: var(--wotf-primary);
+  font-family: 'Metamorphous', Georgia, serif;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.wotf-home h1 {
+  font-size: clamp(1.8rem, 5vw, 2.7rem);
+}
+
+.wotf-home h2 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+}
+
+.wotf-home p {
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
+.wotf-prose {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.wotf-feature-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.wotf-feature-list p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.wotf-home-context > p,
+.wotf-home-about > p {
+  margin: 0 0 1rem;
+}
+
+.wotf-home blockquote {
+  margin: 1.5rem 0 0;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  font-style: italic;
+  line-height: 1.8;
+}
+
+.wotf-site .wotf-app {
+  font-family: 'Spectral', Georgia, serif;
+}
+
+.wotf-site .wotf-menu .card-title {
+  color: var(--wotf-primary);
+  font-family: 'Metamorphous', Georgia, serif;
+}
+
+.wotf-site .wotf-btn,
+.wotf-site .pj-nuevo,
+.wotf-site .pj-del {
+  font-family: 'Spectral', Georgia, serif;
+}
+
+.wotf-site .pj-open:hover,
+.wotf-site .pj-nuevo:hover,
+.wotf-site .wotf-btn:hover {
+  border-color: var(--wotf-primary);
+}
+
+.wotf-site .pj-del {
+  color: var(--wotf-secondary);
+}
+
+.wotf-site-footer {
+  padding: 1rem;
+  background: #571845;
+  border-top: 2px solid #202020;
+  box-shadow: 0 -4px 0 #202020;
+  color: var(--wotf-gold);
+  font-family: 'Metamorphous', Georgia, serif;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+@media (max-width: 800px) {
+  .wotf-site .header-logo span {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .wotf-site .header-logo-link::before {
+    flex-basis: 46px;
+    width: 46px;
+    height: 46px;
+  }
+
+  .wotf-site .header-logo span {
+    font-size: 1.2rem;
+  }
+}

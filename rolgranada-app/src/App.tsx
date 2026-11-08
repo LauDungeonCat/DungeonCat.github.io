@@ -7,6 +7,7 @@ import Login from "./auth/Login";
 import { useAuth } from "./auth/useAuth";
 import { Inicio } from "./inicio/Inicio";
 import Perfil from "./perfil/Perfil";
+import WillOfForgeInicio from "./herramientas/wotf_ficha/WillOfForgeInicio";
 import WotfPersonajes from "./herramientas/wotf_ficha/WotfPersonajes";
 
 import "./App.css";
@@ -19,6 +20,7 @@ const BuscarPartidas = lazy(() => import("./partidas/BuscarPartidas"));
 
 export type Pagina =
   | "generador-encuentros"
+  | "wotf-inicio"
   | "wotf-ficha"
   | "disponibilidad"
   | "mis-partidas"
@@ -29,6 +31,7 @@ export type Pagina =
 
 const paginas: Pagina[] = [
   "generador-encuentros",
+  "wotf-inicio",
   "wotf-ficha",
   "disponibilidad",
   "mis-partidas",
@@ -104,6 +107,8 @@ function AplicacionAutenticada() {
     switch (pagina) {
       case "generador-encuentros":
         return <GeneradorEncuentros />;
+      case "wotf-inicio":
+        return <WillOfForgeInicio />;
       case "wotf-ficha":
         return <WotfPersonajes supabase={supabase} />;
       case "disponibilidad":
@@ -122,17 +127,21 @@ function AplicacionAutenticada() {
     }
   }
 
+  const esWillOfTheForge = pagina === "wotf-inicio" || pagina === "wotf-ficha";
+
   return (
-    <>
-      <Header profile={profile} onSignOut={signOut} requestLogin={requestLogin} updateProfile={updateProfile} onNavigate={cambiarPagina} />
+    <div className={`app-layout${esWillOfTheForge ? " wotf-site" : ""}`}>
+      <Header profile={profile} onSignOut={signOut} requestLogin={requestLogin} updateProfile={updateProfile} onNavigate={cambiarPagina} wotfMode={esWillOfTheForge} />
       <main>
         <Suspense fallback={<section className="auth-state" role="status">Cargando sección…</section>}>
           {renderPagina()}
         </Suspense>
       </main>
-      <Footer />
+      {esWillOfTheForge ? (
+        <footer className="wotf-site-footer">Will of the Forge · Pre-alfa semi abierta</footer>
+      ) : <Footer />}
       <Login />
-    </>
+    </div>
   );
 }
 

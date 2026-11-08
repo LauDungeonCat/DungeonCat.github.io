@@ -3,6 +3,9 @@
   --color-brand-header: #c02642;
   --color-brand-dark: #a8131a;
   --color-brand-hover: #9b182e;
+  --wotf-primary: #571845;
+  --wotf-secondary: #900c3e;
+  --wotf-gold: #d8ac29;
 
   --bg-page: #f5f5f5;
   --bg-card: #ffffff;
@@ -44,6 +47,8 @@
 
 body.dark-mode {
   --color-brand-dark: #c42a46;
+  --wotf-primary: #d8ac29;
+  --wotf-secondary: #d8ac29;
 
   --bg-page: #121212;
   --bg-card: #1e1e1e;
