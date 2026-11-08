@@ -302,7 +302,8 @@
 }
 
 .btn-kofi {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   background-color: var(--color-brand-header, #c02642);
   color: #ffffff;
   padding: 0.65rem 1.3rem;
@@ -313,6 +314,14 @@
   margin-bottom: 0.5rem;
   box-shadow: 0 3px 0 var(--shadow-neobrutal, #202020);
   transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
+}
+
+.kofi-icon {
+  width: 1.15em;
+  height: 1.15em;
+  margin-right: 0.4em;
+  object-fit: contain;
+  vertical-align: middle;
 }
 
 .btn-kofi:hover,

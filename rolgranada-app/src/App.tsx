@@ -27,12 +27,38 @@ export type Pagina =
   | "contacto"
   | "perfil"; 
 
+const paginas: Pagina[] = [
+  "generador-encuentros",
+  "wotf-ficha",
+  "disponibilidad",
+  "mis-partidas",
+  "buscar-partidas",
+  "inicio",
+  "contacto",
+  "perfil",
+];
+
+function esPagina(valor: string): valor is Pagina {
+  return paginas.includes(valor as Pagina);
+}
+
+function obtenerPaginaActual(): Pagina {
+  const paginaHash = window.location.hash.slice(1).replace(/^\/+/, "").split("?")[0];
+  if (esPagina(paginaHash)) return paginaHash;
+  if (new URLSearchParams(window.location.search).has("partida")) return "buscar-partidas";
+  return "inicio";
+}
+
 function AplicacionAutenticada() {
-  const [pagina, setPagina] = useState<Pagina>(() =>
-    new URLSearchParams(window.location.search).has("partida") ? "buscar-partidas" : "inicio"
-  );
+  const [pagina, setPagina] = useState<Pagina>(obtenerPaginaActual);
 
   const { profile, signOut, requestLogin, updateProfile } = useAuth();
+
+  useEffect(() => {
+    const sincronizarPagina = () => setPagina(obtenerPaginaActual());
+    window.addEventListener("hashchange", sincronizarPagina);
+    return () => window.removeEventListener("hashchange", sincronizarPagina);
+  }, []);
 
   // Detección automática del tema del sistema y soporte para localStorage
   useEffect(() => {
@@ -68,7 +94,10 @@ function AplicacionAutenticada() {
   }, []);
 
   function cambiarPagina(nombre: string) {
-    setPagina(nombre as Pagina);
+    if (!esPagina(nombre)) return;
+    setPagina(nombre);
+    const hash = `#/${nombre}`;
+    if (window.location.hash !== hash) window.location.hash = hash;
   }
 
   function renderPagina() {

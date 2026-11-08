@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { useAuth } from "./auth/useAuth";
 import type { Database } from "./lib/database.types";
 import { supabase } from "./lib/supabase";
@@ -76,6 +76,7 @@ function mapearDisponibilidad(rows: { fecha: string; manana: string; tarde: stri
 
 export function useRolData() {
   const { profile } = useAuth();
+  const channelId = useId();
   const [partidas, setPartidas] = useState<Partida[]>([]);
   const [sesiones, setSesiones] = useState<SesionUsuarioRow[]>([]);
   const [disponibilidad, setDisponibilidad] = useState<Record<string, DisponibilidadDia>>({});
@@ -183,13 +184,38 @@ export function useRolData() {
       void sincronizarDatos();
     };
 
+    let temporizadorRefresco: ReturnType<typeof setTimeout> | null = null;
+    const programarRefresco = () => {
+      if (temporizadorRefresco) clearTimeout(temporizadorRefresco);
+      temporizadorRefresco = setTimeout(() => {
+        temporizadorRefresco = null;
+        if (activo) void sincronizarDatos();
+      }, 100);
+    };
+
+    const canal = supabase
+      .channel(`rol_data_${channelId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "partidas" }, programarRefresco)
+      .on("postgres_changes", { event: "*", schema: "public", table: "partida_participantes" }, programarRefresco)
+      .on("postgres_changes", { event: "*", schema: "public", table: "sesiones" }, programarRefresco)
+      .on("postgres_changes", { event: "*", schema: "public", table: "disponibilidades" }, programarRefresco)
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, programarRefresco)
+      .subscribe((status, subscriptionError) => {
+        if (!activo) return;
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          setError(subscriptionError?.message ?? `La conexión en tiempo real no está disponible (${status}).`);
+        }
+      });
+
     window.addEventListener("rol-data-actualizado", handleRefresco);
 
     return () => {
       activo = false;
+      if (temporizadorRefresco) clearTimeout(temporizadorRefresco);
       window.removeEventListener("rol-data-actualizado", handleRefresco);
+      void supabase.removeChannel(canal);
     };
-  }, [cargarDatos, profile?.id, sincronizarDatos]);
+  }, [cargarDatos, channelId, profile?.id, sincronizarDatos]);
 
   const ejecutar = useCallback(
     async (operacion: () => Promise<void>) => {

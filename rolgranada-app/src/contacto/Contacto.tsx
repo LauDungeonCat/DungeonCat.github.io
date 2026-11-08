@@ -1,5 +1,6 @@
 import whatsappQr from "../assets/whatsapp-qr.png";
 import instagramQr from "../assets/instagram-qr.png";
+import KofiIcon from "../components/KofiIcon";
 import "./Contacto.css";
 
 export default function Contacto() {
@@ -100,7 +101,7 @@ export default function Contacto() {
             rel="noreferrer"
             className="btn-kofi"
           >
-            ☕ Apoyar en Ko-fi
+            <KofiIcon />Apoyar en Ko-fi
           </a>
           <p className="apoyo-nota">
             * Si me escribes por WhatsApp tras apoyar, te configuraré un sombrerito o orejitas personalizadas para tu avatar.

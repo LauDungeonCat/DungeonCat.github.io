@@ -28,7 +28,6 @@ type HeaderProps = {
 };
 
 export default function Header({ onNavigate, profile, requestLogin }: HeaderProps) {
-  const [menuAbierto, setMenuAbierto] = useState(false);
   const [partidasAbierto, setPartidasAbierto] = useState(false);
   const [notificacionesAbiertas, setNotificacionesAbiertas] = useState(false);
   const [solicitudesCargadas, setSolicitudesCargadas] = useState<{ usuarioId: string; items: SolicitudPendienteRow[] } | null>(null);
@@ -144,17 +143,16 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
     };
   }, [usuarioId]);
 
-  function abrirMenu(setter: (abierto: boolean) => void) {
-    if (window.matchMedia('(hover: hover)').matches) setter(true);
+  function abrirMenu() {
+    if (window.matchMedia('(hover: hover)').matches) setPartidasAbierto(true);
   }
 
-  function cerrarMenu(setter: (abierto: boolean) => void) {
-    if (window.matchMedia('(hover: hover)').matches) setter(false);
+  function cerrarMenu() {
+    if (window.matchMedia('(hover: hover)').matches) setPartidasAbierto(false);
   }
 
   function navegarDesdeEnlace(event: React.MouseEvent<HTMLAnchorElement>, pagina: string) {
     event.preventDefault();
-    setMenuAbierto(false);
     setPartidasAbierto(false);
     onNavigate(pagina);
   }
@@ -194,10 +192,11 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
       <nav className="header-nav">
         <ul>
           <li><a href="#inicio" onClick={(event) => navegarDesdeEnlace(event, 'inicio')}>Inicio</a></li>
+          <li><a href="#disponibilidad" onClick={(event) => navegarDesdeEnlace(event, 'disponibilidad')}>Disponibilidad</a></li>
           <li
             className="tools-menu"
-            onMouseEnter={() => abrirMenu(setPartidasAbierto)}
-            onMouseLeave={() => cerrarMenu(setPartidasAbierto)}
+            onMouseEnter={abrirMenu}
+            onMouseLeave={cerrarMenu}
           >
             <div className="tools-menu-content">
               <button
@@ -211,32 +210,8 @@ export default function Header({ onNavigate, profile, requestLogin }: HeaderProp
               </button>
               {partidasAbierto && (
                 <ul className="tools-dropdown">
-                  <li><a href="#disponibilidad" onClick={(event) => navegarDesdeEnlace(event, 'disponibilidad')}>Disponibilidad</a></li>
                   <li><a href="#mis-partidas" onClick={(event) => navegarDesdeEnlace(event, 'mis-partidas')}>Mis Partidas</a></li>
                   <li><a href="#buscar-partidas" onClick={(event) => navegarDesdeEnlace(event, 'buscar-partidas')}>Buscar Partidas</a></li>
-                </ul>
-              )}
-            </div>
-          </li>
-          <li
-            className="tools-menu"
-            onMouseEnter={() => abrirMenu(setMenuAbierto)}
-            onMouseLeave={() => cerrarMenu(setMenuAbierto)}
-          >
-            <div className="tools-menu-content">
-              <button
-                className="tools-trigger active"
-                type="button"
-                aria-expanded={menuAbierto}
-                aria-haspopup="true"
-                onClick={() => setMenuAbierto((abierto) => !abierto)}
-              >
-                <span>Herramientas</span>
-              </button>
-              {menuAbierto && (
-                <ul className="tools-dropdown">
-                  <li><a href="#generador-encuentros" onClick={(event) => navegarDesdeEnlace(event, 'generador-encuentros')}>Generador de Encuentros</a></li>
-                  <li><a href="#wotf-ficha" onClick={(event) => navegarDesdeEnlace(event, 'wotf-ficha')}>Personajes Will of the Forge</a></li>
                 </ul>
               )}
             </div>

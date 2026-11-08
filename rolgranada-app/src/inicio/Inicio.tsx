@@ -2,6 +2,7 @@ import React from 'react';
 import type { Pagina } from '../App';
 import whatsappQr from '../assets/whatsapp-qr.png';
 import instagramQr from '../assets/instagram-qr.png';
+import KofiIcon from '../components/KofiIcon';
 import { useRolData } from '../useRolData';
 import './Inicio.css';
 
@@ -169,7 +170,7 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
             rel="noreferrer"
             className="btn-kofi"
           >
-            ☕ Invítame a un café en Ko-fi
+            <KofiIcon />Invítame a un café en Ko-fi
           </a>
           <p className="apoyo-nota">
             * Si me escribes por WhatsApp tras apoyar, te configuraré un sombrerito o orejitas personalizadas para tu avatar.

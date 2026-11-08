@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
 import logoSvg from '../assets/logo.svg';
+import KofiIcon from './KofiIcon';
 import './Footer.css';
 
 export default function Footer() {
@@ -32,7 +33,7 @@ export default function Footer() {
           <div className="footer-column">
             <span className="footer-heading">Apoyo</span>
             <a href="https://ko-fi.com/lauradungeoncat" target="_blank" rel="noreferrer">
-              ☕ Invítame a un café (Ko-fi)
+              <KofiIcon />Invítame a un café (Ko-fi)
             </a>
             <p className="footer-text" style={{ fontSize: '0.8rem', marginTop: '0.4rem' }}>
               Apoya el proyecto y consigue un sombrerito o orejitas personalizadas para tu avatar escribiendo por WhatsApp.
