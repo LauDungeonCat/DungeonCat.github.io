@@ -86,6 +86,16 @@ export default function Contacto() {
         </div>
       </section>
 
+      <section className="inicio-comunidad-section contact-promocion-rol" aria-labelledby="contact-promocion-titulo">
+        <div className="comunidad-box-header">
+          <h3 id="contact-promocion-titulo">Promociona tus proyectos de rol</h3>
+        </div>
+        <p>
+          Se permite y se fomenta compartir proyectos y creaciones personales, como juegos de rol,
+          manuales y recursos, siempre que estén estrictamente relacionados con los juegos de rol.
+        </p>
+      </section>
+
       {/* Sección de Apoyo en Contacto */}
       <section className="inicio-comunidad-section" style={{ marginTop: '2rem' }}>
         <div className="comunidad-box-header">

@@ -1,7 +1,13 @@
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type FormEvent, type PointerEvent, type KeyboardEvent, type WheelEvent } from 'react';
 import { useAuth } from '../auth/useAuth';
 import { supabase } from '../lib/supabase';
 import { TEMAS_SENSIBLES, normalizarTemasPerfil, type NivelPerfil } from '../temasSensibles';
+import { featureRpc } from '../lib/featureRpc';
+import { useEstadisticasUsuario } from './useEstadisticasUsuario';
+import InsigniasUsuario from './InsigniasUsuario';
+import AmigosPerfil from './AmigosPerfil';
+import AvatarUsuario from '../components/AvatarUsuario';
+import PerfilUsuarioLink from '../components/PerfilUsuarioLink';
 import crownIcon from '../assets/crown.svg';
 import './Perfil.css';
 import '../partidas/FormularioPartida.css';
@@ -9,7 +15,18 @@ import '../partidas/FormularioPartida.css';
 export default function Perfil() {
   const { profile, updateProfile, signOut } = useAuth();
 
-  const [tabActiva, setTabActiva] = useState<'general' | 'jugador' | 'master'>('general');
+  const [tabActiva, setTabActiva] = useState<'general' | 'jugador' | 'master' | 'estadisticas' | 'amigos'>('general');
+  const [refreshStats, setRefreshStats] = useState(0);
+  const { estadisticas, cargando: cargandoEstadisticas, error: errorEstadisticas } = useEstadisticasUsuario(profile?.id ?? null, refreshStats);
+  const [bioEditada, setBioEditada] = useState<string | null>(null);
+  const bio = bioEditada ?? estadisticas?.perfil?.bio ?? '';
+  const [seguidorYoutubeEditado, setSeguidorYoutubeEditado] = useState<boolean | null>(null);
+  const [creadorJdrEditado, setCreadorJdrEditado] = useState<boolean | null>(null);
+  const seguidorYoutube = seguidorYoutubeEditado ?? estadisticas?.perfil?.seguidor_youtube ?? false;
+  const creadorJdr = creadorJdrEditado ?? estadisticas?.perfil?.creador_jdr ?? false;
+  const [guardandoInsignias, setGuardandoInsignias] = useState(false);
+  const [errorInsignias, setErrorInsignias] = useState<string | null>(null);
+  const [mensajeInsignias, setMensajeInsignias] = useState<string | null>(null);
 
   // Estados del formulario general
   const [username, setUsername] = useState<string>('');
@@ -18,6 +35,9 @@ export default function Perfil() {
   const [posX, setPosX] = useState<number>(50);
   const [posY, setPosY] = useState<number>(50);
   const [zoom, setZoom] = useState<number>(100);
+  const [editorEncuadreAbierto, setEditorEncuadreAbierto] = useState(false);
+  const ajustesEncuadreIniciales = useRef<{ x: number; y: number; zoom: number } | null>(null);
+  const arrastreEncuadre = useRef<{ pointerId: number; x: number; y: number } | null>(null);
   
   // Preferencias de juego
   const [roleplay, setRoleplay] = useState<number>(3);
@@ -35,6 +55,57 @@ export default function Perfil() {
 
   // Estado para controlar el modal de aviso de cierre de sesión
   const [mostrarModalCerrarSesion, setMostrarModalCerrarSesion] = useState(false);
+
+  function abrirEditorEncuadre() {
+    ajustesEncuadreIniciales.current = { x: posX, y: posY, zoom };
+    setEditorEncuadreAbierto(true);
+  }
+
+  function cerrarEditorEncuadre(aplicar: boolean) {
+    if (!aplicar && ajustesEncuadreIniciales.current) {
+      setPosX(ajustesEncuadreIniciales.current.x);
+      setPosY(ajustesEncuadreIniciales.current.y);
+      setZoom(ajustesEncuadreIniciales.current.zoom);
+    }
+    arrastreEncuadre.current = null;
+    ajustesEncuadreIniciales.current = null;
+    setEditorEncuadreAbierto(false);
+  }
+
+  function iniciarArrastreEncuadre(event: PointerEvent<HTMLDivElement>) {
+    if (event.button !== 0) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    arrastreEncuadre.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+  }
+
+  function moverEncuadre(event: PointerEvent<HTMLDivElement>) {
+    const arrastre = arrastreEncuadre.current;
+    if (!arrastre || arrastre.pointerId !== event.pointerId) return;
+    const limites = event.currentTarget.getBoundingClientRect();
+    setPosX((actual) => Math.min(100, Math.max(0, actual - ((event.clientX - arrastre.x) / limites.width) * 100)));
+    setPosY((actual) => Math.min(100, Math.max(0, actual - ((event.clientY - arrastre.y) / limites.height) * 100)));
+    arrastre.x = event.clientX;
+    arrastre.y = event.clientY;
+  }
+
+  function ajustarEncuadreTeclado(event: KeyboardEvent<HTMLDivElement>) {
+    const cambios: Record<string, () => void> = {
+      ArrowLeft: () => setPosX((actual) => Math.min(100, actual + 2)),
+      ArrowRight: () => setPosX((actual) => Math.max(0, actual - 2)),
+      ArrowUp: () => setPosY((actual) => Math.min(100, actual + 2)),
+      ArrowDown: () => setPosY((actual) => Math.max(0, actual - 2)),
+    };
+    const ajustar = cambios[event.key];
+    if (ajustar) {
+      event.preventDefault();
+      ajustar();
+    }
+  }
+
+  function ajustarZoomConRueda(event: WheelEvent<HTMLDivElement>) {
+    event.preventDefault();
+    setZoom((actual) => Math.min(300, Math.max(100, actual + (event.deltaY < 0 ? 10 : -10))));
+  }
 
   useEffect(() => {
     if (!profile) return;
@@ -106,7 +177,6 @@ export default function Perfil() {
       setErrorPerfil('No se encontró una sesión activa.');
       return;
     }
-
     setGuardando(true);
     setMensajeExito(null);
     setErrorPerfil(null);
@@ -135,12 +205,36 @@ export default function Perfil() {
         pronombres,
         avatarPosicionStr
       );
+      if (bioEditada !== null) {
+        await featureRpc("actualizar_bio_perfil", { p_bio: bioEditada });
+        setRefreshStats((actual) => actual + 1);
+      }
 
       setMensajeExito('¡Perfil actualizado correctamente!');
     } catch (err) {
       setErrorPerfil(err instanceof Error ? err.message : 'Error al guardar los cambios.');
     } finally {
       setGuardando(false);
+    }
+  }
+
+  async function guardarInsignias() {
+    setGuardandoInsignias(true);
+    setErrorInsignias(null);
+    setMensajeInsignias(null);
+    try {
+      await featureRpc("actualizar_insignias_perfil", {
+        p_seguidor_youtube: seguidorYoutube,
+        p_creador_jdr: creadorJdr,
+      });
+      setMensajeInsignias("Preferencias de insignias actualizadas.");
+      setSeguidorYoutubeEditado(null);
+      setCreadorJdrEditado(null);
+      setRefreshStats((actual) => actual + 1);
+    } catch (cause) {
+      setErrorInsignias(cause instanceof Error ? cause.message : "No se pudieron guardar las insignias.");
+    } finally {
+      setGuardandoInsignias(false);
     }
   }
 
@@ -192,8 +286,88 @@ export default function Perfil() {
         >
           Perfil de Máster
         </button>
+        <button
+          type="button"
+          className={`perfil-tab-btn ${tabActiva === 'estadisticas' ? 'active' : ''}`}
+          onClick={() => setTabActiva('estadisticas')}
+        >
+          Estadísticas
+        </button>
+        <button
+          type="button"
+          className={`perfil-tab-btn ${tabActiva === 'amigos' ? 'active' : ''}`}
+          onClick={() => setTabActiva('amigos')}
+        >
+          Amigos
+        </button>
       </div>
 
+      {tabActiva === 'amigos' ? (
+        <section className="perfil-form-card">
+          {profile?.id && <AmigosPerfil userId={profile.id} nombre={profile.username ?? 'tu perfil'} esPropio />}
+        </section>
+      ) : tabActiva === 'estadisticas' ? (
+        <section className="perfil-form-card perfil-estadisticas" aria-labelledby="perfil-estadisticas-titulo">
+          <h2 id="perfil-estadisticas-titulo">Estadísticas de {profile?.username ?? "tu perfil"}</h2>
+          {cargandoEstadisticas && <p role="status">Cargando estadísticas…</p>}
+          {errorEstadisticas && <p className="datos-error" role="alert">{errorEstadisticas}</p>}
+          {estadisticas && (
+            <>
+              <InsigniasUsuario estadisticas={estadisticas} />
+
+              <div className="perfil-estadisticas-resumen">
+                <article><strong>{estadisticas.inscripciones_aceptadas}</strong><span>Partidas jugadas</span></article>
+                <article><strong>{estadisticas.partidas_dirigidas}</strong><span>Partidas dirigidas</span></article>
+                <article><strong>{estadisticas.sesiones_jugadas}</strong><span>Sesiones jugadas</span></article>
+                <article><strong>{estadisticas.sesiones_dirigidas}</strong><span>Sesiones dirigidas</span></article>
+              </div>
+
+              <section className="perfil-companeros-frecuentes">
+                <h3>Top 3 de compañeros frecuentes</h3>
+                {estadisticas.top_companeros.length === 0 ? <p>Aún no hay sesiones compartidas contabilizadas.</p> : (
+                  <ol>
+                    {estadisticas.top_companeros.map((companero) => (
+                      <li key={companero.id}>
+                        <AvatarUsuario userId={companero.id} nombre={companero.username} avatarUrl={companero.avatar_url} avatarPosition={companero.avatar_position} size={38} />
+                        <PerfilUsuarioLink userId={companero.id} nombre={companero.username} />
+                        <span>{companero.sesiones_coincidentes} sesiones coincidentes</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </section>
+
+              <section className="perfil-historial">
+                <details>
+                  <summary>Historial de partidas ({estadisticas.historial.length})</summary>
+                  {estadisticas.historial.length === 0 ? <p>Aún no hay partidas en el historial.</p> : (
+                    <ul>
+                      {estadisticas.historial.map((partida) => (
+                        <li key={partida.partida_id}>
+                          <div><strong>{partida.titulo}</strong><span>{partida.sistema} · {partida.rol} · {partida.estado}</span></div>
+                          <span>{partida.sesiones_jugadas} sesiones realizadas{partida.ultima_sesion ? ` · última: ${new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(new Date(`${partida.ultima_sesion}T12:00:00`))}` : ""}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </details>
+              </section>
+
+              <section className="perfil-insignias-preferencias">
+                <h3>Insignias que puedes indicar</h3>
+                <label><input type="checkbox" checked={seguidorYoutube} onChange={(event) => setSeguidorYoutubeEditado(event.target.checked)} /> Sigo a Lau DungeonCat en YouTube</label>
+                <label><input type="checkbox" checked={creadorJdr} onChange={(event) => setCreadorJdrEditado(event.target.checked)} /> Soy creador/a de juegos de rol</label>
+                {errorInsignias && <p className="datos-error" role="alert">{errorInsignias}</p>}
+                {mensajeInsignias && <p className="datos-exito" role="status">{mensajeInsignias}</p>}
+                <button type="button" className="btn-rojo" disabled={guardandoInsignias} onClick={() => void guardarInsignias()}>
+                  {guardandoInsignias ? "Guardando…" : "Guardar insignias"}
+                </button>
+              </section>
+
+            </>
+          )}
+        </section>
+      ) : (
       <form className="perfil-form-card" onSubmit={handleSubmit}>
         {tabActiva === 'general' && (
           <div className="perfil-seccion-tab animate-fade">
@@ -262,44 +436,26 @@ export default function Perfil() {
                   />
                 </label>
 
+                <label className="perfil-bio-label">
+                  <div className="label-header">
+                    <span className="label-title">Biografía</span>
+                    <span className="label-opcional">({bio.length}/500)</span>
+                  </div>
+                  <textarea
+                    rows={4}
+                    maxLength={500}
+                    value={bio}
+                    onChange={(event) => setBioEditada(event.target.value)}
+                    placeholder="Cuéntale a la comunidad qué te gusta jugar o cómo disfrutas las partidas."
+                  />
+                </label>
+
                 {avatarUrl && (
                   <div className="perfil-ajuste-posicion">
-                    <span>Ajustar encuadre de la imagen:</span>
-                    <div className="perfil-sliders-posicion">
-                      <label>
-                        Horizontal ({posX}%):
-                        <input 
-                          type="range" 
-                          min="0" 
-                          max="100" 
-                          value={posX} 
-                          style={{ '--value-percent': `${posX}%` } as React.CSSProperties}
-                          onChange={(e) => setPosX(Number(e.target.value))} 
-                        />
-                      </label>
-                      <label>
-                        Vertical ({posY}%):
-                        <input 
-                          type="range" 
-                          min="0" 
-                          max="100" 
-                          value={posY} 
-                          style={{ '--value-percent': `${posY}%` } as React.CSSProperties}
-                          onChange={(e) => setPosY(Number(e.target.value))} 
-                        />
-                      </label>
-                      <label>
-                        Zoom ({zoom}%):
-                        <input 
-                          type="range" 
-                          min="100" 
-                          max="300" 
-                          value={zoom} 
-                          style={{ '--value-percent': `${((zoom - 100) / (300 - 100)) * 100}%` } as React.CSSProperties}
-                          onChange={(e) => setZoom(Number(e.target.value))} 
-                        />
-                      </label>
-                    </div>
+                    <span>Encuadre de la imagen</span>
+                    <button type="button" className="perfil-abrir-recorte" onClick={abrirEditorEncuadre}>
+                      Ajustar imagen
+                    </button>
                   </div>
                 )}
               </div>
@@ -458,6 +614,7 @@ export default function Perfil() {
           </button>
         </div>
       </form>
+      )}
 
       {/* Modal de confirmación reutilizando las clases exactas de FormularioPartida.css */}
       {mostrarModalCerrarSesion && (
@@ -488,6 +645,56 @@ export default function Perfil() {
                   Sí, cerrar sesión
                 </button>
               </div>
+            </div>
+          </section>
+        </div>
+      )}
+      {editorEncuadreAbierto && avatarUrl && (
+        <div className="crear-campana-overlay" onMouseDown={(event) => event.target === event.currentTarget && cerrarEditorEncuadre(false)}>
+          <section
+            className="crear-campana-dialog perfil-recorte-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="perfil-recorte-titulo"
+            onKeyDown={(event) => {
+              if (event.key === "Escape") cerrarEditorEncuadre(false);
+            }}
+          >
+            <header className="crear-campana-header">
+              <div>
+                <p className="seccion-etiqueta">Perfil</p>
+                <h2 id="perfil-recorte-titulo">Ajustar imagen</h2>
+              </div>
+              <button type="button" className="crear-campana-cerrar" onClick={() => cerrarEditorEncuadre(false)} aria-label="Cerrar editor de imagen">×</button>
+            </header>
+            <div
+              className="perfil-recorte-visor"
+              role="img"
+              aria-label="Arrastra la imagen para ajustar el encuadre. También puedes usar las flechas del teclado."
+              tabIndex={0}
+              onPointerDown={iniciarArrastreEncuadre}
+              onPointerMove={moverEncuadre}
+              onPointerUp={() => { arrastreEncuadre.current = null; }}
+              onPointerCancel={() => { arrastreEncuadre.current = null; }}
+              onKeyDown={ajustarEncuadreTeclado}
+              onWheel={ajustarZoomConRueda}
+            >
+              <img
+                src={avatarUrl}
+                alt=""
+                draggable={false}
+                style={{ objectPosition: `${posX}% ${posY}%`, transform: `scale(${zoom / 100})`, transformOrigin: `${posX}% ${posY}%` }}
+              />
+            </div>
+            <p className="perfil-recorte-ayuda">Arrastra la imagen para colocarla. Usa la rueda del ratón o los botones para ajustar el zoom.</p>
+            <div className="perfil-recorte-zoom" aria-label={`Zoom ${zoom}%`}>
+              <button type="button" onClick={() => setZoom((actual) => Math.max(100, actual - 10))} disabled={zoom <= 100} aria-label="Reducir zoom">−</button>
+              <span>{zoom}%</span>
+              <button type="button" onClick={() => setZoom((actual) => Math.min(300, actual + 10))} disabled={zoom >= 300} aria-label="Aumentar zoom">+</button>
+            </div>
+            <div className="crear-campana-acciones">
+              <button className="crear-campana-cancelar" type="button" onClick={() => cerrarEditorEncuadre(false)}>Cancelar</button>
+              <button className="crear-campana-enviar" type="button" onClick={() => cerrarEditorEncuadre(true)}>Aplicar encuadre</button>
             </div>
           </section>
         </div>

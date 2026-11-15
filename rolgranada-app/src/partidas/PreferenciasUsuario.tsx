@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { etiquetaTema, normalizarTemasPerfil } from '../temasSensibles';
+import AvatarUsuario from '../components/AvatarUsuario';
+import PerfilUsuarioLink from '../components/PerfilUsuarioLink';
 import './PreferenciasUsuario.css';
 
 type ModalPreferenciasProps = {
@@ -33,14 +35,7 @@ export default function ModalPreferenciasUsuario({ userId, esMaster = false, onC
     return () => { activo = false; };
   }, [userId]);
 
-  const avatarPos = perfil?.avatar_position ? perfil.avatar_position.split(' ') : ['50', '50', '100'];
-  const posX = avatarPos[0] || '50';
-  const posY = avatarPos[1] || '50';
-  const zoom = avatarPos[2] || '100';
-
   const temas = normalizarTemasPerfil(perfil?.temas_sensibles);
-
-  const tieneFotoValida = Boolean(perfil?.avatar_url && perfil.avatar_url.trim() !== '');
 
   // Comprobamos si rol_preferencias está vacío (ej. {} o null/undefined) o no contiene claves válidas
   const prefs = perfil?.rol_preferencias;
@@ -67,29 +62,12 @@ export default function ModalPreferenciasUsuario({ userId, esMaster = false, onC
         {!cargando && perfil && (
           <div className="modal-preferencias-contenido">
             <div className="modal-perfil-user-header">
-              {tieneFotoValida ? (
-                <div className="modal-avatar-frame">
-                  <img
-                    src={perfil.avatar_url}
-                    alt=""
-                    referrerPolicy="no-referrer"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      display: 'block',
-                      objectPosition: `${posX}% ${posY}%`,
-                      transform: `scale(${Number(zoom) / 100})`,
-                      transformOrigin: `${posX}% ${posY}%`
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="modal-avatar-frame modal-avatar-placeholder">Sin foto</div>
-              )}
+              <div className="modal-avatar-frame">
+                <AvatarUsuario userId={userId} nombre={perfil.username} avatarUrl={perfil.avatar_url} avatarPosition={perfil.avatar_position} size={76} />
+              </div>
               <div className="modal-user-identity">
                 <h3 className="modal-username-heading">
-                  {perfil.username}
+                  <PerfilUsuarioLink userId={userId} nombre={perfil.username} />
                 </h3>
                 {perfil.pronombres && <span className="modal-pronombres-pill">{perfil.pronombres}</span>}
               </div>

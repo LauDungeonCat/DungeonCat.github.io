@@ -1,0 +1,77 @@
+.amigos-perfil {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 2px solid var(--border-neobrutal);
+  border-radius: 6px;
+  background: var(--bg-card);
+}
+
+.amigos-perfil-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.amigos-perfil-header h2,
+.amigos-perfil-solicitudes h3 {
+  margin: 0;
+  font-family: Georgia, serif;
+}
+
+.amigos-perfil-header p {
+  margin: 0.3rem 0 0;
+  color: var(--text-secondary);
+}
+
+.amigos-perfil-lista,
+.amigos-perfil-solicitudes ul {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.amigos-perfil-lista li,
+.amigos-perfil-solicitudes li,
+.amigos-perfil-relacion {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.amigos-perfil-lista li,
+.amigos-perfil-solicitudes li {
+  padding: 0.5rem;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+}
+
+.amigos-perfil-lista li > button:last-child,
+.amigos-perfil-solicitudes li > button:last-child {
+  margin-left: auto;
+}
+
+.amigos-perfil-solicitudes {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.amigos-perfil-solicitudes li > span,
+.amigos-perfil-vacio {
+  color: var(--text-secondary);
+}
+
+.amigos-perfil-vacio {
+  margin: 0;
+}
+
+@media (max-width: 520px) {
+  .amigos-perfil-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

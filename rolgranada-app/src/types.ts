@@ -31,6 +31,7 @@ export interface Partida {
   dmId: string;
   dm: string;
   dmAvatarUrl: string | null;
+  dmAvatarPosition: string | null;
   ubicacionAproximada: string;
   ubicacionExacta: string | null;
   imagenUrl: string;
@@ -40,12 +41,84 @@ export interface Partida {
   viewerIsParticipant: boolean;
   viewerHasRequested: boolean;
   esPrivada: boolean;
+  amigosPuedenUnirse: boolean;
+  viewerEsAmigo: boolean;
   proximaSesion?: string;
   proximaSesionFranja?: FranjaHorario;
   estado: "abierta" | "en_curso" | "finalizada";
+  fechaFin: string | null;
   sesionesAlMes: number;
   duracionEstimada: string | null;
   triggerWarnings: TriggerWarningsPartida;
+}
+
+export interface EstadisticasPerfil {
+  id: string;
+  username: string;
+  avatar_url: string | null;
+  avatar_position: string | null;
+  role: string | null;
+  created_at: string | null;
+  bio: string;
+  apoyo_kofi: boolean;
+  seguidor_youtube: boolean;
+  creador_jdr: boolean;
+}
+
+export interface CompaneroFrecuente {
+  id: string;
+  username: string;
+  avatar_url: string | null;
+  avatar_position: string | null;
+  sesiones_coincidentes: number;
+}
+
+export interface PartidaHistorial {
+  partida_id: string;
+  titulo: string;
+  sistema: string;
+  estado: string;
+  rol: "DM" | "Jugador";
+  sesiones_jugadas: number;
+  ultima_sesion: string | null;
+}
+
+export interface EstadisticasUsuario {
+  perfil: EstadisticasPerfil | null;
+  companeros_distintos: number;
+  partidas_dirigidas: number;
+  partidas_activas: number;
+  partidas_finalizadas: number;
+  inscripciones_aceptadas: number;
+  sesiones_dirigidas: number;
+  sesiones_jugadas: number;
+  top_companeros: CompaneroFrecuente[];
+  historial: PartidaHistorial[];
+}
+
+export interface AmigoPerfil {
+  id: string;
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  avatar_position: string | null;
+}
+
+export interface SolicitudAmistad extends AmigoPerfil {
+  id: string;
+}
+
+export interface RelacionAmistad {
+  id: string;
+  estado: "pendiente" | "aceptada";
+  enviada_por_visor: boolean;
+}
+
+export interface DatosAmistad {
+  amigos: AmigoPerfil[];
+  solicitudes_recibidas: SolicitudAmistad[];
+  solicitudes_enviadas: SolicitudAmistad[];
+  relacion: RelacionAmistad | null;
 }
 
 export interface PartidaEditable {
@@ -59,6 +132,7 @@ export interface PartidaEditable {
   sesionesAlMes: number;
   duracionEstimada: string;
   esPrivada?: boolean;
+  amigosPuedenUnirse?: boolean;
   triggerWarnings?: TriggerWarningsPartida;
 }
 

@@ -1,0 +1,169 @@
+.perfil-usuario-link {
+  border: 0;
+  padding: 0;
+  min-height: 0;
+  width: auto;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.perfil-usuario-link:hover,
+.perfil-usuario-link:focus-visible {
+  color: var(--color-brand);
+  text-decoration-color: currentColor;
+  background: transparent;
+}
+
+.perfil-publico-overlay {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(0 0 0 / 65%);
+}
+
+.perfil-publico-dialog {
+  position: relative;
+  display: grid;
+  gap: 1.25rem;
+  width: min(100%, 760px);
+  max-height: min(90vh, 900px);
+  overflow: auto;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 3px solid var(--border-neobrutal);
+  border-radius: 8px;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  box-shadow: 8px 8px 0 var(--shadow-neobrutal);
+}
+
+.perfil-publico-cerrar {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  justify-self: end;
+  width: 2.5rem;
+  min-height: 2.5rem;
+  margin-bottom: -2.5rem;
+  padding: 0;
+  font-size: 1.5rem;
+}
+
+.perfil-publico-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-right: 2.5rem;
+}
+
+.perfil-publico-header h2 {
+  margin: 0;
+  font-family: Georgia, serif;
+  overflow-wrap: anywhere;
+}
+
+.perfil-publico-rol {
+  color: var(--color-brand);
+  font-weight: 700;
+}
+
+.perfil-publico-resumen {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+}
+
+.perfil-publico-bio {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-left: 4px solid var(--color-brand);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.perfil-publico-resumen div {
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  padding: 0.7rem 0.3rem;
+  border: 2px solid var(--border-neobrutal);
+  border-radius: 6px;
+  background: var(--bg-card);
+  text-align: center;
+}
+
+.perfil-publico-resumen strong {
+  font-size: 1.3rem;
+}
+
+.perfil-publico-resumen span,
+.perfil-publico-companeros li > span {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.perfil-publico-companeros h3 {
+  margin: 0 0 0.6rem;
+  font-family: Georgia, serif;
+}
+
+.perfil-publico-companeros details {
+  border: 2px solid var(--border-neobrutal);
+  border-radius: 6px;
+  background: var(--bg-card);
+}
+
+.perfil-publico-companeros details[open] summary {
+  border-bottom: 1px solid var(--border-neobrutal);
+}
+
+.perfil-publico-companeros details > p {
+  margin: 0;
+  padding: 0.75rem;
+}
+
+.perfil-publico-companeros ul {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.perfil-publico-companeros li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.perfil-publico-companeros li > span {
+  margin-left: auto;
+}
+
+.perfil-publico-admin {
+  padding: 0.75rem;
+  border: 1px dashed var(--border-neobrutal);
+}
+
+.perfil-publico-admin label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+}
+
+@media (max-width: 500px) {
+  .perfil-publico-dialog { padding: 1rem; }
+  .perfil-publico-resumen { grid-template-columns: repeat(2, 1fr); }
+  .perfil-publico-resumen span { font-size: 0.7rem; }
+}

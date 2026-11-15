@@ -200,6 +200,19 @@
     font-weight: 600;
 }
 
+.partida-dm {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.partida-dm .avatar-usuario {
+	width: 28px !important;
+	height: 28px !important;
+	min-width: 28px;
+	min-height: 28px;
+}
+
 .partida-ubicacion-exacta {
 	font-size: 0.78rem;
 }
@@ -224,11 +237,6 @@
 	min-height: 2.1rem;
 	padding: 0.3rem 0.65rem;
 	font-size: 0.8rem;
-}
-
-.partida-gestion .partida-borrar {
-	border-color: var(--color-brand-dark);
-	color: var(--color-brand-dark);
 }
 
 .partida-catalogo-pie {

@@ -1,0 +1,31 @@
+.avatar-usuario {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0;
+  border: 2px solid var(--border-neobrutal);
+  border-radius: 50%;
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.avatar-usuario img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-usuario span {
+  font-weight: 800;
+}
+
+.avatar-usuario:hover,
+.avatar-usuario:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}

@@ -329,7 +329,6 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
                     {errorLocal ?? error}
                 </p>
             )}
-
             {/* Selector de Mes centrado */}
             <div className="gestion-selector-mes-container">
                 <span className="gestion-selector-label">Ver Disponibilidad:</span>
@@ -354,6 +353,7 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
             {/* Tarjeta del Master unificada */}
             <div className="gestion-dm-card">
                 <FichaParticipanteGestion
+                    userId={partida.dmId}
                     nombre={partida.dm}
                     rol="Master"
                     avatarUrl={datosMaster.avatar_url}
@@ -440,6 +440,7 @@ export default function GestionPartida({ partida }: { partida: Partida }) {
                                 return (
                                     <li key={jugador.user_id}>
                                         <FichaParticipanteGestion
+                                            userId={jugador.user_id}
                                             nombre={jugador.username}
                                             rol="Jugador"
                                             avatarUrl={avatarUrl}

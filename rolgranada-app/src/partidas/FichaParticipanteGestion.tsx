@@ -1,4 +1,8 @@
+import AvatarUsuario from "../components/AvatarUsuario";
+import PerfilUsuarioLink from "../components/PerfilUsuarioLink";
+
 type FichaParticipanteProps = {
+    userId: string;
     nombre: string;
     rol: string;
     avatarUrl: string | null;
@@ -11,6 +15,7 @@ type FichaParticipanteProps = {
 };
 
 export function FichaParticipanteGestion({
+    userId,
     nombre,
     rol,
     avatarUrl,
@@ -21,36 +26,17 @@ export function FichaParticipanteGestion({
     onVerPreferencias,
     onQuitar,
 }: FichaParticipanteProps) {
-    const avatarPos = avatarPosition ? avatarPosition.split(' ') : ['50', '50', '100'];
-    const tieneAvatar = Boolean(avatarUrl && avatarUrl.trim() !== '');
     const tieneDisp = franjasIndicadas > 0;
 
     return (
         <div className="gestion-jugador-li" style={{ width: '100%' }}>
             <div className="gestion-jugador-identidad">
-                {tieneAvatar ? (
-                    <div className="gestion-avatar-redondo" style={{ opacity: cargado ? 1 : 0, transition: 'opacity 0.2s ease-in-out' }}>
-                        <img
-                            src={avatarUrl!}
-                            alt=""
-                            referrerPolicy="no-referrer"
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                                display: 'block',
-                                objectPosition: `${avatarPos[0]}% ${avatarPos[1]}%`,
-                                transform: `scale(${Number(avatarPos[2]) / 100})`,
-                                transformOrigin: `${avatarPos[0]}% ${avatarPos[1]}%`
-                            }}
-                        />
-                    </div>
-                ) : (
-                    <div className="gestion-avatar-redondo gestion-avatar-placeholder">{rol === 'Master' ? 'DM' : 'User'}</div>
-                )}
+                <div className="gestion-avatar-redondo" style={{ opacity: cargado ? 1 : 0, transition: 'opacity 0.2s ease-in-out' }}>
+                    <AvatarUsuario userId={userId} nombre={nombre} avatarUrl={avatarUrl} avatarPosition={avatarPosition} size={44} />
+                </div>
                 <div className="gestion-jugador-datos-texto">
                     <span className="gestion-rol-titulo">{rol}</span>
-                    <strong>{nombre}</strong>
+                    <strong><PerfilUsuarioLink userId={userId} nombre={nombre} /></strong>
                     <span
                         className={`jugador-disponibilidad ${!tieneDisp ? "sin-disponibilidad" : "con-disponibilidad"}`}
                         style={{ opacity: cargado ? 1 : 0, transition: 'opacity 0.2s ease-in-out' }}

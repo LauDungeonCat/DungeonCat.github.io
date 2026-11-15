@@ -52,8 +52,8 @@ function obtenerTextoProximaSesion(partidaId: string, sesiones: Array<{ fecha: s
 }
 
 export default function MisPartidas() {
-    const { usuario, partidas, sesiones: sesionesAgendadas, loading, error, desapuntarseDePartida } = useRolData();
-    const { requestLogin } = useAuth();
+    const { usuario, partidas, sesiones: sesionesAgendadas, loading, error, desapuntarseDePartida, finalizarPartida } = useRolData();
+    const { profile, requestLogin } = useAuth();
     const [campanaActiva, setCampanaActiva] = useState(0);
     const [vista, setVista] = useState<Vista>(leerVistaGuardada);
     const [campanaAbiertaId, setCampanaAbiertaId] = useState<string | null>(null);
@@ -63,10 +63,12 @@ export default function MisPartidas() {
 
     const [mostrarCrear, setMostrarCrear] = useState(false);
     const [partidaEditando, setPartidaEditando] = useState<Partida | null>(null);
-    const [partidaAEliminar, setPartidaAEliminar] = useState<Partida | null>(null);
     const [partidaConAvisos, setPartidaConAvisos] = useState<Partida | null>(null);
+    const [partidaAFinalizar, setPartidaAFinalizar] = useState<Partida | null>(null);
+    const [finalizando, setFinalizando] = useState(false);
+    const [errorFinalizacion, setErrorFinalizacion] = useState<string | null>(null);
 
-    const misPartidas = partidas.filter((partida) => usuario?.partidasInscritasIds.includes(partida.id) || partida.dmId === usuario?.id);
+    const misPartidas = partidas.filter((partida) => partida.estado !== "finalizada" && (usuario?.partidasInscritasIds.includes(partida.id) || partida.dmId === usuario?.id));
     const indiceCampanaActiva = misPartidas.length ? campanaActiva % misPartidas.length : 0;
     const campana = misPartidas[indiceCampanaActiva];
     const hayVariasCampanas = misPartidas.length > 1;
@@ -123,7 +125,7 @@ export default function MisPartidas() {
         function alPulsarTecla(event: KeyboardEvent) {
             if (event.key !== "Escape") return;
             // Si hay otra ventana abierta encima, Escape es para esa
-            if (mostrarCrear || partidaEditando || partidaAEliminar || partidaConAvisos) return;
+            if (mostrarCrear || partidaEditando || partidaConAvisos || partidaAFinalizar) return;
             setCampanaAbiertaId(null);
         }
         window.addEventListener("keydown", alPulsarTecla);
@@ -132,7 +134,21 @@ export default function MisPartidas() {
             document.body.style.overflow = overflowPrevio;
             window.removeEventListener("keydown", alPulsarTecla);
         };
-    }, [modalAbierto, mostrarCrear, partidaEditando, partidaAEliminar, partidaConAvisos]);
+    }, [modalAbierto, mostrarCrear, partidaEditando, partidaConAvisos, partidaAFinalizar]);
+
+    async function confirmarFinalizacion() {
+        if (!partidaAFinalizar) return;
+        setFinalizando(true);
+        setErrorFinalizacion(null);
+        try {
+            await finalizarPartida(partidaAFinalizar.id);
+            setPartidaAFinalizar(null);
+        } catch (cause) {
+            setErrorFinalizacion(cause instanceof Error ? cause.message : "No se pudo finalizar la partida.");
+        } finally {
+            setFinalizando(false);
+        }
+    }
 
     function cambiarVista(nueva: Vista) {
         setVista(nueva);
@@ -182,13 +198,13 @@ export default function MisPartidas() {
                         </button>
                     )}
 
-                    {item.dmId === usuario?.id && (
+                    {item.dmId === usuario?.id && item.estado !== "finalizada" && (
                         <div className="mis-partidas-acciones-campana">
                             <button type="button" onClick={() => setPartidaEditando(item)}>
-                                Editar campaña
+                                Gestionar
                             </button>
-                            <button type="button" className="mis-partidas-eliminar" onClick={() => setPartidaAEliminar(item)}>
-                                Eliminar campaña
+                            <button type="button" className="mis-partidas-eliminar" onClick={() => { setErrorFinalizacion(null); setPartidaAFinalizar(item); }}>
+                                Finalizar partida
                             </button>
                             <button
                                 type="button"
@@ -228,6 +244,7 @@ export default function MisPartidas() {
                 </div>
             </div>
             {error && <p className="datos-error" role="alert">{error}</p>}
+            {errorFinalizacion && <p className="datos-error" role="alert">{errorFinalizacion}</p>}
             <AvisoDisponibilidad
                 disponibilidad={usuario?.disponibilidad}
                 sesiones={sesionesAgendadas.map((s) => ({ ...s, franja: s.franja as "manana" | "tarde" }))}
@@ -356,9 +373,22 @@ export default function MisPartidas() {
 
             {mostrarCrear && <FormularioPartida onClose={() => setMostrarCrear(false)} />}
             {partidaEditando && <FormularioPartida partidaAEditar={partidaEditando} onClose={() => setPartidaEditando(null)} />}
-            {partidaAEliminar && <FormularioPartida partidaAEliminar={partidaAEliminar} onClose={() => setPartidaAEliminar(null)} />}
             {partidaConAvisos && <VerTriggerWarnings titulo={partidaConAvisos.titulo} avisos={partidaConAvisos.triggerWarnings} onClose={() => setPartidaConAvisos(null)} />}
-
+            {partidaAFinalizar && profile?.id === partidaAFinalizar.dmId && (
+                <div className="finalizar-partida-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget && !finalizando) setPartidaAFinalizar(null); }}>
+                    <section className="finalizar-partida-dialog" role="dialog" aria-modal="true" aria-labelledby={`finalizar-partida-titulo-${partidaAFinalizar.id}`}>
+                        <h2 id={`finalizar-partida-titulo-${partidaAFinalizar.id}`}>Finalizar partida</h2>
+                        <p>Esta acción es irreversible. La partida dejará de aparecer en Mis Partidas y en Buscar Partidas, pero se conservará en el historial.</p>
+                        {errorFinalizacion && <p className="datos-error" role="alert">{errorFinalizacion}</p>}
+                        <div>
+                            <button type="button" className="btn-secundario" disabled={finalizando} onClick={() => setPartidaAFinalizar(null)}>Cancelar</button>
+                            <button type="button" className="btn-rojo" disabled={finalizando} onClick={() => void confirmarFinalizacion()}>
+                                {finalizando ? "Finalizando…" : "Sí, finalizar"}
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            )}
             <CalendarioSesiones sesiones={sesiones} />
         </section>
     );

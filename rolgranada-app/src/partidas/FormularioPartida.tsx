@@ -9,11 +9,10 @@ const IMAGEN_DEFAULT = "https://images.unsplash.com/photo-1518709268805-4e9042af
 
 interface FormularioPartidaProps {
   partidaAEditar?: Partida | null;
-  partidaAEliminar?: Partida | null;
   onClose: () => void;
 }
 
-export default function FormularioPartida({ partidaAEditar, partidaAEliminar, onClose }: FormularioPartidaProps) {
+export default function FormularioPartida({ partidaAEditar, onClose }: FormularioPartidaProps) {
   const { crearPartida, actualizarPartida, eliminarPartida, usuario } = useRolData();
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,6 +20,7 @@ export default function FormularioPartida({ partidaAEditar, partidaAEliminar, on
     () => partidaAEditar?.triggerWarnings ?? { explicitos: [], implicitos: [], otro: "" },
   );
   const [editorAvisosAbierto, setEditorAvisosAbierto] = useState(false);
+  const [confirmarEliminacion, setConfirmarEliminacion] = useState(false);
   const totalAvisos = contarTriggerWarnings(triggerWarnings);
 
   const [formulario, setFormulario] = useState({
@@ -34,6 +34,7 @@ export default function FormularioPartida({ partidaAEditar, partidaAEliminar, on
     duracionEstimada: partidaAEditar?.duracionEstimada ?? "",
     imagenUrl: partidaAEditar?.imagenUrl ?? "",
     esPrivada: partidaAEditar?.esPrivada ?? false,
+    amigosPuedenUnirse: partidaAEditar?.amigosPuedenUnirse ?? false,
   });
 
   function actualizarCampo(campo: string, valor: string | boolean) {
@@ -56,6 +57,7 @@ export default function FormularioPartida({ partidaAEditar, partidaAEliminar, on
       sesionesAlMes: Math.max(1, parseInt(formulario.sesionesAlMes, 10) || 2),
       duracionEstimada: formulario.duracionEstimada.trim(),
       esPrivada: formulario.esPrivada,
+      amigosPuedenUnirse: formulario.amigosPuedenUnirse,
       triggerWarnings,
     };
 
@@ -73,11 +75,11 @@ export default function FormularioPartida({ partidaAEditar, partidaAEliminar, on
   }
 
   async function confirmarBorrado() {
-    if (!partidaAEliminar) return;
+    if (!partidaAEditar) return;
     setGuardando(true);
     setError(null);
     try {
-      await eliminarPartida(partidaAEliminar.id);
+      await eliminarPartida(partidaAEditar.id);
       onClose();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Hubo un error al eliminar la campaña.");
@@ -85,28 +87,28 @@ export default function FormularioPartida({ partidaAEditar, partidaAEliminar, on
     }
   }
 
-  if (partidaAEliminar) {
+  if (confirmarEliminacion && partidaAEditar) {
     return (
-      <div className="crear-campana-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="crear-campana-overlay" onMouseDown={(e) => e.target === e.currentTarget && !guardando && setConfirmarEliminacion(false)}>
         <section className="crear-campana-dialog" role="dialog" aria-modal="true" aria-labelledby="eliminar-campana-titulo">
           <header className="crear-campana-header">
             <div>
               <p className="seccion-etiqueta" style={{ color: "#a8131a" }}>Atención</p>
-              <h2 id="eliminar-campana-titulo">Eliminar campaña</h2>
+              <h2 id="eliminar-campana-titulo">Eliminar partida</h2>
             </div>
-            <button type="button" className="crear-campana-cerrar" onClick={onClose} disabled={guardando}>×</button>
+            <button type="button" className="crear-campana-cerrar" onClick={() => setConfirmarEliminacion(false)} disabled={guardando}>×</button>
           </header>
 
           {error && <p className="datos-error" role="alert">{error}</p>}
 
           <div className="crear-campana-form">
             <p className="crear-campana-aviso">
-              ¿Quieres borrar la campaña <strong>"{partidaAEliminar.titulo}"</strong>? Esta acción no se puede deshacer.
+              ¿Quieres eliminar la partida <strong>"{partidaAEditar.titulo}"</strong>? Esta acción no se puede deshacer.
             </p>
             <div className="crear-campana-acciones">
-              <button className="crear-campana-cancelar" type="button" onClick={onClose} disabled={guardando}>Cancelar</button>
+              <button className="crear-campana-cancelar" type="button" onClick={() => setConfirmarEliminacion(false)} disabled={guardando}>Cancelar</button>
               <button className="crear-campana-enviar" type="button" style={{ backgroundColor: "#c02642", borderColor: "#a8131a" }} onClick={() => void confirmarBorrado()} disabled={guardando}>
-                {guardando ? "Eliminando…" : "Sí, eliminar campaña"}
+                {guardando ? "Eliminando…" : "Sí, eliminar partida"}
               </button>
             </div>
           </div>
@@ -151,6 +153,13 @@ export default function FormularioPartida({ partidaAEditar, partidaAEliminar, on
               Campaña privada: requiere aprobación o enlace de invitación
             </label>
 
+            {formulario.esPrivada && (
+              <label className="crear-campana-privacidad crear-campana-campo-amplio">
+                <input type="checkbox" checked={formulario.amigosPuedenUnirse} onChange={(e) => actualizarCampo("amigosPuedenUnirse", e.target.checked)} />
+                Permitir que mis amistades se unan directamente sin invitación
+              </label>
+            )}
+
             <label>
               Ubicación aproximada
               <input required maxLength={100} value={formulario.ubicacionAproximada} onChange={(e) => actualizarCampo("ubicacionAproximada", e.target.value)} placeholder="Zona" />
@@ -194,6 +203,11 @@ export default function FormularioPartida({ partidaAEditar, partidaAEliminar, on
           </div>
 
           <div className="crear-campana-acciones">
+            {partidaAEditar && (
+              <button className="crear-campana-eliminar" type="button" onClick={() => setConfirmarEliminacion(true)} disabled={guardando}>
+                Eliminar partida
+              </button>
+            )}
             <button className="crear-campana-cancelar" type="button" onClick={onClose}>Cancelar</button>
             <button className="crear-campana-enviar" type="submit" disabled={guardando}>
               {guardando ? "Guardando…" : partidaAEditar ? "Guardar cambios" : "Publicar campaña"}

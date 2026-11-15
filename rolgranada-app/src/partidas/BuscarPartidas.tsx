@@ -6,6 +6,8 @@ import AvisoDisponibilidad from "./AvisoDisponibilidad";
 import FormularioPartida from "./FormularioPartida";
 import VerTriggerWarnings from "./VerTriggerWarnings";
 import { hayTriggerWarnings } from "../temasSensibles";
+import AvatarUsuario from "../components/AvatarUsuario";
+import PerfilUsuarioLink from "../components/PerfilUsuarioLink";
 import "./BuscarPartidas.css";
 
 export default function BuscarPartidas({
@@ -21,7 +23,6 @@ export default function BuscarPartidas({
   const [busqueda, setBusqueda] = useState("");
   const [crearAbierto, setCrearAbierto] = useState(abrirCreacionInicial);
   const [partidaEnEdicion, setPartidaEnEdicion] = useState<Partida | null>(partidaInicialAEditar);
-  const [partidaAEliminar, setPartidaAEliminar] = useState<Partida | null>(null);
   const [partidaConAvisos, setPartidaConAvisos] = useState<Partida | null>(null);
 
   const partidaEnlaceId = new URLSearchParams(window.location.search).get("partida");
@@ -29,7 +30,7 @@ export default function BuscarPartidas({
   const termino = busqueda.trim().toLocaleLowerCase("es");
 
   // Búsqueda mejorada incluyendo título, sistema y zona aproximada
-  const partidasFiltradas = partidas.filter((p) => 
+  const partidasFiltradas = partidas.filter((p) => p.estado !== "finalizada" &&
     `${p.titulo} ${p.sistema} ${p.ubicacionAproximada}`.toLocaleLowerCase("es").includes(termino)
   );
 
@@ -86,6 +87,7 @@ export default function BuscarPartidas({
             const completa = partida.participantesCount >= partida.participantesMax;
             const esDm = usuario?.id === partida.dmId;
             const tieneInvitacion = partida.id === partidaEnlaceId && Boolean(codigoInvitacion);
+            const puedeUnirseDirectamente = !partida.esPrivada || (partida.amigosPuedenUnirse && partida.viewerEsAmigo);
             const puedeGestionar = esDm || usuario?.role === "admin";
             const sesionesMes = partida.sesionesAlMes ?? 2;
 
@@ -103,10 +105,15 @@ export default function BuscarPartidas({
                       <p className="partida-sistema">{partida.sistema}</p>
                       <h2>{partida.titulo}</h2>
                       {partida.esPrivada && <span className="partida-privada-etiqueta">Privada</span>}
+                      {partida.esPrivada && partida.amigosPuedenUnirse && <span className="partida-privada-etiqueta">Acceso directo para amistades</span>}
                     </div>
                     <span className="partida-aforo">{partida.participantesCount}/{partida.participantesMax}</span>
                   </div>
-                  <p className="partida-dm"><strong>Dirige:</strong> {partida.dm}</p>
+                  <p className="partida-dm">
+                    <strong>Dirige:</strong>
+                    <AvatarUsuario userId={partida.dmId} nombre={partida.dm} avatarUrl={partida.dmAvatarUrl} avatarPosition={partida.dmAvatarPosition} size={34} />
+                    <PerfilUsuarioLink userId={partida.dmId} nombre={partida.dm} />
+                  </p>
                   <p className="partida-sesiones"><strong>Frecuencia:</strong> {sesionesMes} {sesionesMes === 1 ? "sesión" : "sesiones"}/mes</p>
                   {partida.duracionEstimada && <p className="partida-duracion"><strong>Duración estimada:</strong> {partida.duracionEstimada}</p>}
                   <p className="partida-ubicacion"><strong>Zona aproximada:</strong> {partida.ubicacionAproximada}</p>
@@ -120,8 +127,7 @@ export default function BuscarPartidas({
 
                   {puedeGestionar && (
                     <div className="partida-gestion">
-                      <button type="button" onClick={() => setPartidaEnEdicion(partida)}>Editar</button>
-                      <button type="button" className="partida-borrar" onClick={() => setPartidaAEliminar(partida)}>Borrar</button>
+                      <button type="button" onClick={() => setPartidaEnEdicion(partida)}>Gestionar</button>
                     </div>
                   )}
 
@@ -131,11 +137,11 @@ export default function BuscarPartidas({
                       type="button"
                       onClick={() => {
                         if (!usuario) { requestLogin(); return; }
-                        void (yaInscrito ? desapuntarseDePartida(partida.id) : tieneInvitacion && codigoInvitacion ? unirsePorInvitacion(partida.id, codigoInvitacion) : partida.esPrivada ? solicitarUnirseAPartida(partida.id) : unirseAPartida(partida.id));
+                        void (yaInscrito ? desapuntarseDePartida(partida.id) : tieneInvitacion && codigoInvitacion ? unirsePorInvitacion(partida.id, codigoInvitacion) : puedeUnirseDirectamente ? unirseAPartida(partida.id) : solicitarUnirseAPartida(partida.id));
                       }}
-                      disabled={esDm || (!yaInscrito && (!abierta || completa || (partida.esPrivada && partida.viewerHasRequested && !tieneInvitacion)))}
+                      disabled={esDm || (!yaInscrito && (!abierta || completa || (partida.esPrivada && !puedeUnirseDirectamente && partida.viewerHasRequested && !tieneInvitacion)))}
                     >
-                      {esDm ? "Eres DM" : yaInscrito ? "Desapuntarse" : tieneInvitacion ? "Entrar con invitación" : partida.esPrivada && partida.viewerHasRequested ? "Solicitud enviada" : partida.esPrivada ? "Solicitar unirse" : !abierta ? etiquetaEstado(partida.estado) : completa ? "Partida completa" : "Unirse a la campaña"}
+                      {esDm ? "Eres DM" : yaInscrito ? "Desapuntarse" : tieneInvitacion ? "Entrar con invitación" : !abierta ? etiquetaEstado(partida.estado) : completa ? "Partida completa" : partida.esPrivada && !puedeUnirseDirectamente && partida.viewerHasRequested ? "Solicitud enviada" : partida.esPrivada && !puedeUnirseDirectamente ? "Solicitar unirse" : "Unirse a la campaña"}
                     </button>
                   </div>
                 </div>
@@ -152,7 +158,6 @@ export default function BuscarPartidas({
 
       {crearAbierto && <FormularioPartida onClose={() => setCrearAbierto(false)} />}
       {partidaEnEdicion && <FormularioPartida partidaAEditar={partidaEnEdicion} onClose={() => setPartidaEnEdicion(null)} />}
-      {partidaAEliminar && <FormularioPartida partidaAEliminar={partidaAEliminar} onClose={() => setPartidaAEliminar(null)} />}
       {partidaConAvisos && <VerTriggerWarnings titulo={partidaConAvisos.titulo} avisos={partidaConAvisos.triggerWarnings} onClose={() => setPartidaConAvisos(null)} />}
     </section>
   );

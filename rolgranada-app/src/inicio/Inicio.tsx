@@ -124,8 +124,8 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
         
         <div className="roadmap-grid">
           <div className="roadmap-card">
-            <h4> Valoraciones y Comentarios</h4>
-            <p>Sistema para dejar valoraciones y comentarios de agradecimiento o feedback a Dungeon Masters de la comunidad.</p>
+            <h4>Amistades y comunidad</h4>
+            <p>Conecta con otras personas, comparte tu perfil y organiza tu comunidad de juego.</p>
           </div>
 
           <div className="roadmap-card">

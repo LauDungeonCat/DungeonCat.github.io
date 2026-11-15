@@ -150,6 +150,18 @@
 	color: var(--text-primary);
 }
 
+.crear-campana-eliminar {
+	margin-right: auto;
+	border-color: var(--state-error-border);
+	background: var(--state-error-bg);
+	color: var(--state-error-text);
+}
+
+.crear-campana-eliminar:hover {
+	background: var(--state-error-border);
+	color: var(--text-inverted);
+}
+
 .crear-campana-avisos {
 	display: flex;
 	flex-wrap: wrap;

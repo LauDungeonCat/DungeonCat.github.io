@@ -1,0 +1,285 @@
+.insignias-seccion {
+  display: grid;
+  gap: 1rem;
+}
+
+.insignias-seccion h2 {
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: 1.35rem;
+}
+
+.insignias-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.8rem;
+}
+
+.insignia-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  min-height: 145px;
+  padding: 0.8rem;
+  overflow: hidden;
+  border: 2px solid var(--border-neobrutal);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: 3px 3px 0 var(--shadow-neobrutal);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.insignia-icono {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.insignia-icono svg {
+  display: block;
+  width: 1em;
+  height: 1em;
+}
+
+.insignia-categoria,
+.insignia-metal,
+.insignia-detalle-hint {
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+}
+
+.insignia-detalle-hint {
+  margin-top: 0.15rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.insignia-metal {
+  font-weight: 700;
+}
+
+.insignia-card strong {
+  font-size: 0.9rem;
+}
+
+.metal-generica {
+  border-style: dashed;
+  color: var(--text-secondary);
+}
+
+.metal-cobre { color: #a65324; }
+.metal-plata { color: #697783; }
+.metal-oro { color: #9c7200; }
+.metal-diamante { color: #187b8c; }
+
+.metal-cobre .insignia-icono { background: linear-gradient(145deg, #ffe0bf, #b96635 48%, #f6c59c); }
+.metal-plata .insignia-icono { background: linear-gradient(145deg, #fff, #aeb8c2 48%, #edf1f4); }
+.metal-oro .insignia-icono { background: linear-gradient(145deg, #fff3a6, #d8ac29 48%, #fff0a0); }
+.metal-diamante .insignia-icono { background: linear-gradient(145deg, #e0ffff, #75d8e6 48%, #f8ffff); }
+
+.metal-generica .insignia-icono {
+  border-style: dashed;
+  background: var(--bg-subtle);
+}
+
+body.dark-mode .metal-cobre { color: #f0a16b; }
+body.dark-mode .metal-plata { color: #c4d0da; }
+body.dark-mode .metal-oro { color: #f0cb55; }
+body.dark-mode .metal-diamante { color: #72d9e8; }
+body.dark-mode .metal-diamante .insignia-icono {
+  color: #e8ffff;
+  text-shadow: 0 1px 2px #176271;
+}
+
+.insignia-card:hover,
+.insignia-card:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 4px 5px 0 var(--shadow-neobrutal);
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+.insignia-card:focus-visible {
+  outline-offset: 3px;
+}
+
+.insignia-popup-overlay {
+  position: fixed;
+  z-index: 1300;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(0 0 0 / 68%);
+  animation: insignia-aparecer 0.16s ease-out;
+}
+
+.insignia-popup {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  width: min(100%, 360px);
+  padding: 2rem 1.5rem 1.5rem;
+  border: 3px solid var(--border-neobrutal);
+  border-radius: 12px;
+  background: var(--bg-card);
+  box-shadow: 8px 8px 0 var(--shadow-neobrutal);
+  color: var(--text-primary);
+}
+
+.insignia-popup-cerrar {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 2.25rem;
+  min-height: 2.25rem;
+  padding: 0;
+  font-size: 1.4rem;
+}
+
+.insignia-popup-tarjeta {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  justify-items: center;
+  gap: 0.45rem;
+  width: min(100%, 260px);
+  min-height: 205px;
+  padding: 1.1rem;
+  overflow: hidden;
+  border: 3px solid currentColor;
+  border-radius: 12px;
+  background: var(--bg-card);
+  box-shadow: 4px 5px 0 var(--shadow-neobrutal);
+  text-align: center;
+  transform-style: preserve-3d;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.insignia-popup-tarjeta::before {
+  position: absolute;
+  z-index: 0;
+  inset: -60% auto -60% -55%;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 72%), transparent);
+  content: "";
+  opacity: 0;
+  transform: rotate(25deg) translateX(-220%);
+  transition: opacity 0.2s ease;
+}
+
+.insignia-popup-tarjeta:hover {
+  box-shadow: 8px 12px 18px rgb(0 0 0 / 28%), 4px 5px 0 var(--shadow-neobrutal);
+  transform: perspective(700px) rotateX(5deg) rotateY(-7deg) translateY(-4px);
+}
+
+.insignia-popup-tarjeta:hover::before {
+  opacity: 1;
+  transform: rotate(25deg) translateX(520%);
+  transition: transform 0.75s ease, opacity 0.2s ease;
+}
+
+.insignia-popup-tarjeta > * {
+  position: relative;
+  z-index: 1;
+}
+
+.insignia-popup-icono {
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 0.2rem;
+  border: 3px solid currentColor;
+  border-radius: 50%;
+  font-size: 3rem;
+  font-weight: 800;
+}
+
+.insignia-popup-icono svg {
+  width: 1em;
+  height: 1em;
+}
+
+.insignia-popup-categoria,
+.insignia-popup-metal {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.insignia-popup-tarjeta h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.insignia-popup-metal {
+  font-weight: 800;
+}
+
+.metal-cobre .insignia-popup-icono { background: linear-gradient(145deg, #ffe0bf, #b96635 48%, #f6c59c); }
+.metal-plata .insignia-popup-icono { background: linear-gradient(145deg, #fff, #aeb8c2 48%, #edf1f4); }
+.metal-oro .insignia-popup-icono { background: linear-gradient(145deg, #fff3a6, #d8ac29 48%, #fff0a0); }
+.metal-diamante .insignia-popup-icono { background: linear-gradient(145deg, #e0ffff, #75d8e6 48%, #f8ffff); }
+.metal-generica .insignia-popup-icono {
+  border-style: dashed;
+  background: var(--bg-subtle);
+}
+
+body.dark-mode .metal-diamante .insignia-popup-icono {
+  color: #e8ffff;
+  text-shadow: 0 1px 2px #176271;
+}
+
+.insignia-popup-detalle {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  text-align: center;
+}
+
+.insignia-popup-detalle p {
+  margin: 0;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.insignia-popup-detalle .insignia-siguiente {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.insignia-popup-detalle .insignia-descripcion {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+@keyframes insignia-aparecer {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .insignia-popup-overlay,
+  .insignia-popup-tarjeta,
+  .insignia-popup-tarjeta::before {
+    animation: none;
+    transition: none;
+  }
+
+  .insignia-popup-tarjeta:hover {
+    transform: none;
+  }
+}

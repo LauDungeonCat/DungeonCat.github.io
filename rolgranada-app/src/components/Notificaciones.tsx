@@ -4,6 +4,7 @@ import './Notificaciones.css';
 import type { Notificacion } from '../types';
 import { supabase } from '../lib/supabase';
 import { activarPush, detalleErrorPush } from '../lib/push';
+import PerfilUsuarioLink from './PerfilUsuarioLink';
 
 export type SolicitudPendienteRow = {
   partida_id: string;
@@ -41,6 +42,7 @@ export default function Notificaciones({
   const [notificacionesInApp, setNotificacionesInApp] = useState<Notificacion[]>([]);
   const [cargandoInApp, setCargandoInApp] = useState(false);
   const [errorInApp, setErrorInApp] = useState<string | null>(null);
+  const [limpiando, setLimpiando] = useState(false);
   const [permisoPush, setPermisoPush] = useState<NotificationPermission>(
     typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
   );
@@ -149,6 +151,43 @@ export default function Notificaciones({
     avisarCambioLeidas();
   }
 
+  async function borrarNotificacion(id: string) {
+    if (!userId) return;
+    const { data, error: deleteError } = await supabase
+      .from('notificaciones')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select('id');
+
+    if (deleteError || !data || data.length === 0) {
+      setErrorInApp(deleteError?.message ?? 'No se pudo borrar la notificación.');
+      return;
+    }
+    setErrorInApp(null);
+    setNotificacionesInApp((actuales) => actuales.filter((notificacion) => notificacion.id !== id));
+    avisarCambioLeidas();
+  }
+
+  async function borrarHistorialNotificaciones() {
+    if (!userId || !window.confirm('¿Quieres borrar todo tu historial de notificaciones? Esta acción no se puede deshacer.')) return;
+    setLimpiando(true);
+    setErrorInApp(null);
+    try {
+      const { error: deleteError } = await supabase
+        .from('notificaciones')
+        .delete()
+        .eq('user_id', userId);
+      if (deleteError) throw deleteError;
+      setNotificacionesInApp([]);
+      avisarCambioLeidas();
+    } catch (cause) {
+      setErrorInApp(cause instanceof Error ? cause.message : 'No se pudo borrar el historial de notificaciones.');
+    } finally {
+      setLimpiando(false);
+    }
+  }
+
   if (!abierto) return null;
 
   // Solo se oculta la notificación de "solicitud recibida" (ya aparece arriba con botones).
@@ -200,7 +239,7 @@ export default function Notificaciones({
                 return (
                   <li key={clave}>
                     <div className="notificacion-detalles">
-                      <strong>{solicitud.username}</strong>
+                      <strong><PerfilUsuarioLink userId={solicitud.user_id} nombre={solicitud.username} /></strong>
                       <span>Quiere entrar en <strong>{solicitud.partida_titulo}</strong></span>
                       <time dateTime={solicitud.fecha_union}>
                         {new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium' }).format(new Date(solicitud.fecha_union))}
@@ -236,16 +275,27 @@ export default function Notificaciones({
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '1rem 0 0.5rem 0' }}>
               <h3 style={{ fontSize: '0.95rem', margin: 0, color: 'var(--text-primary)' }}>Avisos Recientes</h3>
-              {hayNoLeidas && (
+              <div className="notificaciones-historial-acciones">
+                {hayNoLeidas && (
+                  <button
+                    type="button"
+                    className="notificacion-rechazar"
+                    style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                    onClick={() => void marcarTodasComoLeidas()}
+                  >
+                    Marcar todas como leídas
+                  </button>
+                )}
                 <button
                   type="button"
                   className="notificacion-rechazar"
                   style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
-                  onClick={() => void marcarTodasComoLeidas()}
+                  disabled={limpiando}
+                  onClick={() => void borrarHistorialNotificaciones()}
                 >
-                  Marcar todas como leídas
+                  {limpiando ? 'Borrando…' : 'Borrar historial'}
                 </button>
-              )}
+              </div>
             </div>
             <ul className="notificaciones-lista">
               {notificacionesFiltradas.map((notif) => (
@@ -268,8 +318,8 @@ export default function Notificaciones({
                       {new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(notif.created_at))}
                     </time>
                   </div>
-                  {!notif.leida && (
-                    <div className="notificacion-acciones" style={{ marginLeft: '1rem' }}>
+                  <div className="notificacion-acciones" style={{ marginLeft: '1rem' }}>
+                    {!notif.leida && (
                       <button 
                         type="button" 
                         className="notificacion-rechazar" 
@@ -278,8 +328,18 @@ export default function Notificaciones({
                       >
                         Marcar leída
                       </button>
-                    </div>
-                  )}
+                    )}
+                    <button
+                      type="button"
+                      className="notificacion-rechazar"
+                      style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                      disabled={limpiando}
+                      aria-label={`Borrar notificación: ${notif.titulo}`}
+                      onClick={() => void borrarNotificacion(notif.id)}
+                    >
+                      Borrar
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>

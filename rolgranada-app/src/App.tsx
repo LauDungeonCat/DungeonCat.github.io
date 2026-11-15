@@ -9,6 +9,7 @@ import { Inicio } from "./inicio/Inicio";
 import Perfil from "./perfil/Perfil";
 import WillOfForgeInicio from "./herramientas/wotf_ficha/WillOfForgeInicio";
 import WotfPersonajes from "./herramientas/wotf_ficha/WotfPersonajes";
+import { PerfilPublicoProvider } from "./perfil/PerfilPublicoProvider";
 
 import "./App.css";
 import { supabase } from "./lib/supabase";
@@ -146,5 +147,5 @@ function AplicacionAutenticada() {
 }
 
 export default function App() {
-  return <AuthProvider><AplicacionAutenticada /></AuthProvider>;
+  return <AuthProvider><PerfilPublicoProvider><AplicacionAutenticada /></PerfilPublicoProvider></AuthProvider>;
 }

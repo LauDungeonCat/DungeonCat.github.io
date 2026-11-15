@@ -4,6 +4,7 @@ import type { Database } from "./lib/database.types";
 import { supabase } from "./lib/supabase";
 import type { CambioDisponibilidad, DisponibilidadDia, FranjaEstado, FranjaHorario, Partida, PartidaEditable, UsuarioActivo } from "./types";
 import { normalizarTriggerWarnings, type TriggerWarningsPartida } from "./temasSensibles";
+import { featureRpc, featureSupabase } from "./lib/featureRpc";
 
 // Tipos auxiliares seguros basados en la Base de Datos
 export type SesionUsuarioRow = Database["public"]["Tables"]["sesiones"]["Row"];
@@ -35,6 +36,7 @@ function mapearPartida(row: PartidaConAccesoRow, triggerWarnings: TriggerWarning
     dmId: row.dm_id ?? "",
     dm: row.dm_username,
     dmAvatarUrl: row.dm_avatar_url,
+    dmAvatarPosition: row.dm_avatar_position ?? null,
     ubicacionAproximada: row.ubicacion_aproximada ?? "",
     ubicacionExacta: row.ubicacion_exacta,
     imagenUrl: row.imagen_url ?? "",
@@ -44,9 +46,12 @@ function mapearPartida(row: PartidaConAccesoRow, triggerWarnings: TriggerWarning
     viewerIsParticipant: row.viewer_is_participant,
     viewerHasRequested: row.viewer_has_requested,
     esPrivada: row.es_privada,
+    amigosPuedenUnirse: row.amigos_pueden_unirse ?? false,
+    viewerEsAmigo: row.viewer_es_amigo ?? false,
     proximaSesion: row.proxima_sesion ?? undefined,
     proximaSesionFranja: row.proxima_sesion_franja ?? undefined,
     estado: row.estado ?? "abierta",
+    fechaFin: row.fecha_fin ?? null,
     sesionesAlMes: row.sesiones_al_mes ?? 2,
     duracionEstimada: row.duracion_estimada,
     triggerWarnings,
@@ -341,7 +346,7 @@ export function useRolData() {
     async (datos: PartidaEditable) => {
       if (!profile) return;
       await ejecutar(async () => {
-        const { error: insertError } = await supabase.from("partidas").insert({
+        const { error: insertError } = await featureSupabase.from("partidas").insert({
           titulo: datos.titulo,
           sistema: datos.sistema,
           descripcion: datos.descripcion ?? "",
@@ -353,6 +358,7 @@ export function useRolData() {
           ubicacion_aproximada: datos.ubicacionAproximada,
           ubicacion_exacta: datos.ubicacionExacta ?? null,
           es_privada: datos.esPrivada ?? false,
+          amigos_pueden_unirse: datos.esPrivada ? datos.amigosPuedenUnirse ?? false : false,
           ...(datos.triggerWarnings ? { trigger_warnings: datos.triggerWarnings } : {}),
         });
         if (insertError) throw insertError;
@@ -364,7 +370,7 @@ export function useRolData() {
   const actualizarPartida = useCallback(
     async (id: string, datos: PartidaEditable) => {
       await ejecutar(async () => {
-        const { error: updateError } = await supabase
+        const { error: updateError } = await featureSupabase
           .from("partidas")
           .update({
             titulo: datos.titulo,
@@ -377,10 +383,20 @@ export function useRolData() {
             ubicacion_aproximada: datos.ubicacionAproximada,
             ubicacion_exacta: datos.ubicacionExacta ?? null,
             es_privada: datos.esPrivada ?? false,
+            amigos_pueden_unirse: datos.esPrivada ? datos.amigosPuedenUnirse ?? false : false,
             ...(datos.triggerWarnings ? { trigger_warnings: datos.triggerWarnings } : {}),
           })
           .eq("id", id);
         if (updateError) throw updateError;
+      });
+    },
+    [ejecutar]
+  );
+
+  const finalizarPartida = useCallback(
+    async (partidaId: string) => {
+      await ejecutar(async () => {
+        await featureRpc("finalizar_partida", { p_partida_id: partidaId });
       });
     },
     [ejecutar]
@@ -560,6 +576,7 @@ export function useRolData() {
     limpiarDisponibilidad,
     crearPartida,
     actualizarPartida,
+    finalizarPartida,
     actualizarCapacidad,
     eliminarPartida,
     cargarJugadoresPartida,
