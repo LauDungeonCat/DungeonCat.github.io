@@ -241,7 +241,24 @@ export function useRolData() {
         manana: manana ?? disponibilidad[fecha]?.manana ?? ("no_indicado" as const),
         tarde: tarde ?? disponibilidad[fecha]?.tarde ?? ("no_indicado" as const),
       }));
-      await ejecutar(async () => {
+      setDisponibilidad((actual) => ({
+        ...actual,
+        ...Object.fromEntries(filas.map(({ fecha, manana, tarde }) => [
+          fecha,
+          {
+            fecha,
+            ...(manana === "no_indicado" ? {} : { manana }),
+            ...(tarde === "no_indicado" ? {} : { tarde }),
+            franjasMarcadas: [
+              ...(manana !== "no_indicado" ? ["manana" as const] : []),
+              ...(tarde !== "no_indicado" ? ["tarde" as const] : []),
+            ],
+          },
+        ])),
+      }));
+
+      try {
+        await ejecutar(async () => {
         // 1. Guardar la disponibilidad actual
         const { error: saveError } = await supabase.from("disponibilidades").upsert(filas, { onConflict: "user_id,fecha" });
         if (saveError) throw saveError;
@@ -297,9 +314,13 @@ export function useRolData() {
             }
           }
         }
-      });
+        });
+      } catch (operationError) {
+        await sincronizarDatos();
+        throw operationError;
+      }
     },
-    [disponibilidad, ejecutar, profile]
+    [disponibilidad, ejecutar, profile, sincronizarDatos]
   );
 
   const actualizarDisponibilidad = useCallback(
