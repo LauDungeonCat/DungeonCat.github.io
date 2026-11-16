@@ -5,9 +5,9 @@ import type {
 } from "../types";
 
 type TablaPartidasConAccesoAmistades = Database["public"]["Tables"]["partidas"] & {
-  Row: Database["public"]["Tables"]["partidas"]["Row"] & { amigos_pueden_unirse: boolean };
-  Insert: Database["public"]["Tables"]["partidas"]["Insert"] & { amigos_pueden_unirse?: boolean };
-  Update: Database["public"]["Tables"]["partidas"]["Update"] & { amigos_pueden_unirse?: boolean };
+  Row: Database["public"]["Tables"]["partidas"]["Row"] & { amigos_pueden_unirse: boolean; es_evento: boolean };
+  Insert: Database["public"]["Tables"]["partidas"]["Insert"] & { amigos_pueden_unirse?: boolean; es_evento?: boolean };
+  Update: Database["public"]["Tables"]["partidas"]["Update"] & { amigos_pueden_unirse?: boolean; es_evento?: boolean };
 };
 
 type FuncionesNuevas = {
@@ -25,6 +25,10 @@ type FuncionesNuevas = {
   };
   actualizar_bio_perfil: {
     Args: { p_bio: string };
+    Returns: undefined;
+  };
+  marcar_partida_evento: {
+    Args: { p_partida_id: string; p_es_evento: boolean };
     Returns: undefined;
   };
   cancelar_solicitud_amistad: {

@@ -15,9 +15,6 @@ interface CalendarioSesionesProps {
     sesiones: Sesion[];
 }
 
-const hoy = new Date();
-hoy.setHours(0, 0, 0, 0);
-
 const diasSemana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 function fechaClave(fecha: Date) {
@@ -48,6 +45,8 @@ function obtenerEnlaceGoogleCalendar(sesion: Sesion) {
 }
 
 export default function CalendarioSesiones({ sesiones }: CalendarioSesionesProps) {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
     const [mesVisible, setMesVisible] = useState(() => new Date(hoy.getFullYear(), hoy.getMonth(), 1));
 
     const inicioMes = new Date(mesVisible.getFullYear(), mesVisible.getMonth(), 1);
@@ -64,6 +63,13 @@ export default function CalendarioSesiones({ sesiones }: CalendarioSesionesProps
         const clave = fechaClave(sesion.fecha);
         sesionesPorFecha.set(clave, [...(sesionesPorFecha.get(clave) ?? []), sesion]);
     }
+
+    const sesionesDelMes = sesiones
+        .filter((sesion) => sesion.fecha.getFullYear() === mesVisible.getFullYear() && sesion.fecha.getMonth() === mesVisible.getMonth())
+        .sort((a, b) => a.fecha.getTime() - b.fecha.getTime() || a.hora.localeCompare(b.hora, "es"));
+    const siguienteSesion = sesionesDelMes.find((sesion) =>
+        new Date(sesion.fecha.getFullYear(), sesion.fecha.getMonth(), sesion.fecha.getDate()) >= hoy
+    );
 
     const formatoMes = new Intl.DateTimeFormat("es-ES", { month: "long", year: "numeric" });
 
@@ -119,6 +125,36 @@ export default function CalendarioSesiones({ sesiones }: CalendarioSesionesProps
                     );
                 })}
             </div>
+            <ol className="calendario-agenda-movil" aria-label={`Sesiones de ${formatoMes.format(mesVisible)}`}>
+                {sesionesDelMes.length > 0 ? sesionesDelMes.map((sesion) => {
+                    const fechaSesion = new Date(sesion.fecha.getFullYear(), sesion.fecha.getMonth(), sesion.fecha.getDate());
+                    const esPasada = fechaSesion < hoy;
+                    const esSiguiente = sesion === siguienteSesion;
+                    return (
+                    <li
+                        key={`${fechaClave(sesion.fecha)}-${sesion.campana}-${sesion.hora}`}
+                        className={`${esPasada ? "dia-pasado" : ""}${esSiguiente ? " siguiente-sesion" : ""}`}
+                    >
+                        <time dateTime={fechaClave(sesion.fecha)}>
+                            {new Intl.DateTimeFormat("es-ES", { weekday: "short", day: "numeric", month: "short" }).format(sesion.fecha)}
+                        </time>
+                        <div>
+                            {esSiguiente && <span className="calendario-agenda-proxima">Siguiente sesión</span>}
+                            <strong>{sesion.campana}</strong>
+                            <span>{sesion.titulo} · {sesion.sistema || "Sistema por confirmar"}</span>
+                            <a
+                                className="calendario-agenda-google"
+                                href={obtenerEnlaceGoogleCalendar(sesion)}
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label={`Añadir sesión de ${sesion.campana} a Google Calendar`}
+                            >
+                                Añadir a Google Calendar
+                            </a>
+                        </div>
+                    </li>
+                )}) : <li className="calendario-agenda-vacia">No hay sesiones este mes.</li>}
+            </ol>
         </section>
     );
 }

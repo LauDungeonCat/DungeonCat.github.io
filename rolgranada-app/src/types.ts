@@ -43,6 +43,7 @@ export interface Partida {
   esPrivada: boolean;
   amigosPuedenUnirse: boolean;
   viewerEsAmigo: boolean;
+  esEvento: boolean;
   proximaSesion?: string;
   proximaSesionFranja?: FranjaHorario;
   estado: "abierta" | "en_curso" | "finalizada";
@@ -133,6 +134,7 @@ export interface PartidaEditable {
   duracionEstimada: string;
   esPrivada?: boolean;
   amigosPuedenUnirse?: boolean;
+  esEvento?: boolean;
   triggerWarnings?: TriggerWarningsPartida;
 }
 

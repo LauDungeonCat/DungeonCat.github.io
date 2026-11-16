@@ -48,6 +48,7 @@ function mapearPartida(row: PartidaConAccesoRow, triggerWarnings: TriggerWarning
     esPrivada: row.es_privada,
     amigosPuedenUnirse: row.amigos_pueden_unirse ?? false,
     viewerEsAmigo: row.viewer_es_amigo ?? false,
+    esEvento: row.es_evento ?? false,
     proximaSesion: row.proxima_sesion ?? undefined,
     proximaSesionFranja: row.proxima_sesion_franja ?? undefined,
     estado: row.estado ?? "abierta",
@@ -346,7 +347,7 @@ export function useRolData() {
     async (datos: PartidaEditable) => {
       if (!profile) return;
       await ejecutar(async () => {
-        const { error: insertError } = await featureSupabase.from("partidas").insert({
+        const { data: partidaCreada, error: insertError } = await featureSupabase.from("partidas").insert({
           titulo: datos.titulo,
           sistema: datos.sistema,
           descripcion: datos.descripcion ?? "",
@@ -360,8 +361,14 @@ export function useRolData() {
           es_privada: datos.esPrivada ?? false,
           amigos_pueden_unirse: datos.esPrivada ? datos.amigosPuedenUnirse ?? false : false,
           ...(datos.triggerWarnings ? { trigger_warnings: datos.triggerWarnings } : {}),
-        });
+        }).select("id").single();
         if (insertError) throw insertError;
+        if (profile.role === "admin" && datos.esEvento) {
+          await featureRpc("marcar_partida_evento", {
+            p_partida_id: partidaCreada.id,
+            p_es_evento: true,
+          });
+        }
       });
     },
     [ejecutar, profile]
@@ -388,9 +395,15 @@ export function useRolData() {
           })
           .eq("id", id);
         if (updateError) throw updateError;
+        if (profile?.role === "admin") {
+          await featureRpc("marcar_partida_evento", {
+            p_partida_id: id,
+            p_es_evento: datos.esEvento ?? false,
+          });
+        }
       });
     },
-    [ejecutar]
+    [ejecutar, profile?.role]
   );
 
   const finalizarPartida = useCallback(

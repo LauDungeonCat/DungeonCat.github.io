@@ -362,6 +362,70 @@ body.dark-mode .perfil-admin-crown {
 
 .perfil-avatar-preview-container {
   flex-shrink: 0;
+  display: grid;
+  justify-items: center;
+  gap: 0.65rem;
+}
+
+.perfil-avatar-selector {
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.perfil-avatar-selector:hover {
+  background-color: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.perfil-avatar-selector span {
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.perfil-avatar-selector:hover span,
+.perfil-avatar-selector:focus-visible span {
+  color: var(--color-brand);
+  text-decoration: underline;
+}
+
+.perfil-avatar-selector:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+.perfil-editor-imagen-dialog {
+  width: min(100%, 520px);
+}
+
+.perfil-editor-imagen-dialog > label {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 1.25rem;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.perfil-editor-imagen-dialog input[type="url"] {
+  width: 100%;
+  min-height: 2.65rem;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  padding: 0.6rem 0.7rem;
+  background: var(--input-bg);
+  color: var(--input-text);
+  font: inherit;
+  font-weight: 400;
 }
 
 .perfil-inputs-col {
@@ -419,11 +483,6 @@ body.dark-mode .perfil-admin-crown {
 .perfil-ajuste-posicion {
   grid-template-columns: 1fr auto;
   align-items: center;
-}
-
-.perfil-form-card .perfil-abrir-recorte {
-  min-height: 2.2rem;
-  padding: 0.45rem 0.8rem;
 }
 
 .perfil-recorte-dialog {
@@ -696,6 +755,38 @@ body.dark-mode .perfil-admin-crown {
 }
 
 @media (max-width: 600px) {
+  .perfil-tabs {
+    flex-wrap: nowrap;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding: 0.35rem;
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    background: var(--bg-alt);
+    scrollbar-color: var(--color-brand) var(--bg-alt);
+    scrollbar-width: thin;
+    overscroll-behavior-x: contain;
+  }
+  .perfil-tab-btn {
+    flex: 0 0 auto;
+    min-height: 2.75rem;
+    margin: 0;
+    padding: 0.65rem 0.85rem;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+  .perfil-tab-btn.active {
+    border-color: var(--border-neobrutal);
+    background: var(--color-brand-header);
+    color: #fff;
+    box-shadow: 0 2px 0 var(--shadow-neobrutal);
+  }
+  .perfil-tab-btn:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
   .perfil-inputs-grid {
     grid-template-columns: 1fr;
   }

@@ -47,6 +47,59 @@
   margin-top: 2rem;
 }
 
+.inicio-eventos {
+  margin: 0 0 2.5rem;
+}
+
+.inicio-eventos .inicio-seccion-titulo {
+  margin-bottom: 1rem;
+}
+
+.inicio-eventos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 1rem;
+}
+
+.inicio-evento-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+  border: 2px solid var(--border-neobrutal);
+  border-radius: 8px;
+  padding: 1.25rem;
+  background: var(--bg-card);
+  box-shadow: 0 5px 0 var(--shadow-neobrutal);
+}
+
+.inicio-evento-card h3 {
+  margin: 0.25rem 0 0.65rem;
+  color: var(--text-primary);
+  font-family: Georgia, serif;
+  overflow-wrap: anywhere;
+}
+
+.inicio-evento-sistema,
+.inicio-evento-fecha {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.inicio-evento-descripcion {
+  margin: 0 0 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.inicio-evento-card .btn-secundario {
+  align-self: flex-start;
+}
+
 /* Botones */
 .btn-rojo, .btn-secundario {
   min-height: 2.5rem;

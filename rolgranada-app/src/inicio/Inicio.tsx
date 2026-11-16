@@ -12,6 +12,7 @@ interface InicioProps {
 
 export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
   const { partidas, sesiones } = useRolData();
+  const eventos = partidas.filter((partida) => partida.esEvento && partida.estado !== "finalizada");
 
   // Estadísticas calculadas directamente del estado cargado por useRolData
   const mesasActivas = partidas.length;
@@ -29,6 +30,30 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
           </p>
         </div>
       </header>
+
+      {eventos.length > 0 && (
+        <section className="inicio-eventos" aria-labelledby="inicio-eventos-titulo">
+          <p className="seccion-etiqueta">Agenda de la comunidad</p>
+          <h2 className="inicio-seccion-titulo" id="inicio-eventos-titulo">Próximos eventos</h2>
+          <div className="inicio-eventos-grid">
+            {eventos.map((evento) => (
+              <article className="inicio-evento-card" key={evento.id}>
+                <div>
+                  <p className="inicio-evento-sistema">{evento.sistema}</p>
+                  <h3>{evento.titulo}</h3>
+                  {evento.descripcion && <p className="inicio-evento-descripcion">{evento.descripcion}</p>}
+                  <p className="inicio-evento-fecha">
+                    {evento.proximaSesion
+                      ? `Próxima sesión: ${new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(new Date(evento.proximaSesion))}${evento.proximaSesionFranja ? ` · ${evento.proximaSesionFranja === "manana" ? "Mañana" : "Tarde"}` : ""}`
+                      : "Fecha por confirmar"}
+                  </p>
+                </div>
+                <button type="button" className="btn-secundario" onClick={() => onNavigate?.("buscar-partidas")}>Ver partida</button>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Accesos Rápidos */}
       <p className="seccion-etiqueta seccion-separador">Accesos Rápidos</p>
@@ -113,44 +138,6 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
           <div className="stat-card">
             <span className="stat-value">{totalSesiones}</span>
             <span className="stat-label">Sesiones Totales</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Roadmap / Próximamente */}
-      <section className="inicio-roadmap-section">
-        <p className="seccion-etiqueta">Próximamente</p>
-        <h3 className="inicio-seccion-titulo">Evolución de la Web</h3>
-        
-        <div className="roadmap-grid">
-          <div className="roadmap-card">
-            <h4>Amistades y comunidad</h4>
-            <p>Conecta con otras personas, comparte tu perfil y organiza tu comunidad de juego.</p>
-          </div>
-
-          <div className="roadmap-card">
-            <h4> Mejora de Temas Sensibles (HECHO!)</h4>
-            <p>Tabla con temas específicos que dará avisos si se seleccionan en una partida. Añadir Trigger Warnings.</p>
-          </div>
-
-          <div className="roadmap-card">
-            <h4> Sistema de Socios (HECHO!)</h4>
-            <p>Todo es gratis, los socios solo apoyan a la comunidad y reciben un sombrerito personalizado encima de su avatar.</p>
-          </div>
-
-          <div className="roadmap-card">
-            <h4> Mejoras para DM</h4>
-            <p>Más herramientas para Dungeon Masters y estadísticas de sus partidas.</p>
-          </div>
-
-          <div className="roadmap-card">
-            <h4> Mejora de Perfil</h4>
-            <p>Un sistema con insignias por logros, estadísticas de juego y recomendaciones de juegos.</p>
-          </div>
-
-          <div className="roadmap-card">
-            <h4> Sugerencias y Feedback*</h4>
-            <p>Podéis escribirme por WhatsApp con sugerencias o feedback sobre la plataforma.</p>
           </div>
         </div>
       </section>

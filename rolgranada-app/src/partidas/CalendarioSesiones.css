@@ -136,12 +136,88 @@
 	margin-top: 0.1rem;
 }
 
+.calendario-agenda-movil {
+	display: none;
+}
+
 @media (max-width: 680px) {
 	.calendario-sesiones { margin-top: 3rem; }
 	.calendario-cabecera { align-items: flex-start; flex-direction: column; padding: 1rem; }
 	.calendario-navegacion { width: 100%; justify-content: space-between; }
-	.calendario-celda { min-height: 72px; padding: 0.25rem; }
-	.calendario-celda time { width: 1.5rem; height: 1.5rem; font-size: 0.8rem; }
-	.evento-sesion { margin-top: 0.2rem; padding: 0.2rem; font-size: 0.62rem; }
-	.evento-sesion span { display: none; }
+	.calendario-grid { display: none; }
+	.calendario-agenda-movil {
+		display: grid;
+		gap: 0;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.calendario-agenda-movil li {
+		display: grid;
+		grid-template-columns: minmax(5.5rem, auto) minmax(0, 1fr);
+		gap: 0.75rem;
+		align-items: start;
+		padding: 0.85rem 1rem;
+		border-bottom: 1px solid var(--input-border);
+	}
+	.calendario-agenda-movil li:last-child { border-bottom: 0; }
+	.calendario-agenda-movil li.dia-pasado {
+		background: var(--bg-subtle);
+		opacity: 0.58;
+	}
+	.calendario-agenda-movil li.dia-pasado time {
+		color: var(--text-muted);
+	}
+	.calendario-agenda-movil li.siguiente-sesion {
+		border-left: 4px solid var(--color-brand-header);
+		background: var(--state-warning-bg);
+	}
+	.calendario-agenda-movil time {
+		color: var(--color-brand-dark);
+		font-size: 0.82rem;
+		font-weight: 800;
+		text-transform: capitalize;
+	}
+	.calendario-agenda-movil li div { display: grid; gap: 0.2rem; min-width: 0; }
+	.calendario-agenda-movil li .calendario-agenda-proxima {
+		justify-self: start;
+		margin-bottom: 0.1rem;
+		padding: 0.12rem 0.4rem;
+		border-radius: 3px;
+		background: var(--color-brand-header);
+		color: var(--text-inverted);
+		font-size: 0.68rem;
+		font-weight: 800;
+		text-transform: uppercase;
+	}
+	.calendario-agenda-movil strong {
+		color: var(--text-primary);
+		overflow-wrap: anywhere;
+	}
+	.calendario-agenda-movil li.siguiente-sesion strong {
+		font-size: 1.05rem;
+	}
+	.calendario-agenda-movil li span {
+		color: var(--text-secondary);
+		font-size: 0.8rem;
+		overflow-wrap: anywhere;
+	}
+	.calendario-agenda-google {
+		justify-self: start;
+		margin-top: 0.2rem;
+		color: var(--color-brand-dark);
+		font-size: 0.78rem;
+		font-weight: 800;
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+	}
+	.calendario-agenda-google:hover,
+	.calendario-agenda-google:focus-visible {
+		color: var(--color-brand);
+	}
+	.calendario-agenda-movil .calendario-agenda-vacia {
+		display: block;
+		color: var(--text-secondary);
+		text-align: center;
+	}
 }

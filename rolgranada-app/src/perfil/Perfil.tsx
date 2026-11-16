@@ -35,7 +35,9 @@ export default function Perfil() {
   const [posX, setPosX] = useState<number>(50);
   const [posY, setPosY] = useState<number>(50);
   const [zoom, setZoom] = useState<number>(100);
+  const [mostrarEditorImagen, setMostrarEditorImagen] = useState(false);
   const [editorEncuadreAbierto, setEditorEncuadreAbierto] = useState(false);
+  const avatarUrlInicial = useRef("");
   const ajustesEncuadreIniciales = useRef<{ x: number; y: number; zoom: number } | null>(null);
   const arrastreEncuadre = useRef<{ pointerId: number; x: number; y: number } | null>(null);
   
@@ -59,6 +61,16 @@ export default function Perfil() {
   function abrirEditorEncuadre() {
     ajustesEncuadreIniciales.current = { x: posX, y: posY, zoom };
     setEditorEncuadreAbierto(true);
+  }
+
+  function abrirEditorImagen() {
+    avatarUrlInicial.current = avatarUrl;
+    setMostrarEditorImagen(true);
+  }
+
+  function cerrarEditorImagen(aplicar: boolean) {
+    if (!aplicar) setAvatarUrl(avatarUrlInicial.current);
+    setMostrarEditorImagen(false);
   }
 
   function cerrarEditorEncuadre(aplicar: boolean) {
@@ -376,22 +388,25 @@ export default function Perfil() {
             
             <div className="perfil-general-content">
               <div className="perfil-avatar-preview-container">
-                {avatarUrl ? (
-                  <div className="perfil-avatar-frame-redondo">
-                    <img 
-                      src={avatarUrl} 
-                      alt="Vista previa avatar" 
-                      className="perfil-avatar-grande-redondo" 
-                      style={{ 
-                        objectPosition: `${posX}% ${posY}%`,
-                        transform: `scale(${zoom / 100})`,
-                        transformOrigin: `${posX}% ${posY}%`
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="perfil-avatar-frame-redondo perfil-avatar-placeholder">Sin imagen</div>
-                )}
+                <button type="button" className="perfil-avatar-selector" onClick={abrirEditorImagen} aria-label="Cambiar imagen de perfil">
+                  {avatarUrl ? (
+                    <div className="perfil-avatar-frame-redondo">
+                      <img
+                        src={avatarUrl}
+                        alt=""
+                        className="perfil-avatar-grande-redondo"
+                        style={{
+                          objectPosition: `${posX}% ${posY}%`,
+                          transform: `scale(${zoom / 100})`,
+                          transformOrigin: `${posX}% ${posY}%`
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="perfil-avatar-frame-redondo perfil-avatar-placeholder">Sin imagen</div>
+                  )}
+                  <span>Cambiar Imagen</span>
+                </button>
               </div>
 
               <div className="perfil-inputs-col">
@@ -422,20 +437,6 @@ export default function Perfil() {
                   </label>
                 </div>
 
-                <label>
-                  <div className="label-header">
-                    <span className="label-title">URL del Avatar</span>
-                    <span className="label-opcional">(opcional)</span>
-                  </div>
-                  <input
-                    type="url"
-                    maxLength={500}
-                    value={avatarUrl}
-                    onChange={(e) => setAvatarUrl(e.target.value)}
-                    placeholder="https://ejemplo.com/avatar.jpg"
-                  />
-                </label>
-
                 <label className="perfil-bio-label">
                   <div className="label-header">
                     <span className="label-title">Biografía</span>
@@ -450,14 +451,6 @@ export default function Perfil() {
                   />
                 </label>
 
-                {avatarUrl && (
-                  <div className="perfil-ajuste-posicion">
-                    <span>Encuadre de la imagen</span>
-                    <button type="button" className="perfil-abrir-recorte" onClick={abrirEditorEncuadre}>
-                      Ajustar imagen
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -645,6 +638,52 @@ export default function Perfil() {
                   Sí, cerrar sesión
                 </button>
               </div>
+            </div>
+          </section>
+        </div>
+      )}
+      {mostrarEditorImagen && (
+        <div className="crear-campana-overlay" onMouseDown={(event) => event.target === event.currentTarget && cerrarEditorImagen(false)}>
+          <section
+            className="crear-campana-dialog perfil-editor-imagen-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="perfil-editor-imagen-titulo"
+            onKeyDown={(event) => {
+              if (event.key === "Escape") cerrarEditorImagen(false);
+            }}
+          >
+            <header className="crear-campana-header">
+              <div>
+                <p className="seccion-etiqueta">Perfil</p>
+                <h2 id="perfil-editor-imagen-titulo">Cambiar Imagen</h2>
+              </div>
+              <button type="button" className="crear-campana-cerrar" onClick={() => cerrarEditorImagen(false)} aria-label="Cerrar editor de imagen">×</button>
+            </header>
+            <label>
+              <span className="label-title">URL del Avatar</span>
+              <input
+                type="url"
+                maxLength={500}
+                value={avatarUrl}
+                onChange={(event) => setAvatarUrl(event.target.value)}
+                placeholder="https://ejemplo.com/avatar.jpg"
+              />
+            </label>
+            <div className="crear-campana-acciones">
+              {avatarUrl && (
+                <button
+                  className="crear-campana-cancelar"
+                  type="button"
+                  onClick={() => {
+                    cerrarEditorImagen(true);
+                    abrirEditorEncuadre();
+                  }}
+                >
+                  Ajustar Imagen
+                </button>
+              )}
+              <button className="crear-campana-enviar" type="button" onClick={() => cerrarEditorImagen(true)}>Aplicar</button>
             </div>
           </section>
         </div>

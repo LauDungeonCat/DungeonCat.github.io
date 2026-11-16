@@ -30,6 +30,7 @@ type HeaderProps = {
 
 export default function Header({ onNavigate, profile, requestLogin, wotfMode = false }: HeaderProps) {
   const [partidasAbierto, setPartidasAbierto] = useState(false);
+  const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
   const [notificacionesAbiertas, setNotificacionesAbiertas] = useState(false);
   const [solicitudesCargadas, setSolicitudesCargadas] = useState<{ usuarioId: string; items: SolicitudPendienteRow[] } | null>(null);
   const [noLeidasCount, setNoLeidasCount] = useState<number>(0);
@@ -155,6 +156,7 @@ export default function Header({ onNavigate, profile, requestLogin, wotfMode = f
   function navegarDesdeEnlace(event: React.MouseEvent<HTMLAnchorElement>, pagina: string) {
     event.preventDefault();
     setPartidasAbierto(false);
+    setMenuMovilAbierto(false);
     onNavigate(pagina);
   }
 
@@ -191,7 +193,20 @@ export default function Header({ onNavigate, profile, requestLogin, wotfMode = f
         </a>
       </div>
 
-      <nav className="header-nav">
+      <button
+        className="header-menu-toggle"
+        type="button"
+        aria-label={menuMovilAbierto ? "Cerrar menú de navegación" : "Abrir menú de navegación"}
+        aria-expanded={menuMovilAbierto}
+        aria-controls="navegacion-principal"
+        onClick={() => setMenuMovilAbierto((abierto) => !abierto)}
+      >
+        <span />
+        <span />
+        <span />
+      </button>
+
+      <nav id="navegacion-principal" className={`header-nav${menuMovilAbierto ? ' header-nav-abierto' : ''}`}>
         <ul>
           {wotfMode ? (
             <>
@@ -202,11 +217,9 @@ export default function Header({ onNavigate, profile, requestLogin, wotfMode = f
             <>
               <li><a href="#/inicio" onClick={(event) => navegarDesdeEnlace(event, 'inicio')}>Inicio</a></li>
               <li><a href="#/disponibilidad" onClick={(event) => navegarDesdeEnlace(event, 'disponibilidad')}>Disponibilidad</a></li>
-              <li
-                className="tools-menu"
-                onMouseEnter={abrirMenu}
-                onMouseLeave={cerrarMenu}
-              >
+              <li><a href="#/buscar-partidas" onClick={(event) => navegarDesdeEnlace(event, 'buscar-partidas')}>Buscar Partidas</a></li>
+              <li><a href="#/mis-partidas" onClick={(event) => navegarDesdeEnlace(event, 'mis-partidas')}>Mis Partidas</a></li>
+              <li className="tools-menu" onMouseEnter={abrirMenu} onMouseLeave={cerrarMenu}>
                 <div className="tools-menu-content">
                   <button
                     className="tools-trigger active"
