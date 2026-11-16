@@ -29,6 +29,10 @@ export type SesionUsuarioRow = {
   partida_id: string;
   fecha: string;
   franja: "manana" | "tarde" | string;
+  hora_inicio?: string | null;
+  hora_fin?: string | null;
+  evento_comunidad_id?: string | null;
+  evento_ubicacion?: string | null;
   titulo_partida?: string;
   created_at?: string | null;
 };

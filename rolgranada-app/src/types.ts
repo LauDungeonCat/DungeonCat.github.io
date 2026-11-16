@@ -43,7 +43,6 @@ export interface Partida {
   esPrivada: boolean;
   amigosPuedenUnirse: boolean;
   viewerEsAmigo: boolean;
-  esEvento: boolean;
   proximaSesion?: string;
   proximaSesionFranja?: FranjaHorario;
   estado: "abierta" | "en_curso" | "finalizada";
@@ -134,8 +133,37 @@ export interface PartidaEditable {
   duracionEstimada: string;
   esPrivada?: boolean;
   amigosPuedenUnirse?: boolean;
-  esEvento?: boolean;
   triggerWarnings?: TriggerWarningsPartida;
+}
+
+export interface PartidaEvento {
+  sesion_id: string;
+  partida_id: string;
+  titulo: string;
+  sistema: string;
+  imagen_url: string | null;
+  dm_id: string;
+  dm_username: string;
+  es_mia: boolean;
+  estado?: string;
+  participantes_max?: number;
+  participantes_count?: number;
+  viewer_is_participant?: boolean;
+}
+
+export interface EventoComunidad {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  imagen_url: string | null;
+  fecha: string;
+  hora_inicio: string;
+  hora_fin: string;
+  ubicacion: string;
+  modalidad: "abierto" | "cerrado";
+  mesas_max: number | null;
+  mesas_actuales: number;
+  partidas: PartidaEvento[];
 }
 
 export interface UsuarioActivo extends ProfileRow {

@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { useAuth } from "./auth/useAuth";
-import type { Database } from "./lib/database.types";
+import type { SesionUsuarioRow } from "./lib/database.helpers";
 import { supabase } from "./lib/supabase";
 import type { CambioDisponibilidad, DisponibilidadDia, FranjaEstado, FranjaHorario, Partida, PartidaEditable, UsuarioActivo } from "./types";
 import { normalizarTriggerWarnings, type TriggerWarningsPartida } from "./temasSensibles";
 import { featureRpc, featureSupabase } from "./lib/featureRpc";
 
 // Tipos auxiliares seguros basados en la Base de Datos
-export type SesionUsuarioRow = Database["public"]["Tables"]["sesiones"]["Row"];
+export type { SesionUsuarioRow };
 export type PartidaConAccesoRow = any; // Vista o función de partidas con acceso
 export type JugadorPartidaRow = any;
 export type DisponibilidadPartidaRow = any; 
@@ -48,7 +48,6 @@ function mapearPartida(row: PartidaConAccesoRow, triggerWarnings: TriggerWarning
     esPrivada: row.es_privada,
     amigosPuedenUnirse: row.amigos_pueden_unirse ?? false,
     viewerEsAmigo: row.viewer_es_amigo ?? false,
-    esEvento: row.es_evento ?? false,
     proximaSesion: row.proxima_sesion ?? undefined,
     proximaSesionFranja: row.proxima_sesion_franja ?? undefined,
     estado: row.estado ?? "abierta",
@@ -110,7 +109,7 @@ export function useRolData() {
     if (userId) {
       const [disponibilidadResult, sesionesResult] = await Promise.all([
         supabase.from("disponibilidades").select("fecha, manana, tarde").eq("user_id", userId),
-        supabase.rpc("listar_sesiones_usuario"),
+        featureSupabase.rpc("listar_sesiones_usuario"),
       ]);
 
       if (disponibilidadResult.error) throw disponibilidadResult.error;
@@ -131,7 +130,7 @@ export function useRolData() {
         .filter((sesion) => sesion.partida_id === partida.id)
         .map((sesion) => ({
           sesion,
-          fechaHora: new Date(`${sesion.fecha}T${sesion.franja === "manana" ? "09:00:00" : "15:00:00"}`),
+          fechaHora: new Date(`${sesion.fecha}T${sesion.hora_inicio ?? (sesion.franja === "manana" ? "09:00:00" : "15:00:00")}`),
         }))
         .filter(({ fechaHora }) => fechaHora > ahora)
         .sort((a, b) => a.fechaHora.getTime() - b.fechaHora.getTime())[0];
@@ -139,7 +138,7 @@ export function useRolData() {
       return siguiente
         ? {
             ...partida,
-            proximaSesion: `${siguiente.sesion.fecha}T${siguiente.sesion.franja === "manana" ? "09:00:00" : "15:00:00"}`,
+            proximaSesion: `${siguiente.sesion.fecha}T${siguiente.sesion.hora_inicio ?? (siguiente.sesion.franja === "manana" ? "09:00:00" : "15:00:00")}`,
             proximaSesionFranja: siguiente.sesion.franja as FranjaHorario,
           }
         : partida;
@@ -347,7 +346,7 @@ export function useRolData() {
     async (datos: PartidaEditable) => {
       if (!profile) return;
       await ejecutar(async () => {
-        const { data: partidaCreada, error: insertError } = await featureSupabase.from("partidas").insert({
+        const { error: insertError } = await featureSupabase.from("partidas").insert({
           titulo: datos.titulo,
           sistema: datos.sistema,
           descripcion: datos.descripcion ?? "",
@@ -361,14 +360,8 @@ export function useRolData() {
           es_privada: datos.esPrivada ?? false,
           amigos_pueden_unirse: datos.esPrivada ? datos.amigosPuedenUnirse ?? false : false,
           ...(datos.triggerWarnings ? { trigger_warnings: datos.triggerWarnings } : {}),
-        }).select("id").single();
+        });
         if (insertError) throw insertError;
-        if (profile.role === "admin" && datos.esEvento) {
-          await featureRpc("marcar_partida_evento", {
-            p_partida_id: partidaCreada.id,
-            p_es_evento: true,
-          });
-        }
       });
     },
     [ejecutar, profile]
@@ -395,12 +388,6 @@ export function useRolData() {
           })
           .eq("id", id);
         if (updateError) throw updateError;
-        if (profile?.role === "admin") {
-          await featureRpc("marcar_partida_evento", {
-            p_partida_id: id,
-            p_es_evento: datos.esEvento ?? false,
-          });
-        }
       });
     },
     [ejecutar, profile?.role]

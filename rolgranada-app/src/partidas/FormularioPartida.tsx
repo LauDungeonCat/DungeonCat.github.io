@@ -35,7 +35,6 @@ export default function FormularioPartida({ partidaAEditar, onClose }: Formulari
     imagenUrl: partidaAEditar?.imagenUrl ?? "",
     esPrivada: partidaAEditar?.esPrivada ?? false,
     amigosPuedenUnirse: partidaAEditar?.amigosPuedenUnirse ?? false,
-    esEvento: partidaAEditar?.esEvento ?? false,
   });
 
   function actualizarCampo(campo: string, valor: string | boolean) {
@@ -59,7 +58,6 @@ export default function FormularioPartida({ partidaAEditar, onClose }: Formulari
       duracionEstimada: formulario.duracionEstimada.trim(),
       esPrivada: formulario.esPrivada,
       amigosPuedenUnirse: formulario.amigosPuedenUnirse,
-      esEvento: formulario.esEvento,
       triggerWarnings,
     };
 
@@ -159,13 +157,6 @@ export default function FormularioPartida({ partidaAEditar, onClose }: Formulari
               <label className="crear-campana-privacidad crear-campana-campo-amplio">
                 <input type="checkbox" checked={formulario.amigosPuedenUnirse} onChange={(e) => actualizarCampo("amigosPuedenUnirse", e.target.checked)} />
                 Permitir que mis amistades se unan directamente sin invitación
-              </label>
-            )}
-
-            {usuario?.role === "admin" && (
-              <label className="crear-campana-privacidad crear-campana-campo-amplio">
-                <input type="checkbox" checked={formulario.esEvento} onChange={(e) => actualizarCampo("esEvento", e.target.checked)} />
-                Mostrar esta partida como evento en Inicio
               </label>
             )}
 

@@ -26,7 +26,7 @@ function leerVistaGuardada(): Vista {
     }
 }
 
-function obtenerTextoProximaSesion(partidaId: string, sesiones: Array<{ fecha: string; franja: string; partida_id: string }>): string {
+function obtenerTextoProximaSesion(partidaId: string, sesiones: Array<{ fecha: string; franja: string; hora_inicio?: string | null; hora_fin?: string | null; partida_id: string }>): string {
     const ahora = new Date();
     ahora.setHours(0, 0, 0, 0);
 
@@ -41,14 +41,16 @@ function obtenerTextoProximaSesion(partidaId: string, sesiones: Array<{ fecha: s
     if (sesionesPartida.length === 0) return "Por decidir";
 
     const proxima = sesionesPartida.find((s) => s.objetoFecha >= ahora) ?? sesionesPartida[0];
-    const franjaTexto = proxima.franja === "manana" ? "Mañana" : "Tarde";
+    const horarioTexto = proxima.hora_inicio && proxima.hora_fin
+        ? `${proxima.hora_inicio.slice(0, 5)}–${proxima.hora_fin.slice(0, 5)}`
+        : proxima.franja === "manana" ? "Mañana" : "Tarde";
     const fechaFormateada = new Intl.DateTimeFormat("es-ES", {
         day: "numeric",
         month: "short",
         year: "numeric",
     }).format(proxima.objetoFecha);
 
-    return `${fechaFormateada} (${franjaTexto})`;
+    return `${fechaFormateada} (${horarioTexto})`;
 }
 
 export default function MisPartidas() {
@@ -82,11 +84,13 @@ export default function MisPartidas() {
         const partidaAsociada = partidas.find((p) => p.id === sesion.partida_id);
         return {
             fecha: new Date(`${sesion.fecha}T12:00:00`),
-            titulo: `Sesión · ${sesion.franja === "manana" ? "Mañana" : "Tarde"}`,
+            titulo: `Sesión · ${sesion.hora_inicio && sesion.hora_fin ? `${sesion.hora_inicio.slice(0, 5)}–${sesion.hora_fin.slice(0, 5)}` : sesion.franja === "manana" ? "Mañana" : "Tarde"}`,
             campana: partidaAsociada?.titulo ?? "Campaña",
-            hora: sesion.franja === "manana" ? "Mañana" : "Tarde",
+            hora: sesion.hora_inicio && sesion.hora_fin ? `${sesion.hora_inicio.slice(0, 5)}–${sesion.hora_fin.slice(0, 5)}` : sesion.franja === "manana" ? "Mañana" : "Tarde",
+            horaInicio: sesion.hora_inicio,
+            horaFin: sesion.hora_fin,
             sistema: partidaAsociada?.sistema,
-            ubicacion: partidaAsociada?.ubicacionExacta ?? undefined,
+            ubicacion: sesion.evento_ubicacion ?? partidaAsociada?.ubicacionExacta ?? undefined,
         };
     });
 

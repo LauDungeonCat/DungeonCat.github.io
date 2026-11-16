@@ -6,6 +6,8 @@ export type Sesion = {
     titulo: string;
     campana: string;
     hora: string;
+    horaInicio?: string | null;
+    horaFin?: string | null;
     sistema?: string;
     ubicacion?: string;
     onSelectCampana?: (nombreCampana: string) => void;
@@ -32,8 +34,8 @@ function obtenerEnlaceGoogleCalendar(sesion: Sesion) {
     const fechaStr = `${anio}${mes}${dia}`;
 
     const esMañana = sesion.hora.toLowerCase().includes("mañana");
-    const horaInicio = esMañana ? "090000" : "160000";
-    const horaFin = esMañana ? "140000" : "220000";
+    const horaInicio = sesion.horaInicio?.replaceAll(":", "").slice(0, 6) ?? (esMañana ? "090000" : "160000");
+    const horaFin = sesion.horaFin?.replaceAll(":", "").slice(0, 6) ?? (esMañana ? "140000" : "220000");
 
     const text = encodeURIComponent(`Sesión: ${sesion.campana} (${sesion.hora})`);
     const details = encodeURIComponent(

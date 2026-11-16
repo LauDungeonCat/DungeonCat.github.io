@@ -4,6 +4,7 @@ import whatsappQr from '../assets/whatsapp-qr.png';
 import instagramQr from '../assets/instagram-qr.png';
 import KofiIcon from '../components/KofiIcon';
 import { useRolData } from '../useRolData';
+import EventosComunidad from './EventosComunidad';
 import './Inicio.css';
 
 interface InicioProps {
@@ -12,7 +13,6 @@ interface InicioProps {
 
 export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
   const { partidas, sesiones } = useRolData();
-  const eventos = partidas.filter((partida) => partida.esEvento && partida.estado !== "finalizada");
 
   // Estadísticas calculadas directamente del estado cargado por useRolData
   const mesasActivas = partidas.length;
@@ -24,39 +24,16 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
       <header className="inicio-cabecera">
         <div>
           <p className="seccion-etiqueta">Inicio</p>
-          <h1 className="page-title">Bienvenido a la Comunidad</h1>
+          <h1 className="page-title">Bienvenid@ a la Comunidad</h1>
           <p className="inicio-subtitulo">
             Encuentra partidas de rol, organiza tus horarios y gestiona tus campañas en un solo lugar.
           </p>
         </div>
       </header>
 
-      {eventos.length > 0 && (
-        <section className="inicio-eventos" aria-labelledby="inicio-eventos-titulo">
-          <p className="seccion-etiqueta">Agenda de la comunidad</p>
-          <h2 className="inicio-seccion-titulo" id="inicio-eventos-titulo">Próximos eventos</h2>
-          <div className="inicio-eventos-grid">
-            {eventos.map((evento) => (
-              <article className="inicio-evento-card" key={evento.id}>
-                <div>
-                  <p className="inicio-evento-sistema">{evento.sistema}</p>
-                  <h3>{evento.titulo}</h3>
-                  {evento.descripcion && <p className="inicio-evento-descripcion">{evento.descripcion}</p>}
-                  <p className="inicio-evento-fecha">
-                    {evento.proximaSesion
-                      ? `Próxima sesión: ${new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(new Date(evento.proximaSesion))}${evento.proximaSesionFranja ? ` · ${evento.proximaSesionFranja === "manana" ? "Mañana" : "Tarde"}` : ""}`
-                      : "Fecha por confirmar"}
-                  </p>
-                </div>
-                <button type="button" className="btn-secundario" onClick={() => onNavigate?.("buscar-partidas")}>Ver partida</button>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
+      <EventosComunidad partidas={partidas} />
 
-      {/* Accesos Rápidos */}
-      <p className="seccion-etiqueta seccion-separador">Accesos Rápidos</p>
+      <h2 className="inicio-seccion-titulo seccion-separador">Accesos Rápidos</h2>
       
       <div className="inicio-grid">
         {/* Tarjeta 1: Buscar Partidas */}
@@ -121,7 +98,6 @@ export const Inicio: React.FC<InicioProps> = ({ onNavigate }) => {
       
       {/* Estadísticas de la Comunidad */}
       <section className="inicio-stats-section">
-        <p className="seccion-etiqueta">Comunidad</p>
         <h3 className="inicio-seccion-titulo">Estadísticas de Rol Granada</h3>
         
         <div className="stats-grid">
