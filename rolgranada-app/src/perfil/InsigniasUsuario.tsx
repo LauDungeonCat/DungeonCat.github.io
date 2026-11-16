@@ -5,7 +5,7 @@ import "./InsigniasUsuario.css";
 
 const NOMBRE_METAL = {
   generica: "Genérica",
-  cobre: "Cobre Reluciente",
+  cobre: "Cobre",
   plata: "Plata",
   oro: "Oro",
   diamante: "Diamante",
